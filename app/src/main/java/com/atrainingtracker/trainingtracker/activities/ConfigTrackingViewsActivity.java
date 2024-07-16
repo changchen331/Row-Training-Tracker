@@ -1,5 +1,3 @@
-
-
 package com.atrainingtracker.trainingtracker.activities;
 
 import com.atrainingtracker.banalservice.ActivityType;

@@ -1,5 +1,3 @@
-
-
 package com.atrainingtracker.banalservice.devices;
 
 
@@ -11,10 +9,10 @@ import android.util.Log;
 
 import com.atrainingtracker.banalservice.BANALService;
 import com.atrainingtracker.banalservice.Protocol;
-import com.atrainingtracker.banalservice.sensor.MySensor;
-import com.atrainingtracker.banalservice.sensor.MySensorManager;
 import com.atrainingtracker.banalservice.database.DevicesDatabaseManager;
 import com.atrainingtracker.banalservice.helpers.UIHelper;
+import com.atrainingtracker.banalservice.sensor.MySensor;
+import com.atrainingtracker.banalservice.sensor.MySensorManager;
 
 /**
  * base class for remote devices that connect via ANT+ or Bluetooth

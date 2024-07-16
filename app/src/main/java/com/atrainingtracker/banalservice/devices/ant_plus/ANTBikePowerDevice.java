@@ -1,20 +1,18 @@
-
-
 package com.atrainingtracker.banalservice.devices.ant_plus;
 
 import android.content.Context;
 import android.util.Log;
 
 import com.atrainingtracker.banalservice.BANALService;
+import com.atrainingtracker.banalservice.MyBanalDebugHelper;
+import com.atrainingtracker.banalservice.database.DevicesDatabaseManager;
 import com.atrainingtracker.banalservice.devices.BikePowerSensorsHelper;
 import com.atrainingtracker.banalservice.devices.DeviceType;
-import com.atrainingtracker.banalservice.MyBanalDebugHelper;
 import com.atrainingtracker.banalservice.sensor.MyDoubleAccumulatorSensor;
 import com.atrainingtracker.banalservice.sensor.MySensor;
 import com.atrainingtracker.banalservice.sensor.MySensorManager;
 import com.atrainingtracker.banalservice.sensor.SensorType;
 import com.atrainingtracker.banalservice.sensor.ThresholdSensor;
-import com.atrainingtracker.banalservice.database.DevicesDatabaseManager;
 import com.dsi.ant.plugins.antplus.pcc.AntPlusBikePowerPcc;
 import com.dsi.ant.plugins.antplus.pcc.AntPlusBikePowerPcc.CalculatedWheelDistanceReceiver;
 import com.dsi.ant.plugins.antplus.pcc.AntPlusBikePowerPcc.CalculatedWheelSpeedReceiver;

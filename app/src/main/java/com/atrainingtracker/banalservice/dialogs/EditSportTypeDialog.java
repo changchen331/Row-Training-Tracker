@@ -1,5 +1,3 @@
-
-
 package com.atrainingtracker.banalservice.dialogs;
 
 import android.app.Dialog;
@@ -9,9 +7,6 @@ import android.content.Intent;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
 import android.os.Bundle;
-
-import androidx.appcompat.app.AlertDialog;
-import androidx.fragment.app.DialogFragment;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -19,6 +14,9 @@ import android.widget.ArrayAdapter;
 import android.widget.EditText;
 import android.widget.Spinner;
 import android.widget.TextView;
+
+import androidx.appcompat.app.AlertDialog;
+import androidx.fragment.app.DialogFragment;
 
 import com.atrainingtracker.R;
 import com.atrainingtracker.banalservice.BANALService;
@@ -29,7 +27,6 @@ import com.atrainingtracker.trainingtracker.MyHelper;
 
 import java.util.Arrays;
 import java.util.List;
-
 
 
 public class EditSportTypeDialog extends DialogFragment {

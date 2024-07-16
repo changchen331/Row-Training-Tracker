@@ -1,11 +1,9 @@
-
-
 package com.atrainingtracker.trainingtracker.smartwatch.pebble;
 
 
 import com.atrainingtracker.banalservice.ActivityType;
-import com.atrainingtracker.trainingtracker.activities.ConfigViewsActivity;
 import com.atrainingtracker.trainingtracker.TrainingApplication;
+import com.atrainingtracker.trainingtracker.activities.ConfigViewsActivity;
 import com.atrainingtracker.trainingtracker.fragments.ConfigViewsFragment;
 
 public class ConfigPebbleViewsActivity extends ConfigViewsActivity {

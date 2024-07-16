@@ -1,5 +1,3 @@
-
-
 package com.atrainingtracker.trainingtracker.interfaces;
 
 import com.atrainingtracker.trainingtracker.exporter.FileFormat;

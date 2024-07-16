@@ -1,5 +1,3 @@
-
-
 package com.atrainingtracker.banalservice.fragments;
 
 import android.content.Context;
@@ -15,9 +13,9 @@ import android.widget.TextView;
 
 import com.atrainingtracker.R;
 import com.atrainingtracker.banalservice.BANALService;
-import com.atrainingtracker.banalservice.devices.DeviceType;
 import com.atrainingtracker.banalservice.Protocol;
 import com.atrainingtracker.banalservice.database.DevicesDatabaseManager.DevicesDbHelper;
+import com.atrainingtracker.banalservice.devices.DeviceType;
 import com.atrainingtracker.banalservice.helpers.UIHelper;
 import com.atrainingtracker.trainingtracker.database.EquipmentDbHelper;
 

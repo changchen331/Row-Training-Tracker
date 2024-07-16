@@ -1,5 +1,3 @@
-
-
 package com.atrainingtracker.trainingtracker.smartwatch.pebble;
 
 import com.atrainingtracker.R;

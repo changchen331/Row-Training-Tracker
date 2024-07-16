@@ -1,5 +1,3 @@
-
-
 package com.atrainingtracker.banalservice.sensor.formater;
 
 import java.util.concurrent.TimeUnit;

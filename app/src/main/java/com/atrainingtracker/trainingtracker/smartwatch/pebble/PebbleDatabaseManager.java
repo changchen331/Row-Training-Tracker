@@ -1,5 +1,3 @@
-
-
 package com.atrainingtracker.trainingtracker.smartwatch.pebble;
 
 import android.content.ContentValues;

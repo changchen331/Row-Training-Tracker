@@ -1,5 +1,3 @@
-
-
 package com.atrainingtracker.banalservice.fragments;
 
 import android.database.Cursor;
@@ -8,9 +6,9 @@ import android.util.Log;
 
 import com.atrainingtracker.R;
 import com.atrainingtracker.banalservice.BANALService;
-import com.atrainingtracker.banalservice.devices.DeviceType;
 import com.atrainingtracker.banalservice.Protocol;
 import com.atrainingtracker.banalservice.database.DevicesDatabaseManager.DevicesDbHelper;
+import com.atrainingtracker.banalservice.devices.DeviceType;
 
 
 public class KnownRemoteDevicesFragment extends RemoteDevicesFragment {

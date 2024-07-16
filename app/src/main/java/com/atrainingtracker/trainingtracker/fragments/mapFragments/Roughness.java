@@ -1,7 +1,4 @@
-
-
 package com.atrainingtracker.trainingtracker.fragments.mapFragments;
-
 
 
 public enum Roughness {

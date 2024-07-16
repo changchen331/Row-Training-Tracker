@@ -1,5 +1,4 @@
-<?xml version="1.0" encoding="utf-8"?>
-<!--
+<?xml version="1.0" encoding="utf-8"?><!--
   ~ aTrainingTracker (ANT+ BTLE)
   ~ Copyright (C) 2011 - 2019 Rainer Blind <rainer.blind@gmail.com>
   ~
@@ -25,17 +24,17 @@
             android:icon="@drawable/control_start"
             android:title="@string/tab_start" />
 
-<!--        <item-->
-<!--            android:id="@+id/drawer_map"-->
-<!--            android:title="@string/tab_map" />-->
+        <!--        <item-->
+        <!--            android:id="@+id/drawer_map"-->
+        <!--            android:title="@string/tab_map" />-->
 
-<!--        <item-->
-<!--            android:id="@+id/drawer_segments"-->
-<!--            android:title="@string/segments" />-->
+        <!--        <item-->
+        <!--            android:id="@+id/drawer_segments"-->
+        <!--            android:title="@string/segments" />-->
 
-<!--        <item-->
-<!--            android:id="@+id/drawer_my_locations"-->
-<!--            android:title="@string/my_locations" />-->
+        <!--        <item-->
+        <!--            android:id="@+id/drawer_my_locations"-->
+        <!--            android:title="@string/my_locations" />-->
 
         <item
             android:id="@+id/drawer_workouts"

@@ -1,5 +1,3 @@
-
-
 package com.atrainingtracker.trainingtracker.onlinecommunities;
 
 import android.app.Activity;
@@ -42,20 +40,20 @@ public abstract class BaseGetAccessTokenActivity
     public static final String ACCESS_TOKEN = "access_token";
     public static final String HTTPS = "https";
     public static final String TOKEN = "token";
-    protected static final String AUTHORIZE = "authorize";
     public static final String OAUTH = "oauth";
+    public static final String CLIENT_ID = "client_id";
+    public static final String CLIENT_SECRET = "client_secret";
+    public static final String GRANT_TYPE = "grant_type";
+    public static final String REFRESH_TOKEN = "refresh_token";
+    public static final String EXPIRES_AT = "expires_at";
+    protected static final String AUTHORIZE = "authorize";
     protected static final String MOBILE = "mobile";
     protected static final String CODE = "code";
     protected static final String AUTHORIZATION_CODE = "authorization_code";
     protected static final String ACCEPT_APPLICATION = "accept_application";
-    public static final String CLIENT_ID = "client_id";
-    public static final String CLIENT_SECRET = "client_secret";
     protected static final String RESPONSE_TYPE = "response_type";
     protected static final String REDIRECT_URI = "redirect_uri";
-    public static final String GRANT_TYPE = "grant_type";
     protected static final String TOKEN_TYPE = "token_type";
-    public static final String REFRESH_TOKEN = "refresh_token";
-    public static final String EXPIRES_AT = "expires_at";
     protected static final String SCOPE = "scope";
     protected static final String WRITE = "write";
     protected static final String FILE_WRITE = "file:write";

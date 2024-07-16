@@ -1,5 +1,3 @@
-
-
 package com.atrainingtracker.banalservice.sensor.formater;
 
 public class CadenceFormatter implements MyFormatter<Number> {

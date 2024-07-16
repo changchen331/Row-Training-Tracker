@@ -1,9 +1,6 @@
-
-
 package com.atrainingtracker.trainingtracker.fragments;
 
 import android.app.Activity;
-import androidx.appcompat.app.AlertDialog;
 import android.app.Dialog;
 import android.content.BroadcastReceiver;
 import android.content.ContentValues;
@@ -14,7 +11,6 @@ import android.database.Cursor;
 import android.database.SQLException;
 import android.database.sqlite.SQLiteDatabase;
 import android.os.Bundle;
-import androidx.fragment.app.Fragment;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -34,21 +30,24 @@ import android.widget.RadioGroup;
 import android.widget.Spinner;
 import android.widget.TextView;
 
+import androidx.appcompat.app.AlertDialog;
+import androidx.fragment.app.Fragment;
+
 import com.atrainingtracker.R;
 import com.atrainingtracker.banalservice.BSportType;
+import com.atrainingtracker.banalservice.database.SportTypeDatabaseManager;
 import com.atrainingtracker.banalservice.sensor.SensorType;
 import com.atrainingtracker.banalservice.sensor.formater.DistanceFormatter;
 import com.atrainingtracker.banalservice.sensor.formater.TimeFormatter;
-import com.atrainingtracker.banalservice.database.SportTypeDatabaseManager;
-import com.atrainingtracker.trainingtracker.database.ExtremaType;
-import com.atrainingtracker.trainingtracker.exporter.ExportManager;
-import com.atrainingtracker.trainingtracker.exporter.ExportWorkoutIntentService;
 import com.atrainingtracker.trainingtracker.MyHelper;
 import com.atrainingtracker.trainingtracker.TrainingApplication;
 import com.atrainingtracker.trainingtracker.database.EquipmentDbHelper;
+import com.atrainingtracker.trainingtracker.database.ExtremaType;
 import com.atrainingtracker.trainingtracker.database.WorkoutSummariesDatabaseManager;
 import com.atrainingtracker.trainingtracker.database.WorkoutSummariesDatabaseManager.WorkoutSummaries;
 import com.atrainingtracker.trainingtracker.dialogs.EditFancyWorkoutNameDialog;
+import com.atrainingtracker.trainingtracker.exporter.ExportManager;
+import com.atrainingtracker.trainingtracker.exporter.ExportWorkoutIntentService;
 import com.atrainingtracker.trainingtracker.helpers.CalcExtremaValuesTask;
 import com.atrainingtracker.trainingtracker.interfaces.ReallyDeleteDialogInterface;
 
@@ -139,15 +138,6 @@ public class EditWorkoutFragment extends Fragment {
     private Button buttonSaveWorkout, buttonDeleteWorkout, buttonFancyName;
     private Spinner spinnerSport, spinnerEquipment;
     private EditText editExportName, editGoal, editMethod, editDescription;
-    private TextView tvEquipment;
-    private RadioGroup rgCommuteTrainer;
-    private RadioButton rbCommute, rbTrainer;
-    private CheckBox cbPrivate;
-    private boolean radioButtonAlreadyChecked = false;  // necessary to allow deselect of the radio buttons within the group for Commute and Trainer
-    private double MAX_WORKOUT_TIME_TO_SHOW_DELETE_BUTTON = 10 * 60;  // 10 min
-    private String ALL = "all";
-    private boolean mPaceExtremaValuesAvailable = false;
-
     // BroadcastReceivers to update the name, commute, and extrema values
     private final BroadcastReceiver mFinishedCalculatingFancyNameReceiver = new BroadcastReceiver() {
         @Override
@@ -156,6 +146,9 @@ public class EditWorkoutFragment extends Fragment {
             editExportName.setText(workoutName);
         }
     };
+    private TextView tvEquipment;
+    private RadioGroup rgCommuteTrainer;
+    private RadioButton rbCommute, rbTrainer;
     private final BroadcastReceiver mFinishedGuessingCommuteAndTrainerReceiver = new BroadcastReceiver() {
         public void onReceive(Context context, Intent intent) {
             WorkoutSummariesDatabaseManager databaseManager = WorkoutSummariesDatabaseManager.getInstance();
@@ -174,6 +167,11 @@ public class EditWorkoutFragment extends Fragment {
             databaseManager.closeDatabase(); // db.close();
         }
     };
+    private CheckBox cbPrivate;
+    private boolean radioButtonAlreadyChecked = false;  // necessary to allow deselect of the radio buttons within the group for Commute and Trainer
+    private double MAX_WORKOUT_TIME_TO_SHOW_DELETE_BUTTON = 10 * 60;  // 10 min
+    private String ALL = "all";
+    private boolean mPaceExtremaValuesAvailable = false;
     private final BroadcastReceiver mFinishedCalculatingExtremaValueReceiver = new BroadcastReceiver() {
         public void onReceive(Context context, Intent intent) {
             SensorType sensorType = SensorType.valueOf(intent.getExtras().getString(CalcExtremaValuesTask.SENSOR_TYPE));
@@ -408,7 +406,7 @@ public class EditWorkoutFragment extends Fragment {
     }
 
     @Override
-    public void onDestroyView () {
+    public void onDestroyView() {
         super.onDestroyView();
         if (DEBUG) Log.i(TAG, "onDestroyView");
 

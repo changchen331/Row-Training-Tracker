@@ -1,5 +1,3 @@
-
-
 package com.atrainingtracker.trainingtracker.fragments.mapFragments;
 
 import android.Manifest;
@@ -12,10 +10,10 @@ import android.os.Bundle;
 import android.util.Log;
 
 import com.atrainingtracker.banalservice.BANALService;
-import com.atrainingtracker.trainingtracker.tracker.TrackerService;
 import com.atrainingtracker.trainingtracker.TrainingApplication;
 import com.atrainingtracker.trainingtracker.database.WorkoutSummariesDatabaseManager.WorkoutSummaries;
 import com.atrainingtracker.trainingtracker.segments.SegmentHelper;
+import com.atrainingtracker.trainingtracker.tracker.TrackerService;
 import com.google.android.gms.maps.GoogleMap;
 import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.LatLngBounds;

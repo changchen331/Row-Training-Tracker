@@ -1,17 +1,15 @@
-
-
 package com.atrainingtracker.trainingtracker.fragments;
 
 import android.os.Bundle;
+
 import androidx.fragment.app.Fragment;
 
 import com.atrainingtracker.banalservice.ActivityType;
-import com.atrainingtracker.trainingtracker.activities.ConfigViewsActivity;
 import com.atrainingtracker.trainingtracker.TrainingApplication;
+import com.atrainingtracker.trainingtracker.activities.ConfigViewsActivity;
 import com.atrainingtracker.trainingtracker.database.TrackingViewsDatabaseManager;
 
 import java.util.LinkedList;
-
 
 
 public class ConfigTrackingViewsFragment extends ConfigViewsFragment {

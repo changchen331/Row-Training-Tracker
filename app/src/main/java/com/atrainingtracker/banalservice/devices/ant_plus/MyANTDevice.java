@@ -1,8 +1,5 @@
-
-
 package com.atrainingtracker.banalservice.devices.ant_plus;
 
-import androidx.appcompat.app.AlertDialog;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.DialogInterface.OnClickListener;
@@ -10,13 +7,15 @@ import android.content.Intent;
 import android.net.Uri;
 import android.util.Log;
 
+import androidx.appcompat.app.AlertDialog;
+
 import com.atrainingtracker.banalservice.BANALService;
+import com.atrainingtracker.banalservice.Protocol;
 import com.atrainingtracker.banalservice.devices.DeviceType;
 import com.atrainingtracker.banalservice.devices.Manufacturer;
 import com.atrainingtracker.banalservice.devices.MyRemoteDevice;
-import com.atrainingtracker.banalservice.Protocol;
-import com.atrainingtracker.banalservice.sensor.MySensorManager;
 import com.atrainingtracker.banalservice.helpers.BatteryStatusHelper;
+import com.atrainingtracker.banalservice.sensor.MySensorManager;
 import com.dsi.ant.plugins.antplus.pcc.defines.BatteryStatus;
 import com.dsi.ant.plugins.antplus.pcc.defines.DeviceState;
 import com.dsi.ant.plugins.antplus.pcc.defines.EventFlag;

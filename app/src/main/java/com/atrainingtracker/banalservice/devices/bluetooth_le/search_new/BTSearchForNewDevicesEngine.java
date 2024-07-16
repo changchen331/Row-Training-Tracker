@@ -1,5 +1,3 @@
-
-
 package com.atrainingtracker.banalservice.devices.bluetooth_le.search_new;
 
 import android.annotation.SuppressLint;
@@ -18,11 +16,11 @@ import android.os.Handler;
 import android.util.Log;
 
 import com.atrainingtracker.banalservice.BANALService;
+import com.atrainingtracker.banalservice.database.DevicesDatabaseManager;
 import com.atrainingtracker.banalservice.devices.DeviceType;
 import com.atrainingtracker.banalservice.devices.SearchForNewDevicesInterface;
 import com.atrainingtracker.banalservice.devices.bluetooth_le.BTLEBikePowerDevice;
 import com.atrainingtracker.banalservice.devices.bluetooth_le.BluetoothConstants;
-import com.atrainingtracker.banalservice.database.DevicesDatabaseManager;
 
 import java.util.HashMap;
 import java.util.LinkedList;

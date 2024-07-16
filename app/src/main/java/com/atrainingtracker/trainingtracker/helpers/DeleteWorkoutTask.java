@@ -1,5 +1,3 @@
-
-
 package com.atrainingtracker.trainingtracker.helpers;
 
 import android.app.ProgressDialog;
@@ -11,11 +9,11 @@ import android.os.AsyncTask;
 import android.util.Log;
 
 import com.atrainingtracker.R;
-import com.atrainingtracker.trainingtracker.exporter.ExportManager;
 import com.atrainingtracker.trainingtracker.database.LapsDatabaseManager;
 import com.atrainingtracker.trainingtracker.database.WorkoutSamplesDatabaseManager;
 import com.atrainingtracker.trainingtracker.database.WorkoutSummariesDatabaseManager;
 import com.atrainingtracker.trainingtracker.database.WorkoutSummariesDatabaseManager.WorkoutSummaries;
+import com.atrainingtracker.trainingtracker.exporter.ExportManager;
 
 
 public class DeleteWorkoutTask extends AsyncTask<Long, String, Boolean> {

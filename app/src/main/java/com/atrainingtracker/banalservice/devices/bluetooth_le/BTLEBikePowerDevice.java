@@ -1,5 +1,3 @@
-
-
 package com.atrainingtracker.banalservice.devices.bluetooth_le;
 
 import android.annotation.TargetApi;
@@ -10,13 +8,13 @@ import android.os.Build;
 import android.util.Log;
 
 import com.atrainingtracker.banalservice.BANALService;
+import com.atrainingtracker.banalservice.database.DevicesDatabaseManager;
 import com.atrainingtracker.banalservice.devices.BikePowerSensorsHelper;
 import com.atrainingtracker.banalservice.devices.DeviceType;
 import com.atrainingtracker.banalservice.sensor.MyDoubleAccumulatorSensor;
 import com.atrainingtracker.banalservice.sensor.MySensor;
 import com.atrainingtracker.banalservice.sensor.MySensorManager;
 import com.atrainingtracker.banalservice.sensor.SensorType;
-import com.atrainingtracker.banalservice.database.DevicesDatabaseManager;
 
 @TargetApi(Build.VERSION_CODES.JELLY_BEAN_MR2)
 public class BTLEBikePowerDevice extends MyBTLEDevice {

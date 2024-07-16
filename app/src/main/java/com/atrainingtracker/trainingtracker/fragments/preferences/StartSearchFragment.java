@@ -1,10 +1,9 @@
-
-
 package com.atrainingtracker.trainingtracker.fragments.preferences;
 
 import android.os.Bundle;
-import androidx.preference.PreferenceFragmentCompat;
 import android.util.Log;
+
+import androidx.preference.PreferenceFragmentCompat;
 
 import com.atrainingtracker.R;
 import com.atrainingtracker.trainingtracker.TrainingApplication;

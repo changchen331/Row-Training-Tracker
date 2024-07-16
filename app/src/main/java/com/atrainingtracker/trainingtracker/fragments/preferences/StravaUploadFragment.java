@@ -1,15 +1,14 @@
-
-
 package com.atrainingtracker.trainingtracker.fragments.preferences;
 
 import android.app.Activity;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.os.Bundle;
+import android.util.Log;
+
 import androidx.preference.CheckBoxPreference;
 import androidx.preference.Preference;
 import androidx.preference.PreferenceManager;
-import android.util.Log;
 
 import com.atrainingtracker.R;
 import com.atrainingtracker.banalservice.BSportType;

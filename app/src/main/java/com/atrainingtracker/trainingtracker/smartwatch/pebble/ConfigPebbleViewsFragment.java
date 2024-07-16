@@ -1,17 +1,15 @@
-
-
 package com.atrainingtracker.trainingtracker.smartwatch.pebble;
 
 import android.os.Bundle;
+
 import androidx.fragment.app.Fragment;
 
 import com.atrainingtracker.banalservice.ActivityType;
-import com.atrainingtracker.trainingtracker.activities.ConfigViewsActivity;
 import com.atrainingtracker.trainingtracker.TrainingApplication;
+import com.atrainingtracker.trainingtracker.activities.ConfigViewsActivity;
 import com.atrainingtracker.trainingtracker.fragments.ConfigViewsFragment;
 
 import java.util.LinkedList;
-
 
 
 public class ConfigPebbleViewsFragment extends ConfigViewsFragment {

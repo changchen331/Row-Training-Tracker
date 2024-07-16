@@ -1,5 +1,3 @@
-
-
 package com.atrainingtracker.trainingtracker.activities;
 
 
@@ -8,20 +6,20 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
 import android.os.Bundle;
-import com.google.android.material.navigation.NavigationView;
-import androidx.fragment.app.Fragment;
-import androidx.fragment.app.FragmentTransaction;
-import androidx.core.view.GravityCompat;
-import androidx.drawerlayout.widget.DrawerLayout;
-import androidx.appcompat.app.ActionBar;
-import androidx.appcompat.app.ActionBarDrawerToggle;
-import androidx.appcompat.app.AppCompatActivity;
-import androidx.appcompat.widget.Toolbar;
 import android.util.Log;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.WindowManager;
 import android.widget.TextView;
+
+import androidx.appcompat.app.ActionBar;
+import androidx.appcompat.app.ActionBarDrawerToggle;
+import androidx.appcompat.app.AppCompatActivity;
+import androidx.appcompat.widget.Toolbar;
+import androidx.core.view.GravityCompat;
+import androidx.drawerlayout.widget.DrawerLayout;
+import androidx.fragment.app.Fragment;
+import androidx.fragment.app.FragmentTransaction;
 
 import com.atrainingtracker.R;
 import com.atrainingtracker.trainingtracker.TrainingApplication;
@@ -34,6 +32,7 @@ import com.atrainingtracker.trainingtracker.fragments.mapFragments.TrackOnMapAft
 import com.atrainingtracker.trainingtracker.helpers.CalcExtremaValuesTask;
 import com.atrainingtracker.trainingtracker.helpers.DeleteWorkoutTask;
 import com.atrainingtracker.trainingtracker.interfaces.ReallyDeleteDialogInterface;
+import com.google.android.material.navigation.NavigationView;
 
 
 public class WorkoutDetailsActivity extends AppCompatActivity

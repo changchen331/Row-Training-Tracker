@@ -1,5 +1,3 @@
-
-
 package com.atrainingtracker.trainingtracker.dialogs;
 
 import android.app.Dialog;
@@ -12,7 +10,6 @@ import androidx.fragment.app.DialogFragment;
 
 import com.atrainingtracker.R;
 import com.atrainingtracker.trainingtracker.TrainingApplication;
-
 
 
 public class GPSDisabledDialog extends DialogFragment {

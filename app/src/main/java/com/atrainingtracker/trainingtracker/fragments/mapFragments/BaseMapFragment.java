@@ -1,5 +1,3 @@
-
-
 package com.atrainingtracker.trainingtracker.fragments.mapFragments;
 
 import android.Manifest;

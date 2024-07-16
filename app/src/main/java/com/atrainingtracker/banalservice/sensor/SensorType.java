@@ -1,5 +1,3 @@
-
-
 package com.atrainingtracker.banalservice.sensor;
 
 import android.os.Parcel;

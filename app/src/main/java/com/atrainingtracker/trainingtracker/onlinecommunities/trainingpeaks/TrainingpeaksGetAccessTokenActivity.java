@@ -1,5 +1,3 @@
-
-
 package com.atrainingtracker.trainingtracker.onlinecommunities.trainingpeaks;
 
 import android.net.Uri;

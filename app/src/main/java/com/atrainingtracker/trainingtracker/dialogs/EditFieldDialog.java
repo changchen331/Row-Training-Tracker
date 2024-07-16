@@ -1,5 +1,3 @@
-
-
 package com.atrainingtracker.trainingtracker.dialogs;
 
 import android.app.Dialog;
@@ -9,9 +7,6 @@ import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.IntentFilter;
 import android.os.Bundle;
-
-import androidx.appcompat.app.AlertDialog;
-import androidx.fragment.app.DialogFragment;
 import android.util.Log;
 import android.view.Gravity;
 import android.view.LayoutInflater;
@@ -22,20 +17,20 @@ import android.widget.Button;
 import android.widget.Spinner;
 import android.widget.TextView;
 
+import androidx.appcompat.app.AlertDialog;
+import androidx.fragment.app.DialogFragment;
+
 import com.atrainingtracker.R;
 import com.atrainingtracker.banalservice.ActivityType;
-import com.atrainingtracker.banalservice.sensor.SensorType;
 import com.atrainingtracker.banalservice.database.DevicesDatabaseManager;
 import com.atrainingtracker.banalservice.fragments.ConfigureFilterDialogFragment;
+import com.atrainingtracker.banalservice.sensor.SensorType;
 import com.atrainingtracker.trainingtracker.TrainingApplication;
+import com.atrainingtracker.trainingtracker.database.TrackingViewsDatabaseManager;
 import com.atrainingtracker.trainingtracker.views.DeviceIdAndNameArrayAdapter;
 import com.atrainingtracker.trainingtracker.views.SensorArrayAdapter;
-import com.atrainingtracker.trainingtracker.database.TrackingViewsDatabaseManager;
 
 import java.util.LinkedList;
-
-
-
 
 
 public class EditFieldDialog extends DialogFragment {

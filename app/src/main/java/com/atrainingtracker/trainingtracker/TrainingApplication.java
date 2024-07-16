@@ -1,5 +1,3 @@
-
-
 package com.atrainingtracker.trainingtracker;
 
 import android.app.Application;
@@ -16,29 +14,29 @@ import android.content.pm.PackageManager;
 import android.os.Build;
 import android.os.Bundle;
 import android.preference.PreferenceManager;
+import android.util.Log;
+import android.widget.Toast;
+
 import androidx.core.app.NotificationCompat;
 import androidx.core.app.NotificationManagerCompat;
 import androidx.core.content.ContextCompat;
-import android.util.Log;
-import android.widget.Toast;
 
 import com.atrainingtracker.R;
 import com.atrainingtracker.banalservice.BANALService;
 import com.atrainingtracker.banalservice.BSportType;
+import com.atrainingtracker.banalservice.database.DevicesDatabaseManager;
+import com.atrainingtracker.banalservice.database.SportTypeDatabaseManager;
 import com.atrainingtracker.banalservice.sensor.SensorData;
 import com.atrainingtracker.banalservice.sensor.formater.DistanceFormatter;
 import com.atrainingtracker.banalservice.sensor.formater.TimeFormatter;
-import com.atrainingtracker.banalservice.database.DevicesDatabaseManager;
-import com.atrainingtracker.banalservice.database.SportTypeDatabaseManager;
 import com.atrainingtracker.trainingtracker.activities.MainActivityWithNavigation;
 import com.atrainingtracker.trainingtracker.activities.WorkoutDetailsActivity;
-import com.atrainingtracker.trainingtracker.exporter.FileFormat;
-import com.atrainingtracker.trainingtracker.tracker.TrackerService;
 import com.atrainingtracker.trainingtracker.database.KnownLocationsDatabaseManager;
 import com.atrainingtracker.trainingtracker.database.LapsDatabaseManager;
 import com.atrainingtracker.trainingtracker.database.TrackingViewsDatabaseManager;
 import com.atrainingtracker.trainingtracker.database.WorkoutSamplesDatabaseManager;
 import com.atrainingtracker.trainingtracker.database.WorkoutSummariesDatabaseManager;
+import com.atrainingtracker.trainingtracker.exporter.FileFormat;
 import com.atrainingtracker.trainingtracker.fragments.mapFragments.TrackOnMapHelper;
 import com.atrainingtracker.trainingtracker.onlinecommunities.strava.StravaHelper;
 import com.atrainingtracker.trainingtracker.onlinecommunities.strava.StravaSegmentsHelper;
@@ -48,6 +46,7 @@ import com.atrainingtracker.trainingtracker.smartwatch.pebble.PebbleDatabaseMana
 import com.atrainingtracker.trainingtracker.smartwatch.pebble.PebbleService;
 import com.atrainingtracker.trainingtracker.smartwatch.pebble.PebbleServiceBuildIn;
 import com.atrainingtracker.trainingtracker.smartwatch.pebble.Watchapp;
+import com.atrainingtracker.trainingtracker.tracker.TrackerService;
 
 import java.util.HashMap;
 
@@ -129,19 +128,17 @@ public class TrainingApplication extends Application {
     public static final String SPORT = "sport";
     public static final String SENSOR_NAMES = "sensorNames";
     public static final String GC_SENSORS = "GCSensors";
-
-    protected static final String NOTIFICATION_CHANNEL__TRACKING = "NOTIFICATION_CHANNEL__TRACKING";
-    protected static final String NOTIFICATION_CHANNEL__TRACKING_2 = "NOTIFICATION_CHANNEL__TRACKING_2";
     public static final String NOTIFICATION_CHANNEL__EXPORT = "NOTIFICATION_CHANNEL__EXPORT";
     public static final int TRACKING_NOTIFICATION_ID = 1;
     public static final int EXPORT_PROGRESS_NOTIFICATION_ID = 2;
     public static final int EXPORT_RESULT_NOTIFICATION_ID = 3;
     public static final int SEND_EMAIL_NOTIFICATION_ID = 4;
-
     public static final int DEFAULT_SAMPLING_TIME = 1;
     public static final float MIN_DISTANCE_BETWEEN_START_AND_STOP = 100;
     public static final double DISTANCE_TO_MAX_THRESHOLD_FOR_TRAINER = 200;
     public static final double DISTANCE_TO_MAX_RATIO_FOR_COMMUTE = Math.PI / 2; // probably the best value ;-)
+    protected static final String NOTIFICATION_CHANNEL__TRACKING = "NOTIFICATION_CHANNEL__TRACKING";
+    protected static final String NOTIFICATION_CHANNEL__TRACKING_2 = "NOTIFICATION_CHANNEL__TRACKING_2";
     protected final static String DROPBOX_APP_KEY = "iknmdmr31sf64r0";
     protected final static String DROPBOX_APP_SECRET = "w7jkk5ri8sl7sd7";
     protected static final String SP_DROPBOX_TOKEN = "dropboxToken";
@@ -204,13 +201,13 @@ public class TrainingApplication extends Application {
         }
     };
     private Watchapp startedWatchapp = null;
+    private NotificationManagerCompat mNotificationManager;
     protected BroadcastReceiver mTrackingStoppedReceiver = new BroadcastReceiver() {
         @Override
         public void onReceive(Context context, Intent intent) {
             trackingStopped();
         }
     };
-    private NotificationManagerCompat mNotificationManager;
     private NotificationCompat.Builder mTrackingAndSearchingNotificationBuilder;
     private PendingIntent mStartMainActivityPendingIntent;
     private String mNotificationSummary = "searching";
@@ -542,18 +539,20 @@ public class TrainingApplication extends Application {
         cSharedPreferences.edit().putString(SP_STRAVA_TOKEN, token).apply();
     }
 
-    public static void setStravaRefreshToken(String refreshToken) {
-        cSharedPreferences.edit().putString(SP_STRAVA_REFRESH_TOKEN, refreshToken).apply();
-    }
     public static String getStravaRefreshToken() {
         return cSharedPreferences.getString(SP_STRAVA_REFRESH_TOKEN, null);
     }
 
-    public static void setStravaTokenExpiresAt(int expiresAt) {
-        cSharedPreferences.edit().putInt(SP_STRAVA_TOKEN_EXPIRES_AT, expiresAt).apply();
+    public static void setStravaRefreshToken(String refreshToken) {
+        cSharedPreferences.edit().putString(SP_STRAVA_REFRESH_TOKEN, refreshToken).apply();
     }
+
     public static int getStravaTokenExpiresAt() {
         return cSharedPreferences.getInt(SP_STRAVA_TOKEN_EXPIRES_AT, 0);
+    }
+
+    public static void setStravaTokenExpiresAt(int expiresAt) {
+        cSharedPreferences.edit().putInt(SP_STRAVA_TOKEN_EXPIRES_AT, expiresAt).apply();
     }
 
     public static void deleteStravaToken() {
@@ -1169,7 +1168,6 @@ public class TrainingApplication extends Application {
             notificationManager.createNotificationChannel(channel);
         }
     }
-
 
 
 }

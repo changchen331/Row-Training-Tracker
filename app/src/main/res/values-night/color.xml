@@ -1,5 +1,4 @@
-<?xml version="1.0" encoding="utf-8"?>
-<!--
+<?xml version="1.0" encoding="utf-8"?><!--
 ~ Copyright (C) 2019 The Android Open Source Project
 ~
 ~ Licensed under the Apache License, Version 2.0 (the "License");
@@ -21,10 +20,10 @@
     <!--The same color values are defined for dark theme, but with values more appropriate for -->
     <!--low-luminance UIs. These colors will be used by night/themes.xml.-->
 
-  <color name="color_primary">#1464F4</color>
-  <color name="color_primary_variant">#0000cd</color>
-  <color name="color_secondary">#A1CAF1</color>
-  <color name="color_secondary_variant">#6CA0DC</color>
+    <color name="color_primary">#1464F4</color>
+    <color name="color_primary_variant">#0000cd</color>
+    <color name="color_secondary">#A1CAF1</color>
+    <color name="color_secondary_variant">#6CA0DC</color>
 
     <color name="color_background">#000000</color>
     <color name="color_surface">#121212</color>

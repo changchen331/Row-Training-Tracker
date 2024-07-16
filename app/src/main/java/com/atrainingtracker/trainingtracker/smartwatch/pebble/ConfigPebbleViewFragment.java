@@ -1,5 +1,3 @@
-
-
 package com.atrainingtracker.trainingtracker.smartwatch.pebble;
 
 import android.content.Intent;
@@ -20,10 +18,10 @@ import android.widget.Spinner;
 import com.atrainingtracker.R;
 import com.atrainingtracker.banalservice.ActivityType;
 import com.atrainingtracker.banalservice.sensor.SensorType;
-import com.atrainingtracker.trainingtracker.activities.ConfigViewsActivity;
 import com.atrainingtracker.trainingtracker.TrainingApplication;
-import com.atrainingtracker.trainingtracker.views.SensorArrayAdapter;
+import com.atrainingtracker.trainingtracker.activities.ConfigViewsActivity;
 import com.atrainingtracker.trainingtracker.fragments.ConfigViewFragment;
+import com.atrainingtracker.trainingtracker.views.SensorArrayAdapter;
 
 import java.util.LinkedList;
 import java.util.List;

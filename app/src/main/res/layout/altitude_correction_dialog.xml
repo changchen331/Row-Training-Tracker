@@ -1,5 +1,4 @@
-<?xml version="1.0" encoding="utf-8"?>
-<!--
+<?xml version="1.0" encoding="utf-8"?><!--
   ~ aTrainingTracker (ANT+ BTLE)
   ~ Copyright (C) 2011 - 2019 Rainer Blind <rainer.blind@gmail.com>
   ~
@@ -34,6 +33,6 @@
         android:layout_width="fill_parent"
         android:layout_height="wrap_content"
         android:hint="@string/AltitudeHint"
-        android:inputType="number"/>
+        android:inputType="number" />
 
 </LinearLayout>

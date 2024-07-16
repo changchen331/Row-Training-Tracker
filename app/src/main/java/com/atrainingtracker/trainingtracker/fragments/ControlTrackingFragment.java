@@ -1,5 +1,3 @@
-
-
 package com.atrainingtracker.trainingtracker.fragments;
 
 import android.bluetooth.BluetoothAdapter;
@@ -10,20 +8,16 @@ import android.content.Intent;
 import android.content.IntentFilter;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
-import android.os.Build;
 import android.os.Bundle;
-
-import androidx.appcompat.app.AppCompatActivity;
-import androidx.appcompat.app.AppCompatDelegate;
-import androidx.fragment.app.Fragment;
-import androidx.fragment.app.FragmentManager;
-import androidx.fragment.app.FragmentTransaction;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ImageButton;
 import android.widget.LinearLayout;
+
+import androidx.fragment.app.FragmentManager;
+import androidx.fragment.app.FragmentTransaction;
 
 import com.atrainingtracker.R;
 import com.atrainingtracker.banalservice.BANALService;
@@ -41,7 +35,7 @@ public class ControlTrackingFragment extends BaseTrackingFragment {
     private final IntentFilter mStartTrackingFilter = new IntentFilter();
     protected RemoteDevicesSettingsInterface mRemoteDevicesSettingsInterface;
     protected StartOrResumeInterface mStartOrResumeInterface;
-//    protected BroadcastReceiver mUpdateResearchReceiver = new BroadcastReceiver() {
+    //    protected BroadcastReceiver mUpdateResearchReceiver = new BroadcastReceiver() {
 //        @Override
 //        public void onReceive(Context context, Intent intent) {
 //            updateResearchButton();
@@ -283,7 +277,7 @@ public class ControlTrackingFragment extends BaseTrackingFragment {
     }
 
     @Override
-    public void onStart () {
+    public void onStart() {
         super.onStart();
         if (DEBUG) Log.i(TAG, "onStart");
 
@@ -311,13 +305,13 @@ public class ControlTrackingFragment extends BaseTrackingFragment {
     }
 
     @Override
-    public void onStop () {
+    public void onStop() {
         super.onStop();
         if (DEBUG) Log.i(TAG, "onStop");
     }
 
     @Override
-    public void onDestroyView () {
+    public void onDestroyView() {
         super.onDestroyView();
         if (DEBUG) Log.i(TAG, "onDestroyView");
 
@@ -328,13 +322,13 @@ public class ControlTrackingFragment extends BaseTrackingFragment {
     }
 
     @Override
-    public void onDestroy () {
+    public void onDestroy() {
         super.onDestroy();
         if (DEBUG) Log.i(TAG, "onDestroy");
     }
 
     @Override
-    public void onDetach () {
+    public void onDetach() {
         super.onDetach();
         if (DEBUG) Log.i(TAG, "onDetach");
     }

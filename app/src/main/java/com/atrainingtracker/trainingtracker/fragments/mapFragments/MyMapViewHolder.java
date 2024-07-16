@@ -1,10 +1,7 @@
-
-
 package com.atrainingtracker.trainingtracker.fragments.mapFragments;
 
 import com.google.android.gms.maps.GoogleMap;
 import com.google.android.gms.maps.MapView;
-
 
 
 public class MyMapViewHolder {

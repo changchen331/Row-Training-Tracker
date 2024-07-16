@@ -1,5 +1,3 @@
-
-
 package com.atrainingtracker.trainingtracker.onlinecommunities.strava;
 
 import android.content.Context;
@@ -56,7 +54,9 @@ public class StravaHelper {
     }
 
     protected static void storeJSONData(JSONObject jsonObject) {
-        if (DEBUG) {Log.i(TAG, "string JSON response: " + jsonObject);}
+        if (DEBUG) {
+            Log.i(TAG, "string JSON response: " + jsonObject);
+        }
         try {
             if (jsonObject.has("athlete")) {
                 JSONObject athlete = jsonObject.getJSONObject("athlete");
@@ -87,7 +87,7 @@ public class StravaHelper {
     public static String getRefreshedAccessToken() {
         if (DEBUG) Log.i(TAG, "getRefreshedAccessToken()");
         // first, check if we really need a new access token
-        if (System.currentTimeMillis()/1000 < TrainingApplication.getStravaTokenExpiresAt()) {
+        if (System.currentTimeMillis() / 1000 < TrainingApplication.getStravaTokenExpiresAt()) {
             return TrainingApplication.getStravaAccessToken();
         }
 

@@ -1,5 +1,3 @@
-
-
 package com.atrainingtracker.trainingtracker.onlinecommunities.strava;
 
 import com.atrainingtracker.trainingtracker.segments.SegmentsDatabaseManager.Segments;

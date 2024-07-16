@@ -1,5 +1,3 @@
-
-
 package com.atrainingtracker.banalservice.sensor.formater;
 
 public interface MyFormatter<T> {

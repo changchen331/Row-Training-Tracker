@@ -1,5 +1,3 @@
-
-
 package com.atrainingtracker.trainingtracker.database;
 
 import android.content.ContentValues;
@@ -11,8 +9,8 @@ import android.provider.BaseColumns;
 import android.util.Log;
 
 import com.atrainingtracker.R;
-import com.atrainingtracker.banalservice.sensor.SensorType;
 import com.atrainingtracker.banalservice.database.SportTypeDatabaseManager;
+import com.atrainingtracker.banalservice.sensor.SensorType;
 import com.atrainingtracker.trainingtracker.TrainingApplication;
 import com.google.android.gms.maps.model.LatLng;
 

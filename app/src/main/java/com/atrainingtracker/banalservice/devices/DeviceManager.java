@@ -1,6 +1,6 @@
-
-
 package com.atrainingtracker.banalservice.devices;
+
+import static com.atrainingtracker.banalservice.BSportType.UNKNOWN;
 
 import android.Manifest;
 import android.content.BroadcastReceiver;
@@ -17,6 +17,9 @@ import android.util.Log;
 import com.atrainingtracker.R;
 import com.atrainingtracker.banalservice.BANALService;
 import com.atrainingtracker.banalservice.BSportType;
+import com.atrainingtracker.banalservice.Protocol;
+import com.atrainingtracker.banalservice.database.DevicesDatabaseManager;
+import com.atrainingtracker.banalservice.database.DevicesDatabaseManager.DevicesDbHelper;
 import com.atrainingtracker.banalservice.devices.ant_plus.ANTBikeCadenceDevice;
 import com.atrainingtracker.banalservice.devices.ant_plus.ANTBikePowerDevice;
 import com.atrainingtracker.banalservice.devices.ant_plus.ANTBikeSpeedAndCadenceDevice;
@@ -34,14 +37,11 @@ import com.atrainingtracker.banalservice.devices.bluetooth_le.BTLEHeartRateDevic
 import com.atrainingtracker.banalservice.devices.bluetooth_le.MyBTLEDevice;
 import com.atrainingtracker.banalservice.devices.bluetooth_le.search_new.BTSearchForNewDevicesEngine;
 import com.atrainingtracker.banalservice.devices.bluetooth_le.search_new.BTSearchForNewDevicesEngine.IBTSearchForNewDevicesEngineInterface;
-import com.atrainingtracker.banalservice.Protocol;
+import com.atrainingtracker.banalservice.helpers.HavePressureSensor;
 import com.atrainingtracker.banalservice.sensor.MyAccumulatorSensor;
 import com.atrainingtracker.banalservice.sensor.MySensor;
 import com.atrainingtracker.banalservice.sensor.MySensorManager;
 import com.atrainingtracker.banalservice.sensor.SensorType;
-import com.atrainingtracker.banalservice.database.DevicesDatabaseManager;
-import com.atrainingtracker.banalservice.database.DevicesDatabaseManager.DevicesDbHelper;
-import com.atrainingtracker.banalservice.helpers.HavePressureSensor;
 import com.atrainingtracker.trainingtracker.TrainingApplication;
 import com.dsi.ant.plugins.antplus.pccbase.MultiDeviceSearch;
 import com.google.android.gms.common.ConnectionResult;
@@ -54,8 +54,6 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-
-import static com.atrainingtracker.banalservice.BSportType.UNKNOWN;
 
 
 public class DeviceManager

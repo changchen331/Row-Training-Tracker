@@ -1,5 +1,3 @@
-
-
 package com.atrainingtracker.trainingtracker.exporter;
 
 public class ExportInfo {

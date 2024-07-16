@@ -1,5 +1,3 @@
-
-
 package com.atrainingtracker.trainingtracker.segments;
 
 import android.os.Bundle;

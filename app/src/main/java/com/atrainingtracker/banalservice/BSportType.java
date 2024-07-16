@@ -1,5 +1,3 @@
-
-
 package com.atrainingtracker.banalservice;
 
 // TODO: does it really make sense to have BSportType and TTSportType???

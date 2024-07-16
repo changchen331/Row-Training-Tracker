@@ -1,5 +1,3 @@
-
-
 package com.atrainingtracker.trainingtracker.exporter;
 
 import android.content.Context;

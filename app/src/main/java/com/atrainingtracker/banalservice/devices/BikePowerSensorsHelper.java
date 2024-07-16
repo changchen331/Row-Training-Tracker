@@ -1,7 +1,4 @@
-
-
 package com.atrainingtracker.banalservice.devices;
-
 
 
 public class BikePowerSensorsHelper {

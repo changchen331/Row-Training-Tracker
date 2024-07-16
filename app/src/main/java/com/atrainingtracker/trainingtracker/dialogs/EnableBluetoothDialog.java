@@ -1,5 +1,3 @@
-
-
 package com.atrainingtracker.trainingtracker.dialogs;
 
 import android.app.Activity;
@@ -15,7 +13,6 @@ import com.atrainingtracker.R;
 import com.atrainingtracker.banalservice.Protocol;
 import com.atrainingtracker.trainingtracker.TrainingApplication;
 import com.atrainingtracker.trainingtracker.interfaces.RemoteDevicesSettingsInterface;
-
 
 
 public class EnableBluetoothDialog extends DialogFragment {

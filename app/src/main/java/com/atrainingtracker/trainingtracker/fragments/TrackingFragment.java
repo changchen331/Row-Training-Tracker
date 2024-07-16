@@ -1,17 +1,12 @@
-
-
 package com.atrainingtracker.trainingtracker.fragments;
+
+import static com.atrainingtracker.trainingtracker.dialogs.EditFieldDialog.TRACKING_VIEW_CHANGED_INTENT;
 
 import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
-import android.os.Build;
 import android.os.Bundle;
-
-import androidx.appcompat.app.AppCompatDelegate;
-import androidx.fragment.app.Fragment;
-import androidx.appcompat.app.AppCompatActivity;
 import android.util.Log;
 import android.view.Gravity;
 import android.view.LayoutInflater;
@@ -28,15 +23,15 @@ import android.widget.TextView;
 import com.atrainingtracker.R;
 import com.atrainingtracker.banalservice.ActivityType;
 import com.atrainingtracker.banalservice.BANALService;
-import com.atrainingtracker.banalservice.sensor.SensorType;
 import com.atrainingtracker.banalservice.database.DevicesDatabaseManager;
 import com.atrainingtracker.banalservice.filters.FilterData;
 import com.atrainingtracker.banalservice.filters.FilterType;
 import com.atrainingtracker.banalservice.filters.FilteredSensorData;
-import com.atrainingtracker.trainingtracker.activities.ConfigTrackingViewsActivity;
-import com.atrainingtracker.trainingtracker.activities.ConfigViewsActivity;
+import com.atrainingtracker.banalservice.sensor.SensorType;
 import com.atrainingtracker.trainingtracker.MyHelper;
 import com.atrainingtracker.trainingtracker.TrainingApplication;
+import com.atrainingtracker.trainingtracker.activities.ConfigTrackingViewsActivity;
+import com.atrainingtracker.trainingtracker.activities.ConfigViewsActivity;
 import com.atrainingtracker.trainingtracker.database.TrackingViewsDatabaseManager;
 import com.atrainingtracker.trainingtracker.dialogs.EditFieldDialog;
 import com.atrainingtracker.trainingtracker.fragments.mapFragments.TrackOnMapTrackingAndFollowingFragment;
@@ -44,8 +39,6 @@ import com.atrainingtracker.trainingtracker.fragments.mapFragments.TrackOnMapTra
 
 import java.util.HashMap;
 import java.util.TreeMap;
-
-import static com.atrainingtracker.trainingtracker.dialogs.EditFieldDialog.TRACKING_VIEW_CHANGED_INTENT;
 
 public class TrackingFragment extends BaseTrackingFragment {
     public static final String TAG = "TrackingFragment";
@@ -220,7 +213,7 @@ public class TrackingFragment extends BaseTrackingFragment {
     }
 
     @Override
-    public void onStart () {
+    public void onStart() {
         super.onStart();
         if (DEBUG) Log.i(TAG, "onStart " + mViewId);
     }
@@ -233,15 +226,20 @@ public class TrackingFragment extends BaseTrackingFragment {
         // optionally enable fullscreen mode
         if (TrackingViewsDatabaseManager.fullscreen(mViewId)) {
             hideSystemUI();
-        }
-        else {
+        } else {
             showSystemUI();
         }
 
         // optionally force day or night...
-        if (TrackingViewsDatabaseManager.day(mViewId))   { forceDay();   }
-        if (TrackingViewsDatabaseManager.night(mViewId)) { forceNight(); }
-        if (TrackingViewsDatabaseManager.systemSettings(mViewId)) { followSystem(); }
+        if (TrackingViewsDatabaseManager.day(mViewId)) {
+            forceDay();
+        }
+        if (TrackingViewsDatabaseManager.night(mViewId)) {
+            forceNight();
+        }
+        if (TrackingViewsDatabaseManager.systemSettings(mViewId)) {
+            followSystem();
+        }
     }
 
 
@@ -261,13 +259,13 @@ public class TrackingFragment extends BaseTrackingFragment {
     }
 
     @Override
-    public void onStop () {
+    public void onStop() {
         super.onStop();
         if (DEBUG) Log.i(TAG, "onStop " + mViewId);
     }
 
     @Override
-    public void onDestroyView () {
+    public void onDestroyView() {
         super.onDestroyView();
         if (DEBUG) Log.i(TAG, "onDestroyView " + mViewId);
 
@@ -276,13 +274,13 @@ public class TrackingFragment extends BaseTrackingFragment {
     }
 
     @Override
-    public void onDestroy () {
+    public void onDestroy() {
         super.onDestroy();
         if (DEBUG) Log.i(TAG, "onDestroy " + mViewId);
     }
 
     @Override
-    public void onDetach () {
+    public void onDetach() {
         super.onDetach();
         if (DEBUG) Log.i(TAG, "onDetach " + mViewId);
     }
@@ -437,8 +435,7 @@ public class TrackingFragment extends BaseTrackingFragment {
                     if (getActivity() != null) {
                         value = getString(R.string.NoData);
                         if (DEBUG) Log.i(TAG, ":-( no valid value for " + hashKey);
-                    }
-                    else {
+                    } else {
                         value = "--";
                         Log.i(TAG, "WTF: no value for " + hashKey + " but no Activity");
                     }

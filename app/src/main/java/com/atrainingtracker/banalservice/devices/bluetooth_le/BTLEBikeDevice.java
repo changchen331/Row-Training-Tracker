@@ -1,5 +1,3 @@
-
-
 package com.atrainingtracker.banalservice.devices.bluetooth_le;
 
 import android.annotation.TargetApi;

@@ -1,5 +1,3 @@
-
-
 package com.atrainingtracker.trainingtracker.tracker;
 
 import android.app.Service;
@@ -18,13 +16,12 @@ import android.util.Log;
 
 import com.atrainingtracker.banalservice.BANALService;
 import com.atrainingtracker.banalservice.BANALService.BANALServiceComm;
+import com.atrainingtracker.banalservice.database.SportTypeDatabaseManager;
 import com.atrainingtracker.banalservice.devices.AltitudeFromPressureDevice;
 import com.atrainingtracker.banalservice.sensor.MySensorManager;
 import com.atrainingtracker.banalservice.sensor.SensorData;
 import com.atrainingtracker.banalservice.sensor.SensorType;
 import com.atrainingtracker.banalservice.sensor.SensorValueType;
-import com.atrainingtracker.banalservice.database.SportTypeDatabaseManager;
-import com.atrainingtracker.trainingtracker.exporter.ExportManager;
 import com.atrainingtracker.trainingtracker.TrainingApplication;
 import com.atrainingtracker.trainingtracker.database.ActiveDevicesDbHelper;
 import com.atrainingtracker.trainingtracker.database.ActiveDevicesDbHelper.ActiveDevices;
@@ -32,6 +29,7 @@ import com.atrainingtracker.trainingtracker.database.LapsDatabaseManager;
 import com.atrainingtracker.trainingtracker.database.WorkoutSamplesDatabaseManager;
 import com.atrainingtracker.trainingtracker.database.WorkoutSummariesDatabaseManager;
 import com.atrainingtracker.trainingtracker.database.WorkoutSummariesDatabaseManager.WorkoutSummaries;
+import com.atrainingtracker.trainingtracker.exporter.ExportManager;
 
 import java.text.SimpleDateFormat;
 import java.util.Arrays;
@@ -650,7 +648,8 @@ public class TrackerService extends Service {
                 samplesDb.insertOrThrow(mSamplesTableName,
                         null,
                         samplingValues);
-            } catch (SQLException retryException) {  //  still did not work => try to insert them one by one...
+            } catch (
+                    SQLException retryException) {  //  still did not work => try to insert them one by one...
                 Log.i(TAG, "Failed to insert the samples after altering the table.  Try to insert them one by one.");
                 for (String key : samplingValues.keySet()) {
                     ContentValues oneSamplingValue = new ContentValues();

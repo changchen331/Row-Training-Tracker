@@ -1,5 +1,3 @@
-
-
 package com.atrainingtracker.banalservice.sensor.formater;
 
 import com.atrainingtracker.banalservice.BANALService;

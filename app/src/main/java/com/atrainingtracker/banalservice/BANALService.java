@@ -1,6 +1,7 @@
-
-
 package com.atrainingtracker.banalservice;
+
+import static com.atrainingtracker.trainingtracker.TrainingApplication.REQUEST_NEW_LAP;
+import static com.atrainingtracker.trainingtracker.TrainingApplication.REQUEST_START_SEARCH_FOR_PAIRED_DEVICES;
 
 import android.app.Service;
 import android.content.BroadcastReceiver;
@@ -12,18 +13,18 @@ import android.os.Binder;
 import android.os.IBinder;
 import android.util.Log;
 
+import com.atrainingtracker.banalservice.database.SportTypeDatabaseManager;
 import com.atrainingtracker.banalservice.devices.DeviceManager;
 import com.atrainingtracker.banalservice.devices.DeviceType;
 import com.atrainingtracker.banalservice.devices.MyRemoteDevice;
+import com.atrainingtracker.banalservice.filters.FilterData;
+import com.atrainingtracker.banalservice.filters.FilterManager;
+import com.atrainingtracker.banalservice.filters.FilteredSensorData;
 import com.atrainingtracker.banalservice.sensor.MyAccumulatorSensor;
 import com.atrainingtracker.banalservice.sensor.MySensor;
 import com.atrainingtracker.banalservice.sensor.MySensorManager;
 import com.atrainingtracker.banalservice.sensor.SensorData;
 import com.atrainingtracker.banalservice.sensor.SensorType;
-import com.atrainingtracker.banalservice.database.SportTypeDatabaseManager;
-import com.atrainingtracker.banalservice.filters.FilterData;
-import com.atrainingtracker.banalservice.filters.FilterManager;
-import com.atrainingtracker.banalservice.filters.FilteredSensorData;
 import com.atrainingtracker.trainingtracker.TrainingApplication;
 import com.dsi.ant.plugins.antplus.pccbase.AntPluginPcc;
 
@@ -33,9 +34,6 @@ import java.util.EnumSet;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Set;
-
-import static com.atrainingtracker.trainingtracker.TrainingApplication.REQUEST_NEW_LAP;
-import static com.atrainingtracker.trainingtracker.TrainingApplication.REQUEST_START_SEARCH_FOR_PAIRED_DEVICES;
 
 public class BANALService
         extends Service {

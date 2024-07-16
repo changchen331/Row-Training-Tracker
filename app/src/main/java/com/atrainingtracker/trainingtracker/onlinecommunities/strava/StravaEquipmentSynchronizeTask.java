@@ -1,5 +1,3 @@
-
-
 package com.atrainingtracker.trainingtracker.onlinecommunities.strava;
 
 import android.app.ProgressDialog;

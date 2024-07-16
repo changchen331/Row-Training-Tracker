@@ -1,5 +1,3 @@
-
-
 package com.atrainingtracker.trainingtracker.onlinecommunities.strava;
 
 import android.app.IntentService;
@@ -32,7 +30,6 @@ import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.HashSet;
 import java.util.Set;
-
 
 
 public class StravaSegmentsIntentService extends IntentService {

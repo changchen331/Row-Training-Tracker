@@ -1,5 +1,4 @@
-<?xml version="1.0" encoding="utf-8"?>
-<!--
+<?xml version="1.0" encoding="utf-8"?><!--
   ~ aTrainingTracker (ANT+ BTLE)
   ~ Copyright (C) 2011 - 2019 Rainer Blind <rainer.blind@gmail.com>
   ~
@@ -22,32 +21,32 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent">
 
-<!--    <LinearLayout-->
-<!--        android:id="@+id/llResearch"-->
-<!--        android:layout_width="wrap_content"-->
-<!--        android:layout_height="wrap_content"-->
-<!--        android:layout_alignParentLeft="true"-->
-<!--        android:layout_alignParentTop="true"-->
-<!--        android:orientation="vertical"-->
-<!--        android:paddingLeft="10dp">-->
+    <!--    <LinearLayout-->
+    <!--        android:id="@+id/llResearch"-->
+    <!--        android:layout_width="wrap_content"-->
+    <!--        android:layout_height="wrap_content"-->
+    <!--        android:layout_alignParentLeft="true"-->
+    <!--        android:layout_alignParentTop="true"-->
+    <!--        android:orientation="vertical"-->
+    <!--        android:paddingLeft="10dp">-->
 
-<!--        <ImageButton-->
-<!--            android:id="@+id/ibResearch"-->
-<!--            android:layout_width="wrap_content"-->
-<!--            android:layout_height="wrap_content"-->
-<!--            android:background="@android:color/transparent"-->
-<!--            android:src="@drawable/research_icon"-->
-<!--            tools:ignore="ContentDescription" />-->
+    <!--        <ImageButton-->
+    <!--            android:id="@+id/ibResearch"-->
+    <!--            android:layout_width="wrap_content"-->
+    <!--            android:layout_height="wrap_content"-->
+    <!--            android:background="@android:color/transparent"-->
+    <!--            android:src="@drawable/research_icon"-->
+    <!--            tools:ignore="ContentDescription" />-->
 
-<!--        <TextView-->
-<!--            android:layout_width="wrap_content"-->
-<!--            android:layout_height="wrap_content"-->
-<!--            android:layout_gravity="center_horizontal"-->
-<!--            android:text="@string/research"-->
-<!--            android:textSize="15sp" />-->
+    <!--        <TextView-->
+    <!--            android:layout_width="wrap_content"-->
+    <!--            android:layout_height="wrap_content"-->
+    <!--            android:layout_gravity="center_horizontal"-->
+    <!--            android:text="@string/research"-->
+    <!--            android:textSize="15sp" />-->
 
 
-<!--    </LinearLayout>-->
+    <!--    </LinearLayout>-->
 
     <FrameLayout
         android:id="@+id/tracking_mode_container"
@@ -117,9 +116,9 @@
         android:id="@+id/ctl_llCenter"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:orientation="vertical"
         android:layout_centerHorizontal="true"
-        android:layout_centerVertical="true" />
+        android:layout_centerVertical="true"
+        android:orientation="vertical" />
 
     <FrameLayout
         android:id="@+id/ctl_control_sport_type_container"

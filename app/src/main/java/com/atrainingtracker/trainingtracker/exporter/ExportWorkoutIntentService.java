@@ -1,6 +1,6 @@
-
-
 package com.atrainingtracker.trainingtracker.exporter;
+
+import static com.atrainingtracker.trainingtracker.TrainingApplication.NOTIFICATION_CHANNEL__EXPORT;
 
 import android.Manifest;
 import android.app.IntentService;
@@ -9,20 +9,19 @@ import android.content.Intent;
 import android.graphics.BitmapFactory;
 import android.net.Uri;
 import android.os.Bundle;
+import android.util.Log;
+
 import androidx.core.app.NotificationCompat;
 import androidx.core.app.NotificationManagerCompat;
 import androidx.core.content.FileProvider;
-import android.util.Log;
 
 import com.atrainingtracker.R;
-import com.atrainingtracker.trainingtracker.activities.MainActivityWithNavigation;
 import com.atrainingtracker.trainingtracker.MyHelper;
 import com.atrainingtracker.trainingtracker.TrainingApplication;
+import com.atrainingtracker.trainingtracker.activities.MainActivityWithNavigation;
 
 import java.io.File;
 import java.util.ArrayList;
-
-import static com.atrainingtracker.trainingtracker.TrainingApplication.NOTIFICATION_CHANNEL__EXPORT;
 
 /**
  *

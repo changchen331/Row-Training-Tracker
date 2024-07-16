@@ -1,5 +1,3 @@
-
-
 package com.atrainingtracker.banalservice.devices;
 
 public interface SearchForNewDevicesInterface {

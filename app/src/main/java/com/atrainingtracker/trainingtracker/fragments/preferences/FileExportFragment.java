@@ -1,5 +1,3 @@
-
-
 package com.atrainingtracker.trainingtracker.fragments.preferences;
 
 import android.os.Bundle;

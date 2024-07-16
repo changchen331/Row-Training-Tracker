@@ -1,10 +1,7 @@
-
-
 package com.atrainingtracker.trainingtracker.segments;
 
 import com.atrainingtracker.trainingtracker.TrainingApplication;
 import com.google.android.gms.maps.model.LatLng;
-
 
 
 public class SegmentHelper {

@@ -1,5 +1,3 @@
-
-
 package com.atrainingtracker.trainingtracker.exporter;
 
 import android.content.Context;
@@ -9,7 +7,6 @@ import android.util.Log;
 
 import com.atrainingtracker.R;
 import com.atrainingtracker.banalservice.database.SportTypeDatabaseManager;
-import com.atrainingtracker.trainingtracker.TrainingApplication;
 import com.atrainingtracker.trainingtracker.database.EquipmentDbHelper;
 import com.atrainingtracker.trainingtracker.database.WorkoutSummariesDatabaseManager;
 import com.atrainingtracker.trainingtracker.database.WorkoutSummariesDatabaseManager.WorkoutSummaries;
@@ -357,7 +354,9 @@ public class StravaUploader extends BaseExporter {
 
         if (update) {
             activityJSON = updateStravaActivity(activityId, nameValuePairs);
-            if (DEBUG) {Log.i(TAG, "json: " + activityJSON); }
+            if (DEBUG) {
+                Log.i(TAG, "json: " + activityJSON);
+            }
             // check result
             String errors = "errors:";
             boolean correctUpdate = true;

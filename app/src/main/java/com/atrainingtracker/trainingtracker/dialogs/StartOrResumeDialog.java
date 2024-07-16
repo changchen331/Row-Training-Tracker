@@ -1,5 +1,3 @@
-
-
 package com.atrainingtracker.trainingtracker.dialogs;
 
 import android.app.Activity;
@@ -13,7 +11,6 @@ import androidx.fragment.app.DialogFragment;
 import com.atrainingtracker.R;
 import com.atrainingtracker.trainingtracker.TrainingApplication;
 import com.atrainingtracker.trainingtracker.interfaces.StartOrResumeInterface;
-
 
 
 public class StartOrResumeDialog extends DialogFragment {

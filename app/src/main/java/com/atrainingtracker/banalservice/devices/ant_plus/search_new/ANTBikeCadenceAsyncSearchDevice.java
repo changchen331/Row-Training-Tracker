@@ -1,5 +1,3 @@
-
-
 package com.atrainingtracker.banalservice.devices.ant_plus.search_new;
 
 import android.content.Context;

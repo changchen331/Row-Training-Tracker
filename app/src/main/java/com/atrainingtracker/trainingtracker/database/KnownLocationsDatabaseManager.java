@@ -1,5 +1,3 @@
-
-
 package com.atrainingtracker.trainingtracker.database;
 
 import android.content.ContentValues;

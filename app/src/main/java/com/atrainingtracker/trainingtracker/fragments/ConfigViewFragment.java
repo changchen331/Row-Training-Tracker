@@ -1,10 +1,9 @@
-
-
 package com.atrainingtracker.trainingtracker.fragments;
 
 import android.content.Intent;
-import androidx.fragment.app.Fragment;
 import android.util.Log;
+
+import androidx.fragment.app.Fragment;
 
 import com.atrainingtracker.banalservice.ActivityType;
 import com.atrainingtracker.trainingtracker.activities.ConfigViewsActivity;

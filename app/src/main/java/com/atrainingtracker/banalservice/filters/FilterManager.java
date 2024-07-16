@@ -1,6 +1,6 @@
-
-
 package com.atrainingtracker.banalservice.filters;
+
+import static com.atrainingtracker.trainingtracker.dialogs.EditFieldDialog.TRACKING_VIEW_CHANGED_INTENT;
 
 import android.content.BroadcastReceiver;
 import android.content.Context;
@@ -18,8 +18,6 @@ import com.atrainingtracker.trainingtracker.database.TrackingViewsDatabaseManage
 import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
-
-import static com.atrainingtracker.trainingtracker.dialogs.EditFieldDialog.TRACKING_VIEW_CHANGED_INTENT;
 
 public class FilterManager {
     private static final String TAG = FilterType.class.getSimpleName();

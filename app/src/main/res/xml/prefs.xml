@@ -1,5 +1,4 @@
-<?xml version="1.0" encoding="utf-8"?>
-<!--
+<?xml version="1.0" encoding="utf-8"?><!--
   ~ aTrainingTracker (ANT+ BTLE)
   ~ Copyright (C) 2011 - 2019 Rainer Blind <rainer.blind@gmail.com>
   ~
@@ -329,88 +328,88 @@
             </PreferenceCategory>
         </PreferenceScreen>
     </PreferenceCategory>
-<!--    <PreferenceCategory android:title="@string/prefsAdvanced">-->
+    <!--    <PreferenceCategory android:title="@string/prefsAdvanced">-->
 
 
-<!--&lt;!&ndash;        <PreferenceScreen&ndash;&gt;-->
-<!--&lt;!&ndash;            android:key="sportTypes"&ndash;&gt;-->
-<!--&lt;!&ndash;            android:summary="@string/configure_sport_types"&ndash;&gt;-->
-<!--&lt;!&ndash;            android:title="@string/sport_types">&ndash;&gt;-->
-<!--&lt;!&ndash;            <Preference>&ndash;&gt;-->
-<!--&lt;!&ndash;                &lt;!&ndash; just a dummy entry &ndash;&gt;&ndash;&gt;-->
-<!--&lt;!&ndash;            </Preference>&ndash;&gt;-->
-<!--&lt;!&ndash;        </PreferenceScreen>&ndash;&gt;-->
+    <!--&lt;!&ndash;        <PreferenceScreen&ndash;&gt;-->
+    <!--&lt;!&ndash;            android:key="sportTypes"&ndash;&gt;-->
+    <!--&lt;!&ndash;            android:summary="@string/configure_sport_types"&ndash;&gt;-->
+    <!--&lt;!&ndash;            android:title="@string/sport_types">&ndash;&gt;-->
+    <!--&lt;!&ndash;            <Preference>&ndash;&gt;-->
+    <!--&lt;!&ndash;                &lt;!&ndash; just a dummy entry &ndash;&gt;&ndash;&gt;-->
+    <!--&lt;!&ndash;            </Preference>&ndash;&gt;-->
+    <!--&lt;!&ndash;        </PreferenceScreen>&ndash;&gt;-->
 
-<!--&lt;!&ndash;        <Preference&ndash;&gt;-->
-<!--&lt;!&ndash;            android:icon="@drawable/icon_configure_views"&ndash;&gt;-->
-<!--&lt;!&ndash;            android:title="@string/prefsConfigureDisplaysTitle">&ndash;&gt;-->
-<!--&lt;!&ndash;            <intent android:action="com.atrainingtracker.trainingtracker.intent.action.ConfigureAllTrackingViews" />&ndash;&gt;-->
-<!--&lt;!&ndash;        </Preference>&ndash;&gt;-->
+    <!--&lt;!&ndash;        <Preference&ndash;&gt;-->
+    <!--&lt;!&ndash;            android:icon="@drawable/icon_configure_views"&ndash;&gt;-->
+    <!--&lt;!&ndash;            android:title="@string/prefsConfigureDisplaysTitle">&ndash;&gt;-->
+    <!--&lt;!&ndash;            <intent android:action="com.atrainingtracker.trainingtracker.intent.action.ConfigureAllTrackingViews" />&ndash;&gt;-->
+    <!--&lt;!&ndash;        </Preference>&ndash;&gt;-->
 
-<!--&lt;!&ndash;        <PreferenceScreen&ndash;&gt;-->
-<!--&lt;!&ndash;            android:icon="@drawable/icon_pebble"&ndash;&gt;-->
-<!--&lt;!&ndash;            android:key="pebbleScreen"&ndash;&gt;-->
-<!--&lt;!&ndash;            android:title="@string/prefsPebbleTitle">&ndash;&gt;-->
-<!--&lt;!&ndash;            <CheckBoxPreference&ndash;&gt;-->
-<!--&lt;!&ndash;                android:defaultValue="false"&ndash;&gt;-->
-<!--&lt;!&ndash;                android:key="PebbleSupport"&ndash;&gt;-->
-<!--&lt;!&ndash;                android:summary="@string/prefsPebbleSupportSummary"&ndash;&gt;-->
-<!--&lt;!&ndash;                android:title="@string/prefsPebbleSupportTitle" />&ndash;&gt;-->
+    <!--&lt;!&ndash;        <PreferenceScreen&ndash;&gt;-->
+    <!--&lt;!&ndash;            android:icon="@drawable/icon_pebble"&ndash;&gt;-->
+    <!--&lt;!&ndash;            android:key="pebbleScreen"&ndash;&gt;-->
+    <!--&lt;!&ndash;            android:title="@string/prefsPebbleTitle">&ndash;&gt;-->
+    <!--&lt;!&ndash;            <CheckBoxPreference&ndash;&gt;-->
+    <!--&lt;!&ndash;                android:defaultValue="false"&ndash;&gt;-->
+    <!--&lt;!&ndash;                android:key="PebbleSupport"&ndash;&gt;-->
+    <!--&lt;!&ndash;                android:summary="@string/prefsPebbleSupportSummary"&ndash;&gt;-->
+    <!--&lt;!&ndash;                android:title="@string/prefsPebbleSupportTitle" />&ndash;&gt;-->
 
-<!--&lt;!&ndash;            <ListPreference&ndash;&gt;-->
-<!--&lt;!&ndash;                android:defaultValue="BUILD_IN"&ndash;&gt;-->
-<!--&lt;!&ndash;                android:dependency="PebbleSupport"&ndash;&gt;-->
-<!--&lt;!&ndash;                android:entries="@array/PebbleWatchapps"&ndash;&gt;-->
-<!--&lt;!&ndash;                android:entryValues="@array/PebbleWatchapps_values"&ndash;&gt;-->
-<!--&lt;!&ndash;                android:key="listPebbleWatchapps"&ndash;&gt;-->
-<!--&lt;!&ndash;                android:summary="@string/prefsPebbleWatchappsSummary"&ndash;&gt;-->
-<!--&lt;!&ndash;                android:title="@string/prefsPebbleWatchappsTitle" />&ndash;&gt;-->
+    <!--&lt;!&ndash;            <ListPreference&ndash;&gt;-->
+    <!--&lt;!&ndash;                android:defaultValue="BUILD_IN"&ndash;&gt;-->
+    <!--&lt;!&ndash;                android:dependency="PebbleSupport"&ndash;&gt;-->
+    <!--&lt;!&ndash;                android:entries="@array/PebbleWatchapps"&ndash;&gt;-->
+    <!--&lt;!&ndash;                android:entryValues="@array/PebbleWatchapps_values"&ndash;&gt;-->
+    <!--&lt;!&ndash;                android:key="listPebbleWatchapps"&ndash;&gt;-->
+    <!--&lt;!&ndash;                android:summary="@string/prefsPebbleWatchappsSummary"&ndash;&gt;-->
+    <!--&lt;!&ndash;                android:title="@string/prefsPebbleWatchappsTitle" />&ndash;&gt;-->
 
-<!--&lt;!&ndash;            <Preference&ndash;&gt;-->
-<!--&lt;!&ndash;                android:key="configurePebbleDisplays"&ndash;&gt;-->
-<!--&lt;!&ndash;                android:title="@string/prefsConfigurePebbleDisplaysTitle">&ndash;&gt;-->
-<!--&lt;!&ndash;                <intent android:action="com.atrainingtracker.trainingtracker.smartwatch.pebble.ConfigPebbleViewsActivity" />&ndash;&gt;-->
-<!--&lt;!&ndash;            </Preference>&ndash;&gt;-->
-<!--&lt;!&ndash;        </PreferenceScreen>&ndash;&gt;-->
-<!--&lt;!&ndash;        <PreferenceScreen&ndash;&gt;-->
-<!--&lt;!&ndash;            android:icon="@drawable/ic_gps_fixed_black_48dp"&ndash;&gt;-->
-<!--&lt;!&ndash;            android:key="prefsLocationSources"&ndash;&gt;-->
-<!--&lt;!&ndash;            android:title="@string/prefsLocationSourceTitle">&ndash;&gt;-->
-<!--&lt;!&ndash;            <PreferenceCategory android:title="@string/prefsLocationSourceTitle">&ndash;&gt;-->
-<!--&lt;!&ndash;                <CheckBoxPreference&ndash;&gt;-->
-<!--&lt;!&ndash;                    android:defaultValue="true"&ndash;&gt;-->
-<!--&lt;!&ndash;                    android:key="locationSourceGPS"&ndash;&gt;-->
-<!--&lt;!&ndash;                    android:summary="@string/prefsLocationSourceGPSSummary"&ndash;&gt;-->
-<!--&lt;!&ndash;                    android:title="@string/prefsLocationSourceGPS" />&ndash;&gt;-->
-<!--&lt;!&ndash;                <CheckBoxPreference&ndash;&gt;-->
-<!--&lt;!&ndash;                    android:defaultValue="false"&ndash;&gt;-->
-<!--&lt;!&ndash;                    android:key="locationSourceGoogleFused"&ndash;&gt;-->
-<!--&lt;!&ndash;                    android:summary="@string/prefsLocationSourceGoogleFusedSummary"&ndash;&gt;-->
-<!--&lt;!&ndash;                    android:title="@string/prefsLocationSourceGoogleFused" />&ndash;&gt;-->
-<!--&lt;!&ndash;                <CheckBoxPreference&ndash;&gt;-->
-<!--&lt;!&ndash;                    android:defaultValue="false"&ndash;&gt;-->
-<!--&lt;!&ndash;                    android:key="locationSourceNetwork"&ndash;&gt;-->
-<!--&lt;!&ndash;                    android:summary="@string/prefsLocationSourceNetworkSummary"&ndash;&gt;-->
-<!--&lt;!&ndash;                    android:title="@string/prefsLocationSourceNetwork" />&ndash;&gt;-->
-<!--&lt;!&ndash;            </PreferenceCategory>&ndash;&gt;-->
+    <!--&lt;!&ndash;            <Preference&ndash;&gt;-->
+    <!--&lt;!&ndash;                android:key="configurePebbleDisplays"&ndash;&gt;-->
+    <!--&lt;!&ndash;                android:title="@string/prefsConfigurePebbleDisplaysTitle">&ndash;&gt;-->
+    <!--&lt;!&ndash;                <intent android:action="com.atrainingtracker.trainingtracker.smartwatch.pebble.ConfigPebbleViewsActivity" />&ndash;&gt;-->
+    <!--&lt;!&ndash;            </Preference>&ndash;&gt;-->
+    <!--&lt;!&ndash;        </PreferenceScreen>&ndash;&gt;-->
+    <!--&lt;!&ndash;        <PreferenceScreen&ndash;&gt;-->
+    <!--&lt;!&ndash;            android:icon="@drawable/ic_gps_fixed_black_48dp"&ndash;&gt;-->
+    <!--&lt;!&ndash;            android:key="prefsLocationSources"&ndash;&gt;-->
+    <!--&lt;!&ndash;            android:title="@string/prefsLocationSourceTitle">&ndash;&gt;-->
+    <!--&lt;!&ndash;            <PreferenceCategory android:title="@string/prefsLocationSourceTitle">&ndash;&gt;-->
+    <!--&lt;!&ndash;                <CheckBoxPreference&ndash;&gt;-->
+    <!--&lt;!&ndash;                    android:defaultValue="true"&ndash;&gt;-->
+    <!--&lt;!&ndash;                    android:key="locationSourceGPS"&ndash;&gt;-->
+    <!--&lt;!&ndash;                    android:summary="@string/prefsLocationSourceGPSSummary"&ndash;&gt;-->
+    <!--&lt;!&ndash;                    android:title="@string/prefsLocationSourceGPS" />&ndash;&gt;-->
+    <!--&lt;!&ndash;                <CheckBoxPreference&ndash;&gt;-->
+    <!--&lt;!&ndash;                    android:defaultValue="false"&ndash;&gt;-->
+    <!--&lt;!&ndash;                    android:key="locationSourceGoogleFused"&ndash;&gt;-->
+    <!--&lt;!&ndash;                    android:summary="@string/prefsLocationSourceGoogleFusedSummary"&ndash;&gt;-->
+    <!--&lt;!&ndash;                    android:title="@string/prefsLocationSourceGoogleFused" />&ndash;&gt;-->
+    <!--&lt;!&ndash;                <CheckBoxPreference&ndash;&gt;-->
+    <!--&lt;!&ndash;                    android:defaultValue="false"&ndash;&gt;-->
+    <!--&lt;!&ndash;                    android:key="locationSourceNetwork"&ndash;&gt;-->
+    <!--&lt;!&ndash;                    android:summary="@string/prefsLocationSourceNetworkSummary"&ndash;&gt;-->
+    <!--&lt;!&ndash;                    android:title="@string/prefsLocationSourceNetwork" />&ndash;&gt;-->
+    <!--&lt;!&ndash;            </PreferenceCategory>&ndash;&gt;-->
 
-<!--&lt;!&ndash;            <PreferenceCategory android:title="@string/prefsAdvanced">&ndash;&gt;-->
-<!--&lt;!&ndash;                <CheckBoxPreference&ndash;&gt;-->
-<!--&lt;!&ndash;                    android:defaultValue="false"&ndash;&gt;-->
-<!--&lt;!&ndash;                    android:key="showAllLocationsSourcesOnMap"&ndash;&gt;-->
-<!--&lt;!&ndash;                    android:summary="@string/prefsShowAllLocationSourcesOnMapSummary"&ndash;&gt;-->
-<!--&lt;!&ndash;                    android:title="@string/prefsShowAllLocationSourcesOnMapTitle" />&ndash;&gt;-->
-<!--&lt;!&ndash;            </PreferenceCategory>&ndash;&gt;-->
-<!--&lt;!&ndash;        </PreferenceScreen>&ndash;&gt;-->
+    <!--&lt;!&ndash;            <PreferenceCategory android:title="@string/prefsAdvanced">&ndash;&gt;-->
+    <!--&lt;!&ndash;                <CheckBoxPreference&ndash;&gt;-->
+    <!--&lt;!&ndash;                    android:defaultValue="false"&ndash;&gt;-->
+    <!--&lt;!&ndash;                    android:key="showAllLocationsSourcesOnMap"&ndash;&gt;-->
+    <!--&lt;!&ndash;                    android:summary="@string/prefsShowAllLocationSourcesOnMapSummary"&ndash;&gt;-->
+    <!--&lt;!&ndash;                    android:title="@string/prefsShowAllLocationSourcesOnMapTitle" />&ndash;&gt;-->
+    <!--&lt;!&ndash;            </PreferenceCategory>&ndash;&gt;-->
+    <!--&lt;!&ndash;        </PreferenceScreen>&ndash;&gt;-->
 
-<!--&lt;!&ndash;        <PreferenceScreen&ndash;&gt;-->
-<!--&lt;!&ndash;            android:key="fancyWorkoutNames"&ndash;&gt;-->
-<!--&lt;!&ndash;            android:summary="@string/configureWorkoutNameSchemes"&ndash;&gt;-->
-<!--&lt;!&ndash;            android:title="@string/workout_name_schemes">&ndash;&gt;-->
-<!--&lt;!&ndash;            <Preference>&ndash;&gt;-->
-<!--&lt;!&ndash;                &lt;!&ndash; just a dummy entry &ndash;&gt;&ndash;&gt;-->
-<!--&lt;!&ndash;            </Preference>&ndash;&gt;-->
-<!--&lt;!&ndash;        </PreferenceScreen>&ndash;&gt;-->
-<!--    </PreferenceCategory>-->
+    <!--&lt;!&ndash;        <PreferenceScreen&ndash;&gt;-->
+    <!--&lt;!&ndash;            android:key="fancyWorkoutNames"&ndash;&gt;-->
+    <!--&lt;!&ndash;            android:summary="@string/configureWorkoutNameSchemes"&ndash;&gt;-->
+    <!--&lt;!&ndash;            android:title="@string/workout_name_schemes">&ndash;&gt;-->
+    <!--&lt;!&ndash;            <Preference>&ndash;&gt;-->
+    <!--&lt;!&ndash;                &lt;!&ndash; just a dummy entry &ndash;&gt;&ndash;&gt;-->
+    <!--&lt;!&ndash;            </Preference>&ndash;&gt;-->
+    <!--&lt;!&ndash;        </PreferenceScreen>&ndash;&gt;-->
+    <!--    </PreferenceCategory>-->
 
 </PreferenceScreen>

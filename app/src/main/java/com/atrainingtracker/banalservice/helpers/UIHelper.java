@@ -1,10 +1,8 @@
-
-
 package com.atrainingtracker.banalservice.helpers;
 
 import com.atrainingtracker.R;
-import com.atrainingtracker.banalservice.devices.DeviceType;
 import com.atrainingtracker.banalservice.Protocol;
+import com.atrainingtracker.banalservice.devices.DeviceType;
 
 public class UIHelper {
     public static int getIconId(DeviceType deviceType, Protocol protocol) {

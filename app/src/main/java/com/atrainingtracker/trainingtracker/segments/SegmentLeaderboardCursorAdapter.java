@@ -1,16 +1,15 @@
-
-
 package com.atrainingtracker.trainingtracker.segments;
 
 import android.content.Context;
 import android.database.Cursor;
-import androidx.cursoradapter.widget.CursorAdapter;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ImageView;
 import android.widget.TextView;
+
+import androidx.cursoradapter.widget.CursorAdapter;
 
 import com.atrainingtracker.R;
 import com.atrainingtracker.banalservice.sensor.formater.SpeedFormatter;
@@ -20,7 +19,6 @@ import com.atrainingtracker.trainingtracker.TrainingApplication;
 import com.atrainingtracker.trainingtracker.onlinecommunities.strava.StravaHelper;
 import com.atrainingtracker.trainingtracker.segments.SegmentsDatabaseManager.Segments;
 import com.squareup.picasso.Picasso;
-
 
 
 public class SegmentLeaderboardCursorAdapter extends CursorAdapter {

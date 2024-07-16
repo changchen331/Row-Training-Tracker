@@ -1,5 +1,3 @@
-
-
 package com.atrainingtracker.trainingtracker.fragments;
 
 import android.util.Log;

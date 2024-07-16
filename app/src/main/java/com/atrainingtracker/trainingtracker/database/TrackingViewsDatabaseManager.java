@@ -1,5 +1,3 @@
-
-
 package com.atrainingtracker.trainingtracker.database;
 
 import android.content.ContentValues;
@@ -12,11 +10,11 @@ import android.util.Log;
 
 import com.atrainingtracker.R;
 import com.atrainingtracker.banalservice.ActivityType;
-import com.atrainingtracker.banalservice.sensor.SensorType;
 import com.atrainingtracker.banalservice.database.DevicesDatabaseManager;
 import com.atrainingtracker.banalservice.filters.FilterData;
 import com.atrainingtracker.banalservice.filters.FilterType;
 import com.atrainingtracker.banalservice.helpers.HavePressureSensor;
+import com.atrainingtracker.banalservice.sensor.SensorType;
 import com.atrainingtracker.trainingtracker.TrainingApplication;
 
 import java.util.EnumMap;

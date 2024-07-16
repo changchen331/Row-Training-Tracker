@@ -1,5 +1,3 @@
-
-
 package com.atrainingtracker.banalservice.devices;
 
 import com.atrainingtracker.banalservice.BANALService;
@@ -129,7 +127,6 @@ public enum DeviceType {
                 deviceTypes.add(DeviceType.ROWING_SPEED_AND_CADENCE);
                 deviceTypes.add(DeviceType.ROWING_POWER);      // but not all
                 break;
-
 
 
             // all devices that support speed / distance...

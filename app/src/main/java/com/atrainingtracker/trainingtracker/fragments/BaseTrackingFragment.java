@@ -1,5 +1,3 @@
-
-
 package com.atrainingtracker.trainingtracker.fragments;
 
 import android.content.Context;
@@ -51,7 +49,9 @@ public abstract class BaseTrackingFragment extends Fragment {
     // Shows the system bars by removing all the flags
     // except for the ones that make the content appear under the system bars.
     protected void showSystemUI() {
-        if (getActivity() == null) { return; }
+        if (getActivity() == null) {
+            return;
+        }
 
         View decorView = getActivity().getWindow().getDecorView();
         decorView.setSystemUiVisibility(0);
@@ -60,19 +60,25 @@ public abstract class BaseTrackingFragment extends Fragment {
     }
 
     protected void forceDay() {
-        if (getActivity() == null) { return; }
+        if (getActivity() == null) {
+            return;
+        }
         ((AppCompatActivity) getActivity()).getDelegate().setLocalNightMode(AppCompatDelegate.MODE_NIGHT_NO);
         // AppCompatDelegate.setDefaultNightMode(AppCompatDelegate.MODE_NIGHT_NO);
     }
 
     protected void forceNight() {
-        if (getActivity() == null) { return; }
+        if (getActivity() == null) {
+            return;
+        }
         ((AppCompatActivity) getActivity()).getDelegate().setLocalNightMode(AppCompatDelegate.MODE_NIGHT_YES);
         // AppCompatDelegate.setDefaultNightMode(AppCompatDelegate.MODE_NIGHT_YES);
     }
 
     protected void followSystem() {
-        if (getActivity() == null) { return; }
+        if (getActivity() == null) {
+            return;
+        }
         ((AppCompatActivity) getActivity()).getDelegate().setLocalNightMode(AppCompatDelegate.getDefaultNightMode());
         // AppCompatDelegate.setDefaultNightMode(AppCompatDelegate.getDefaultNightMode());
     }

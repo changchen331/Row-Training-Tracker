@@ -1,17 +1,17 @@
-
 package com.atrainingtracker.banalservice.fragments;
 
 import android.content.Context;
 import android.os.Bundle;
-import androidx.fragment.app.ListFragment;
 import android.util.Log;
 import android.view.View;
 import android.widget.ListView;
 
+import androidx.fragment.app.ListFragment;
+
 import com.atrainingtracker.R;
 import com.atrainingtracker.banalservice.BANALService;
-import com.atrainingtracker.banalservice.devices.DeviceType;
 import com.atrainingtracker.banalservice.Protocol;
+import com.atrainingtracker.banalservice.devices.DeviceType;
 
 import java.util.ArrayList;
 import java.util.Arrays;

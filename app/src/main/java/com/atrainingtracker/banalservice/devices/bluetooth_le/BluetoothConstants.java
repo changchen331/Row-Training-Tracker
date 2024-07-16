@@ -1,5 +1,3 @@
-
-
 package com.atrainingtracker.banalservice.devices.bluetooth_le;
 
 import com.atrainingtracker.banalservice.devices.DeviceType;

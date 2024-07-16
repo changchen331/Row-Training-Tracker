@@ -1,5 +1,3 @@
-
-
 package com.atrainingtracker.banalservice.devices.bluetooth_le;
 
 import android.annotation.TargetApi;
@@ -17,11 +15,11 @@ import android.os.Handler;
 import android.util.Log;
 
 import com.atrainingtracker.banalservice.BANALService;
+import com.atrainingtracker.banalservice.Protocol;
+import com.atrainingtracker.banalservice.database.DevicesDatabaseManager;
 import com.atrainingtracker.banalservice.devices.DeviceType;
 import com.atrainingtracker.banalservice.devices.MyRemoteDevice;
-import com.atrainingtracker.banalservice.Protocol;
 import com.atrainingtracker.banalservice.sensor.MySensorManager;
-import com.atrainingtracker.banalservice.database.DevicesDatabaseManager;
 
 import java.util.LinkedList;
 import java.util.Queue;
@@ -42,7 +40,15 @@ public abstract class MyBTLEDevice extends MyRemoteDevice {
     protected State mState = State.DISCONNECTED;
     Handler mHandler;
     private String TAG = "MyBTLEDevice";
-    private final BluetoothGattCallback mGattCallback = new BluetoothGattCallback() {
+    /**
+     * constructor
+     */
+    public MyBTLEDevice(Context context, MySensorManager mySensorManager, DeviceType deviceType, long deviceId, String address) {
+        super(context, mySensorManager, deviceType, deviceId);
+
+        mAddress = address;
+        mHandler = new Handler(mContext.getMainLooper());
+    }    private final BluetoothGattCallback mGattCallback = new BluetoothGattCallback() {
         @Override
         public void onConnectionStateChange(BluetoothGatt gatt, int status, int newState) {
             if (DEBUG)
@@ -116,21 +122,10 @@ public abstract class MyBTLEDevice extends MyRemoteDevice {
         }
     };
 
-    /**
-     * constructor
-     */
-    public MyBTLEDevice(Context context, MySensorManager mySensorManager, DeviceType deviceType, long deviceId, String address) {
-        super(context, mySensorManager, deviceType, deviceId);
-
-        mAddress = address;
-        mHandler = new Handler(mContext.getMainLooper());
-    }
-
     @Override
     public Protocol getProtocol() {
         return Protocol.BLUETOOTH_LE;
     }
-
 
     @Override
     public void startSearching() {
@@ -181,7 +176,6 @@ public abstract class MyBTLEDevice extends MyRemoteDevice {
     public boolean isReceivingData() {
         return mState == State.CONNECTED_WITH_SERVICE;
     }
-
 
     @Override
     public void shutDown() {
@@ -268,4 +262,6 @@ public abstract class MyBTLEDevice extends MyRemoteDevice {
     }
 
     protected enum State {DISCONNECTED, SEARCHING, CONNECTED_TO_GATT, CONNECTED_WITH_SERVICE}
+
+
 }

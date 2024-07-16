@@ -1,20 +1,17 @@
-
-
 package com.atrainingtracker.trainingtracker.onlinecommunities.strava;
 
-
-
-import android.content.Context;
-import android.content.Intent;
-import android.util.Log;
-
-import com.atrainingtracker.trainingtracker.TrainingApplication;
 
 import static com.atrainingtracker.trainingtracker.onlinecommunities.strava.StravaSegmentsIntentService.REQUEST_TYPE;
 import static com.atrainingtracker.trainingtracker.onlinecommunities.strava.StravaSegmentsIntentService.REQUEST_UPDATE_LEADERBOARD;
 import static com.atrainingtracker.trainingtracker.onlinecommunities.strava.StravaSegmentsIntentService.REQUEST_UPDATE_STARRED_SEGMENTS;
 import static com.atrainingtracker.trainingtracker.onlinecommunities.strava.StravaSegmentsIntentService.SEGMENT_ID;
 import static com.atrainingtracker.trainingtracker.onlinecommunities.strava.StravaSegmentsIntentService.SPORT_TYPE_ID;
+
+import android.content.Context;
+import android.content.Intent;
+import android.util.Log;
+
+import com.atrainingtracker.trainingtracker.TrainingApplication;
 
 
 public class StravaSegmentsHelper {

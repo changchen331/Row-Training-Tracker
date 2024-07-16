@@ -1,5 +1,3 @@
-
-
 package com.atrainingtracker.trainingtracker.helpers;
 
 import android.content.ContentValues;
@@ -12,8 +10,8 @@ import android.util.Log;
 import android.widget.TextView;
 
 import com.atrainingtracker.R;
-import com.atrainingtracker.banalservice.sensor.SensorType;
 import com.atrainingtracker.banalservice.database.SportTypeDatabaseManager;
+import com.atrainingtracker.banalservice.sensor.SensorType;
 import com.atrainingtracker.trainingtracker.TrainingApplication;
 import com.atrainingtracker.trainingtracker.database.ExtremaType;
 import com.atrainingtracker.trainingtracker.database.KnownLocationsDatabaseManager;

@@ -1,15 +1,13 @@
-
-
 package com.atrainingtracker.trainingtracker.dialogs;
 
 import android.app.Dialog;
 import android.content.DialogInterface;
 import android.os.Bundle;
+import android.text.InputType;
+import android.widget.EditText;
 
 import androidx.appcompat.app.AlertDialog;
 import androidx.fragment.app.DialogFragment;
-import android.text.InputType;
-import android.widget.EditText;
 
 import com.atrainingtracker.R;
 import com.atrainingtracker.trainingtracker.TrainingApplication;
@@ -17,7 +15,6 @@ import com.atrainingtracker.trainingtracker.database.WorkoutSummariesDatabaseMan
 import com.atrainingtracker.trainingtracker.helpers.DeleteWorkoutTask;
 
 import java.util.List;
-
 
 
 public class DeleteOldWorkoutsDialog extends DialogFragment {

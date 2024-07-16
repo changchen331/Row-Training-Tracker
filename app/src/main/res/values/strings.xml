@@ -1,5 +1,4 @@
-<?xml version="1.0" encoding="utf-8"?>
-<!--
+<?xml version="1.0" encoding="utf-8"?><!--
   ~ aTrainingTracker (ANT+ BTLE)
   ~ Copyright (C) 2011 - 2019 Rainer Blind <rainer.blind@gmail.com>
   ~
@@ -221,7 +220,7 @@
     <string name="device_type_short_row_speed">spd</string>
     <string name="device_type_heart_rate">heart rate</string>
     <string name="device_type_short_heart_rate">HR</string>
-<!--    <string name="device_type_run_speed">run speed</string>-->
+    <!--    <string name="device_type_run_speed">run speed</string>-->
     <string name="device_type_short_run_speed">run spd</string>
     <string name="device_type_environment">temperature</string>
     <string name="device_type_short_environment">temp.</string>
