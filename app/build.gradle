@@ -1,5 +1,5 @@
 apply plugin: 'com.android.application'
-apply plugin: 'io.fabric'
+apply plugin: 'com.google.firebase.crashlytics'
 apply plugin: 'com.google.gms.google-services'
 
 def getGitHash = { ->
@@ -12,14 +12,14 @@ def getGitHash = { ->
 }
 
 android {
+    compileSdk 29
+
     // Travis update separately
-    compileSdkVersion 29
-    buildToolsVersion '29.0.2'
 
     defaultConfig {
         applicationId "com.atrainingtracker"
         minSdkVersion 16
-        targetSdkVersion 29
+        targetSdk 28
         multiDexEnabled true
         versionName "4.2.5"
         versionCode 217
@@ -63,20 +63,22 @@ android {
         textReport true
         textOutput 'stdout'
     }
-
     packagingOptions {
-        pickFirst 'META-INF/NOTICE.txt'
-        pickFirst 'META-INF/NOTICE'
-        pickFirst 'META-INF/DEPENDENCIES'
-        pickFirst 'META-INF/LICENSE.txt'
-        pickFirst 'META-INF/LICENSE'
+        resources {
+            pickFirsts += ['META-INF/NOTICE.txt', 'META-INF/NOTICE', 'META-INF/DEPENDENCIES', 'META-INF/LICENSE.txt', 'META-INF/LICENSE']
+        }
     }
+
 
     useLibrary 'org.apache.http.legacy'
 
     dexOptions {
         javaMaxHeapSize "8g"
         preDexLibraries = false
+    }
+    compileOptions {
+        sourceCompatibility JavaVersion.VERSION_17
+        targetCompatibility JavaVersion.VERSION_17
     }
 }
 
