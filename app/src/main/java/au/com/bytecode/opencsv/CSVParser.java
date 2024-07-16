@@ -216,8 +216,7 @@ public class CSVParser {
                     if (!strictQuotes) {
                         if (i > 2 //not on the beginning of the line
                                 && nextLine.charAt(i - 1) != this.separator //not at the beginning of an escape sequence
-                                && nextLine.length() > (i + 1) &&
-                                nextLine.charAt(i + 1) != this.separator //not at the	end of an escape sequence
+                                && nextLine.length() > (i + 1) && nextLine.charAt(i + 1) != this.separator //not at the	end of an escape sequence
                         ) {
 
                             if (ignoreLeadingWhiteSpace && sb.length() > 0 && isAllWhiteSpace(sb)) {
@@ -259,7 +258,6 @@ public class CSVParser {
             tokensOnThisLine.add(sb.toString());
         }
         return tokensOnThisLine.toArray(new String[tokensOnThisLine.size()]);
-
     }
 
     /**

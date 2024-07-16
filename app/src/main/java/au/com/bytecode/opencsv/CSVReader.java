@@ -92,8 +92,7 @@ public class CSVReader implements Closeable {
      * @param escape    the character to use for escaping a separator or quote
      */
 
-    public CSVReader(Reader reader, char separator,
-                     char quotechar, char escape) {
+    public CSVReader(Reader reader, char separator, char quotechar, char escape) {
         this(reader, separator, quotechar, escape, DEFAULT_SKIP_LINES, CSVParser.DEFAULT_STRICT_QUOTES);
     }
 
@@ -166,8 +165,7 @@ public class CSVReader implements Closeable {
         List<String[]> allElements = new ArrayList<String[]>();
         while (hasNext) {
             String[] nextLineAsTokens = readNext();
-            if (nextLineAsTokens != null)
-                allElements.add(nextLineAsTokens);
+            if (nextLineAsTokens != null) allElements.add(nextLineAsTokens);
         }
         return allElements;
 
@@ -231,5 +229,4 @@ public class CSVReader implements Closeable {
     public void close() throws IOException {
         br.close();
     }
-
 }

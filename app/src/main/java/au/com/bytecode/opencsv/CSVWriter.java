@@ -152,8 +152,7 @@ public class CSVWriter implements Closeable {
         }
     }
 
-    protected void writeColumnNames(ResultSet rs)
-            throws SQLException {
+    protected void writeColumnNames(ResultSet rs) throws SQLException {
 
         writeNext(resultService.getColumnNames(rs));
     }
@@ -189,8 +188,7 @@ public class CSVWriter implements Closeable {
      */
     public void writeNext(String[] nextLine) {
 
-        if (nextLine == null)
-            return;
+        if (nextLine == null) return;
 
         StringBuilder sb = new StringBuilder(INITIAL_STRING_SIZE);
         for (int i = 0; i < nextLine.length; i++) {
@@ -200,15 +198,12 @@ public class CSVWriter implements Closeable {
             }
 
             String nextElement = nextLine[i];
-            if (nextElement == null)
-                continue;
-            if (quotechar != NO_QUOTE_CHARACTER)
-                sb.append(quotechar);
+            if (nextElement == null) continue;
+            if (quotechar != NO_QUOTE_CHARACTER) sb.append(quotechar);
 
             sb.append(stringContainsSpecialCharacters(nextElement) ? processLine(nextElement) : nextElement);
 
-            if (quotechar != NO_QUOTE_CHARACTER)
-                sb.append(quotechar);
+            if (quotechar != NO_QUOTE_CHARACTER) sb.append(quotechar);
         }
 
         sb.append(lineEnd);

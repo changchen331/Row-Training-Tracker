@@ -1,5 +1,3 @@
-
-
 package com.atrainingtracker.banalservice.database;
 
 import android.content.ContentValues;
@@ -22,7 +20,6 @@ import java.util.LinkedList;
 import java.util.List;
 
 public class SportTypeDatabaseManager {
-
     private static final String TAG = SportTypeDatabaseManager.class.getName();
     private static final boolean DEBUG = BANALService.DEBUG && false;
     private static SportTypeDatabaseManager cInstance;
@@ -39,8 +36,7 @@ public class SportTypeDatabaseManager {
 
     public static synchronized SportTypeDatabaseManager getInstance() {
         if (cInstance == null) {
-            throw new IllegalStateException(SportTypeDatabaseManager.class.getSimpleName() +
-                    " is not initialized, call initializeInstance(..) method first.");
+            throw new IllegalStateException(SportTypeDatabaseManager.class.getSimpleName() + " is not initialized, call initializeInstance(..) method first.");
         }
 
         return cInstance;
@@ -56,10 +52,7 @@ public class SportTypeDatabaseManager {
         LinkedList<Long> result = new LinkedList<>();
 
         SQLiteDatabase db = getInstance().getOpenDatabase();
-        Cursor cursor = db.query(SportType.TABLE,
-                null,
-                null, null,
-                null, null, null);
+        Cursor cursor = db.query(SportType.TABLE, null, null, null, null, null, null);
         while (cursor.moveToNext()) {
             result.add(cursor.getLong(cursor.getColumnIndex(SportType.C_ID)));
         }
@@ -74,16 +67,11 @@ public class SportTypeDatabaseManager {
 
         BSportType bSportType = getBSportType(id);
 
-        switch (bSportType) {
-            case RUN:
-                return R.drawable.bsport_run;
-
-            case ROWING:
-                return R.drawable.bsport_row;
-
-            default:
-                return R.drawable.bsport_other;
-        }
+        return switch (bSportType) {
+            case RUN -> R.drawable.bsport_run;
+            case ROWING -> R.drawable.bsport_row;
+            default -> R.drawable.bsport_other;
+        };
     }
 
     public static Drawable getBSportTypeIcon(Context context, long id, double scale) {
@@ -103,10 +91,7 @@ public class SportTypeDatabaseManager {
         LinkedList<String> result = new LinkedList<>();
 
         SQLiteDatabase db = getInstance().getOpenDatabase();
-        Cursor cursor = db.query(SportType.TABLE,
-                null,
-                null, null,
-                null, null, null);
+        Cursor cursor = db.query(SportType.TABLE, null, null, null, null, null, null);
         while (cursor.moveToNext()) {
             result.add(cursor.getString(cursor.getColumnIndex(SportType.UI_NAME)));
         }
@@ -123,18 +108,11 @@ public class SportTypeDatabaseManager {
         List<Long> result = new LinkedList<>();
 
         SQLiteDatabase db = getInstance().getOpenDatabase();
-        Cursor cursor = db.query(SportType.TABLE,
-                null,
-                SportType.BASE_SPORT_TYPE + "=? AND " + SportType.MIN_AVG_SPEED + "<=? AND " + SportType.MAX_AVG_SPEED + ">?",
-                new String[]{bSportType.name(), Double.toString(avgSpd), Double.toString(avgSpd)},
-                null, null, null);
+        Cursor cursor = db.query(SportType.TABLE, null, SportType.BASE_SPORT_TYPE + "=? AND " + SportType.MIN_AVG_SPEED + "<=? AND " + SportType.MAX_AVG_SPEED + ">?", new String[]{bSportType.name(), Double.toString(avgSpd), Double.toString(avgSpd)}, null, null, null);
         if (cursor.getCount() == 0   // nothing was found for the UNKNOWN sport type
                 && bSportType == BSportType.UNKNOWN) {
             cursor = db.query(SportType.TABLE,   // => query again, ignoring the basic sport type
-                    null,
-                    SportType.MIN_AVG_SPEED + "<=? AND " + SportType.MAX_AVG_SPEED + ">?",
-                    new String[]{Double.toString(avgSpd), Double.toString(avgSpd)},
-                    null, null, null);
+                    null, SportType.MIN_AVG_SPEED + "<=? AND " + SportType.MAX_AVG_SPEED + ">?", new String[]{Double.toString(avgSpd), Double.toString(avgSpd)}, null, null, null);
         }
 
         if (cursor.getCount() != 0) {
@@ -160,19 +138,10 @@ public class SportTypeDatabaseManager {
         List<String> result = new LinkedList<>();
 
         SQLiteDatabase db = getInstance().getOpenDatabase();
-        Cursor cursor = db.query(SportType.TABLE,
-                null,
-                SportType.BASE_SPORT_TYPE + "=? AND " + SportType.MIN_AVG_SPEED + "<=? AND " + SportType.MAX_AVG_SPEED + ">?",
-                new String[]{bSportType.name(), Double.toString(avgSpd), Double.toString(avgSpd)},
-                null, null, null);
-        if (cursor.getCount() == 0
-                && bSportType == BSportType.UNKNOWN) {  // nothing was found for the UNKNOWN sport type
+        Cursor cursor = db.query(SportType.TABLE, null, SportType.BASE_SPORT_TYPE + "=? AND " + SportType.MIN_AVG_SPEED + "<=? AND " + SportType.MAX_AVG_SPEED + ">?", new String[]{bSportType.name(), Double.toString(avgSpd), Double.toString(avgSpd)}, null, null, null);
+        if (cursor.getCount() == 0 && bSportType == BSportType.UNKNOWN) {  // nothing was found for the UNKNOWN sport type
             // => query again, ignoring the basic sport type
-            cursor = db.query(SportType.TABLE,
-                    null,
-                    SportType.MIN_AVG_SPEED + "<=? AND " + SportType.MAX_AVG_SPEED + ">?",
-                    new String[]{Double.toString(avgSpd), Double.toString(avgSpd)},
-                    null, null, null);
+            cursor = db.query(SportType.TABLE, null, SportType.MIN_AVG_SPEED + "<=? AND " + SportType.MAX_AVG_SPEED + ">?", new String[]{Double.toString(avgSpd), Double.toString(avgSpd)}, null, null, null);
         }
 
         if (cursor.getCount() != 0) {
@@ -195,11 +164,7 @@ public class SportTypeDatabaseManager {
         List<Long> result = new LinkedList<>();
 
         SQLiteDatabase db = getInstance().getOpenDatabase();
-        Cursor cursor = db.query(SportType.TABLE,
-                null,
-                SportType.BASE_SPORT_TYPE + "=?",
-                new String[]{bSportType.name()},
-                null, null, null);
+        Cursor cursor = db.query(SportType.TABLE, null, SportType.BASE_SPORT_TYPE + "=?", new String[]{bSportType.name()}, null, null, null);
 
         if (cursor.getCount() != 0) {
             while (cursor.moveToNext()) {
@@ -223,11 +188,7 @@ public class SportTypeDatabaseManager {
         LinkedList<String> result = new LinkedList<>();
 
         SQLiteDatabase db = getInstance().getOpenDatabase();
-        Cursor cursor = db.query(SportType.TABLE,
-                null,
-                SportType.BASE_SPORT_TYPE + "=?",
-                new String[]{bSportType.name()},
-                null, null, null);
+        Cursor cursor = db.query(SportType.TABLE, null, SportType.BASE_SPORT_TYPE + "=?", new String[]{bSportType.name()}, null, null, null);
 
         if (cursor.getCount() != 0) {
             while (cursor.moveToNext()) {
@@ -294,10 +255,7 @@ public class SportTypeDatabaseManager {
     public static long getSportTypeIdFromUIName(String UIName) {
         long result = -1;
         SQLiteDatabase db = getInstance().getOpenDatabase();
-        Cursor cursor = db.query(SportType.TABLE,
-                null,
-                SportType.UI_NAME + "=?", new String[]{UIName},
-                null, null, null);
+        Cursor cursor = db.query(SportType.TABLE, null, SportType.UI_NAME + "=?", new String[]{UIName}, null, null, null);
         if (cursor.moveToNext()) {
             result = cursor.getLong(cursor.getColumnIndex(SportType.C_ID));
         }
@@ -310,19 +268,11 @@ public class SportTypeDatabaseManager {
     private static String getString(long id, String col) {
         String result = null;
         SQLiteDatabase db = getInstance().getOpenDatabase();
-        Cursor cursor = db.query(SportType.TABLE,
-                null,
-                SportType.C_ID + "=?",
-                new String[]{Long.toString(id)},
-                null, null, null);
+        Cursor cursor = db.query(SportType.TABLE, null, SportType.C_ID + "=?", new String[]{Long.toString(id)}, null, null, null);
         if (cursor.moveToNext()) {
             result = cursor.getString(cursor.getColumnIndex(col));
         } else {  // try to find the corresponding row of the 'other' sport type
-            cursor = db.query(SportType.TABLE,
-                    null,
-                    SportType.C_ID + "=?",
-                    new String[]{Long.toString(1)},
-                    null, null, null);
+            cursor = db.query(SportType.TABLE, null, SportType.C_ID + "=?", new String[]{Long.toString(1)}, null, null, null);
             if (cursor.moveToNext()) {
                 result = cursor.getString(cursor.getColumnIndex(col));
             }
@@ -335,19 +285,11 @@ public class SportTypeDatabaseManager {
     private static double getDouble(long id, String col) {
         double result = 0.0;
         SQLiteDatabase db = getInstance().getOpenDatabase();
-        Cursor cursor = db.query(SportType.TABLE,
-                null,
-                SportType.C_ID + "=?",
-                new String[]{Long.toString(id)},
-                null, null, null);
+        Cursor cursor = db.query(SportType.TABLE, null, SportType.C_ID + "=?", new String[]{Long.toString(id)}, null, null, null);
         if (cursor.moveToNext()) {
             result = cursor.getDouble(cursor.getColumnIndex(col));
         } else {  // try to find the corresponding row of the 'other' sport type
-            cursor = db.query(SportType.TABLE,
-                    null,
-                    SportType.C_ID + "=?",
-                    new String[]{Long.toString(1)},
-                    null, null, null);
+            cursor = db.query(SportType.TABLE, null, SportType.C_ID + "=?", new String[]{Long.toString(1)}, null, null, null);
             if (cursor.moveToNext()) {
                 result = cursor.getDouble(cursor.getColumnIndex(col));
             }
@@ -361,10 +303,7 @@ public class SportTypeDatabaseManager {
         List<String> result = new LinkedList<>();
 
         SQLiteDatabase db = getInstance().getOpenDatabase();
-        Cursor cursor = db.query(SportType.TABLE,
-                null,
-                null, null,
-                null, null, null);
+        Cursor cursor = db.query(SportType.TABLE, null, null, null, null, null, null);
         while (cursor.moveToNext()) {
             result.add(cursor.getString(cursor.getColumnIndex(SportType.UI_NAME)));
         }
@@ -384,9 +323,7 @@ public class SportTypeDatabaseManager {
         }
 
         SQLiteDatabase db = getInstance().getOpenDatabase();
-        db.delete(SportType.TABLE,
-                SportType.C_ID + "=?",
-                new String[]{Long.toString(id)});
+        db.delete(SportType.TABLE, SportType.C_ID + "=?", new String[]{Long.toString(id)});
         getInstance().closeDatabase();
     }
 
@@ -446,11 +383,7 @@ public class SportTypeDatabaseManager {
     private enum TTSportType {
         // only for the UI we use the R.string, others are hard coded because they should never ever be translated
         //                         UI Id    gc       strava   tcx         Runkeeper           TrainingPeaks
-        WALK(BSportType.UNKNOWN, R.string.sport_type_walk, "walk", "Walk", "Walking", "Walking", "Walk"),
-        RUN(BSportType.RUN, R.string.sport_type_run, "run", "Run", "Running", "Running", "Run"),
-        MTB(BSportType.ROWING, R.string.sport_type_MTB, "mtb", "Ride", "Biking", "Mountain Biking", "MTB"),
-        ROWING(BSportType.ROWING, R.string.sport_type_row, "row", "Ride", "Biking", "Cycling", "Bike"),
-        OTHER(BSportType.UNKNOWN, R.string.sport_type_other, "", "", "Other", "Other", "Other");
+        WALK(BSportType.UNKNOWN, R.string.sport_type_walk, "walk", "Walk", "Walking", "Walking", "Walk"), RUN(BSportType.RUN, R.string.sport_type_run, "run", "Run", "Running", "Running", "Run"), MTB(BSportType.ROWING, R.string.sport_type_MTB, "mtb", "Ride", "Biking", "Mountain Biking", "MTB"), ROWING(BSportType.ROWING, R.string.sport_type_row, "row", "Ride", "Biking", "Cycling", "Bike"), OTHER(BSportType.UNKNOWN, R.string.sport_type_other, "", "", "Other", "Other", "Other");
 
         // TODO: Runkeeper: Running, Cycling, Mountain Biking, Walking, Hiking, Downhill Skiing, Cross-Country Skiing, Snowboarding, Skating, Swimming, Wheelchair, Rowing, Elliptical, Other
         // TODO: TrainingPeaks: Bike, Run, Walk, Swim, Brick, Cross train, Race, Day Off, Mountain Bike, Strength, XC Ski, Rowing, Other
@@ -537,17 +470,7 @@ public class SportTypeDatabaseManager {
     public static class SportTypeDbHelper extends SQLiteOpenHelper {
         public static final String DB_NAME = "SportType.db";
         public static final int DB_VERSION = 1;
-        protected static final String CREATE_TABLE = "create table " + SportType.TABLE + " ("
-                + SportType.C_ID + " INTEGER PRIMARY KEY AUTOINCREMENT, "
-                + SportType.UI_NAME + " text, "
-                + SportType.BASE_SPORT_TYPE + " text, "
-                + SportType.GOLDEN_CHEETAH_NAME + " text, "
-                + SportType.TCX_NAME + " text, "
-                + SportType.STRAVA_NAME + " text, "
-                + SportType.RUNKEEPER_NAME + " text, "
-                + SportType.TRAINING_PEAKS_NAME + " text, "
-                + SportType.MIN_AVG_SPEED + " real, "
-                + SportType.MAX_AVG_SPEED + " real)";
+        protected static final String CREATE_TABLE = "create table " + SportType.TABLE + " (" + SportType.C_ID + " INTEGER PRIMARY KEY AUTOINCREMENT, " + SportType.UI_NAME + " text, " + SportType.BASE_SPORT_TYPE + " text, " + SportType.GOLDEN_CHEETAH_NAME + " text, " + SportType.TCX_NAME + " text, " + SportType.STRAVA_NAME + " text, " + SportType.RUNKEEPER_NAME + " text, " + SportType.TRAINING_PEAKS_NAME + " text, " + SportType.MIN_AVG_SPEED + " real, " + SportType.MAX_AVG_SPEED + " real)";
         private static final String TAG = "SportTypeDbHelper";
         private static final boolean DEBUG = false;
         Context mContext;
