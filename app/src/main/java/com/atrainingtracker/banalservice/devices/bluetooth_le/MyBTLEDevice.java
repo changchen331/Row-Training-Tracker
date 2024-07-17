@@ -40,6 +40,7 @@ public abstract class MyBTLEDevice extends MyRemoteDevice {
     protected State mState = State.DISCONNECTED;
     Handler mHandler;
     private String TAG = "MyBTLEDevice";
+
     /**
      * constructor
      */
@@ -48,6 +49,11 @@ public abstract class MyBTLEDevice extends MyRemoteDevice {
 
         mAddress = address;
         mHandler = new Handler(mContext.getMainLooper());
+    }
+
+    @Override
+    public Protocol getProtocol() {
+        return Protocol.BLUETOOTH_LE;
     }    private final BluetoothGattCallback mGattCallback = new BluetoothGattCallback() {
         @Override
         public void onConnectionStateChange(BluetoothGatt gatt, int status, int newState) {
@@ -121,11 +127,6 @@ public abstract class MyBTLEDevice extends MyRemoteDevice {
             characteristicUpdate(gatt, characteristic);
         }
     };
-
-    @Override
-    public Protocol getProtocol() {
-        return Protocol.BLUETOOTH_LE;
-    }
 
     @Override
     public void startSearching() {
@@ -262,6 +263,8 @@ public abstract class MyBTLEDevice extends MyRemoteDevice {
     }
 
     protected enum State {DISCONNECTED, SEARCHING, CONNECTED_TO_GATT, CONNECTED_WITH_SERVICE}
+
+
 
 
 }

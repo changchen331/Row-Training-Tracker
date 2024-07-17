@@ -57,7 +57,7 @@
 
         <activity
             android:name=".trainingtracker.activities.ConfigTrackingViewsActivity"
-            android:exported="true"
+            android:exported="false"
             android:label="@string/TrackingFragmentConfigActivityLabel"
             android:launchMode="singleTask"
             android:theme="@style/Theme.aTrainingTracker"
@@ -70,7 +70,7 @@
 
         <activity
             android:name=".trainingtracker.smartwatch.pebble.ConfigPebbleViewsActivity"
-            android:exported="true"
+            android:exported="false"
             android:label="@string/PebbleConfigActivityLabel"
             android:launchMode="singleTask"
             android:theme="@style/Theme.aTrainingTracker"
@@ -84,10 +84,9 @@
         <activity
             android:name="com.dropbox.core.android.AuthActivity"
             android:configChanges="orientation|keyboard"
-            android:exported="true"
+            android:exported="false"
             android:launchMode="singleTask">
             <intent-filter>
-
                 <!-- Change this to be db- followed by your app key -->
                 <data android:scheme="db-iknmdmr31sf64r0" />
 
@@ -132,7 +131,9 @@
                 android:resource="@xml/provider_paths" />
         </provider>
 
-        <receiver android:name=".trainingtracker.NetworkReceiver">
+        <receiver
+            android:name=".trainingtracker.NetworkReceiver"
+            android:exported="false">
             <intent-filter>
                 <action
                     android:name="android.net.conn.CONNECTIVITY_CHANGE"

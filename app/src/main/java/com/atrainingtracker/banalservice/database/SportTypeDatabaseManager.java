@@ -67,11 +67,20 @@ public class SportTypeDatabaseManager {
 
         BSportType bSportType = getBSportType(id);
 
-        return switch (bSportType) {
-            case RUN -> R.drawable.bsport_run;
-            case ROWING -> R.drawable.bsport_row;
-            default -> R.drawable.bsport_other;
-        };
+        int temp;
+        switch (bSportType) {
+            case RUN:
+                temp = R.drawable.bsport_run;
+                break;
+            case ROWING:
+                temp = R.drawable.bsport_row;
+                break;
+            default:
+                temp = R.drawable.bsport_other;
+                break;
+        }
+
+        return temp;
     }
 
     public static Drawable getBSportTypeIcon(Context context, long id, double scale) {
