@@ -1,5 +1,6 @@
 package com.atrainingtracker.trainingtracker.exporter;
 
+import android.annotation.SuppressLint;
 import android.content.Context;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
@@ -23,7 +24,9 @@ public class GCFileExporter extends BaseFileExporter {
     private static final String TAG = "GCFileExporter";
     private static final boolean DEBUG = false;
     // DateFormats to convert from Db style dates to Strava style dates
+    @SuppressLint("SimpleDateFormat")
     protected static SimpleDateFormat msdfFromDb = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+    @SuppressLint("SimpleDateFormat")
     protected static SimpleDateFormat msdfToGC = new SimpleDateFormat("yyyy/MM/dd HH:mm:ss");
 
     public GCFileExporter(Context context) {
@@ -34,9 +37,9 @@ public class GCFileExporter extends BaseFileExporter {
         return msdfToGC.format(msdfFromDb.parse(dbTime));
     }
 
+    @SuppressLint("DefaultLocale")
     @Override
-    protected ExportResult doExport(ExportInfo exportInfo)
-            throws IOException, IllegalArgumentException, JSONException, ParseException {
+    protected ExportResult doExport(ExportInfo exportInfo) throws IOException, IllegalArgumentException, JSONException, ParseException {
         if (DEBUG) Log.d(TAG, "exportWorkoutToFile");
 
         final String FORMAT_qq = "    \"%s\":\"%s\",\n";
@@ -81,24 +84,13 @@ public class GCFileExporter extends BaseFileExporter {
         bufferedWriter.write(String.format(FORMAT_q, RECINTSECS, samplingTime));
         bufferedWriter.write(String.format(FORMAT_qq, DEVICETYPE, TrainingApplication.getAppName()));
         bufferedWriter.write(String.format(FORMAT_qq, IDENTIFIER, ""));
-        bufferedWriter.write(String.format(FORMAT_q, TAGS, (new JSONObject())
-                .put(ATHLETE, athleteName)
-                .put(DATA, data)
-                .put(SPORT, SportTypeDatabaseManager.getGcName(sportTypeId))
-                .put(WORKOUT_CODE, goal + " " + method)
-                .toString()));
+        bufferedWriter.write(String.format(FORMAT_q, TAGS, (new JSONObject()).put(ATHLETE, athleteName).put(DATA, data).put(SPORT, SportTypeDatabaseManager.getGcName(sportTypeId)).put(WORKOUT_CODE, goal + " " + method)));
 
         bufferedWriter.write("        \"SAMPLES\":[\n");
 
         WorkoutSamplesDatabaseManager databaseManager = WorkoutSamplesDatabaseManager.getInstance();
         SQLiteDatabase db = databaseManager.getOpenDatabase();
-        Cursor cursor = db.query(WorkoutSamplesDatabaseManager.getTableName(exportInfo.getFileBaseName()),
-                null,
-                null,
-                null,
-                null,
-                null,
-                null);
+        Cursor cursor = db.query(WorkoutSamplesDatabaseManager.getTableName(exportInfo.getFileBaseName()), null, null, null, null, null, null);
 
         int lines = cursor.getCount();
         int count = 0;
@@ -176,7 +168,7 @@ public class GCFileExporter extends BaseFileExporter {
                     }
                 }
 
-                bufferedWriter.write(getSamplePrefix(isFirst) + sample.toString());
+                bufferedWriter.write(getSamplePrefix(isFirst) + sample);
                 isFirst = false;
             }
 
@@ -193,7 +185,6 @@ public class GCFileExporter extends BaseFileExporter {
         databaseManager.closeDatabase();
 
         return new ExportResult(true, getPositiveAnswer(exportInfo));
-
     }
 
     @Override

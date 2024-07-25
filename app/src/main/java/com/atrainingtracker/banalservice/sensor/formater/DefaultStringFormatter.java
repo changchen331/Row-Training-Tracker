@@ -7,5 +7,4 @@ public class DefaultStringFormatter implements MyFormatter<String> {
     public String format(String value) {
         return value;
     }
-
 }

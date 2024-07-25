@@ -1,5 +1,6 @@
 package com.atrainingtracker.trainingtracker.smartwatch.pebble;
 
+import android.annotation.SuppressLint;
 import android.content.Intent;
 import android.os.Bundle;
 import android.text.Editable;
@@ -14,6 +15,8 @@ import android.widget.ArrayAdapter;
 import android.widget.EditText;
 import android.widget.LinearLayout;
 import android.widget.Spinner;
+
+import androidx.annotation.NonNull;
 
 import com.atrainingtracker.R;
 import com.atrainingtracker.banalservice.ActivityType;
@@ -31,10 +34,11 @@ public class ConfigPebbleViewFragment extends ConfigViewFragment {
     private static final String TAG = ConfigPebbleViewFragment.class.getName();
     private static final boolean DEBUG = TrainingApplication.DEBUG && true;
     protected static ArrayAdapter<Integer> NUMBER_OF_FIELDS_ARRAY_ADAPTER;
+    @SuppressLint("StaticFieldLeak")
     protected static SensorArrayAdapter SENSOR_ARRAY_ADAPTER;
 
     protected SensorType[] mSensorTypes = ActivityType.getSensorTypeArray(ActivityType.GENERIC, null);
-    protected List<Spinner> mSensorTypeSpinners = new LinkedList<Spinner>();
+    protected List<Spinner> mSensorTypeSpinners = new LinkedList<>();
 
     // protected ActivityType mActivityType;
     // protected long mViewId;
@@ -52,17 +56,18 @@ public class ConfigPebbleViewFragment extends ConfigViewFragment {
         return fragment;
     }
 
-
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
-        NUMBER_OF_FIELDS_ARRAY_ADAPTER = new ArrayAdapter<Integer>(getContext(), android.R.layout.simple_spinner_item, new Integer[]{3, 5});
+        NUMBER_OF_FIELDS_ARRAY_ADAPTER = new ArrayAdapter<>(requireContext(), android.R.layout.simple_spinner_item, new Integer[]{3, 5});
 
-        mViewId = getArguments().getLong(ConfigViewsActivity.VIEW_ID);
+        if (getArguments() != null) {
+            mViewId = getArguments().getLong(ConfigViewsActivity.VIEW_ID);
+        }
     }
 
     @Override
-    public View onCreateView(LayoutInflater inflater, final ViewGroup container, Bundle savedInstanceState) {
+    public View onCreateView(@NonNull LayoutInflater inflater, final ViewGroup container, Bundle savedInstanceState) {
         super.onCreateView(inflater, container, savedInstanceState);
         if (DEBUG) Log.d(TAG, "onCreateView");
 
@@ -71,9 +76,7 @@ public class ConfigPebbleViewFragment extends ConfigViewFragment {
         mSensorTypes = ActivityType.getSensorTypeArray(mActivityType, getContext());
         SENSOR_ARRAY_ADAPTER = new SensorArrayAdapter(getContext(), android.R.layout.simple_spinner_item, mSensorTypes);
 
-
         View view = inflater.inflate(R.layout.pebble_config_list_5, container, false);
-
 
         final EditText etName = view.findViewById(R.id.editTextName);
         etName.setText(PebbleDatabaseManager.getName(mViewId));
@@ -148,11 +151,11 @@ public class ConfigPebbleViewFragment extends ConfigViewFragment {
 
         // sensor fields
         mSensorTypeSpinners.clear();
-        mSensorTypeSpinners.add((Spinner) view.findViewById(R.id.spinnerField1));
-        mSensorTypeSpinners.add((Spinner) view.findViewById(R.id.spinnerField2));
-        mSensorTypeSpinners.add((Spinner) view.findViewById(R.id.spinnerField3));
-        mSensorTypeSpinners.add((Spinner) view.findViewById(R.id.spinnerField4));
-        mSensorTypeSpinners.add((Spinner) view.findViewById(R.id.spinnerField5));
+        mSensorTypeSpinners.add(view.findViewById(R.id.spinnerField1));
+        mSensorTypeSpinners.add(view.findViewById(R.id.spinnerField2));
+        mSensorTypeSpinners.add(view.findViewById(R.id.spinnerField3));
+        mSensorTypeSpinners.add(view.findViewById(R.id.spinnerField4));
+        mSensorTypeSpinners.add(view.findViewById(R.id.spinnerField5));
 
         int counter = 0;
         for (SensorType sensorType : sensorTypeList) {
@@ -185,7 +188,6 @@ public class ConfigPebbleViewFragment extends ConfigViewFragment {
             counter++;
         }
 
-
         if (DEBUG) Log.i(TAG, "finished onCreateView");
 
         return view;
@@ -199,7 +201,6 @@ public class ConfigPebbleViewFragment extends ConfigViewFragment {
 //
 //    }
 
-
     @Override
     protected void updateNameOfView(String name) {
         PebbleDatabaseManager.updateNameOfView(mViewId, name);
@@ -209,7 +210,7 @@ public class ConfigPebbleViewFragment extends ConfigViewFragment {
         super.onPause();
         if (DEBUG) Log.i(TAG, "onPause()");
 
-        getActivity().sendBroadcast(new Intent(PEBBLE_VIEW_CHANGED_INTENT));
+        requireActivity().sendBroadcast(new Intent(PEBBLE_VIEW_CHANGED_INTENT));
     }
 
 }

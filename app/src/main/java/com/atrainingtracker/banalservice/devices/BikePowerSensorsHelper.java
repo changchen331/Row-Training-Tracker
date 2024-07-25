@@ -2,7 +2,6 @@ package com.atrainingtracker.banalservice.devices;
 
 
 public class BikePowerSensorsHelper {
-
     private static final int POWER_BALANCE = 1;
     private static final int WHEEL_REVOLUTION_DATA = 1 << 1;
     private static final int CRANK_REVOLUTION_DATA = 1 << 2;

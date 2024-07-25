@@ -1,5 +1,6 @@
 package com.atrainingtracker.trainingtracker.exporter;
 
+import android.annotation.SuppressLint;
 import android.app.Notification;
 import android.app.PendingIntent;
 import android.content.Context;
@@ -30,9 +31,9 @@ public abstract class BaseExporter {
     protected static final String PREFIX_FIRST = "\n    ";
     private static final String TAG = "BaseExporter";
     private static final boolean DEBUG = TrainingApplication.DEBUG && false;
-    protected static ExportManager cExportManager;
-    private static NotificationCompat.Builder mNotificationBuilder;
-    private static NotificationManagerCompat cNotificationManager;
+    protected ExportManager cExportManager;
+    private NotificationCompat.Builder mNotificationBuilder;
+    private NotificationManagerCompat cNotificationManager;
     protected Context mContext;
 
     public BaseExporter(Context context) {
@@ -48,21 +49,14 @@ public abstract class BaseExporter {
         newIntent.putExtras(bundle);
         newIntent.setFlags(Intent.FLAG_ACTIVITY_REORDER_TO_FRONT);
         // newIntent.setAction("fooAction");
-        PendingIntent pendingIntent = PendingIntent.getActivity(mContext, 0, newIntent, 0);
+        PendingIntent pendingIntent = PendingIntent.getActivity(mContext, 0, newIntent, PendingIntent.FLAG_IMMUTABLE);
 
         // configure the notification
-        mNotificationBuilder = new NotificationCompat.Builder(mContext, TrainingApplication.NOTIFICATION_CHANNEL__EXPORT)
-                .setSmallIcon(R.drawable.logo)
-                .setLargeIcon(BitmapFactory.decodeResource(mContext.getResources(), R.drawable.ic_save_black_48dp))
-                .setContentTitle(mContext.getString(R.string.TrainingTracker))
-                .setContentText(mContext.getString(R.string.exporting))
-                .setContentIntent(pendingIntent)
-                .setOngoing(true);
+        mNotificationBuilder = new NotificationCompat.Builder(mContext, TrainingApplication.NOTIFICATION_CHANNEL__EXPORT).setSmallIcon(R.drawable.logo).setLargeIcon(BitmapFactory.decodeResource(mContext.getResources(), R.drawable.ic_save_black_48dp)).setContentTitle(mContext.getString(R.string.TrainingTracker)).setContentText(mContext.getString(R.string.exporting)).setContentIntent(pendingIntent).setOngoing(true);
     }
 
     protected static File getBaseDir(Context context) {
-        File[] externalStorageVolumes =
-                ContextCompat.getExternalFilesDirs(context, null);
+        File[] externalStorageVolumes = ContextCompat.getExternalFilesDirs(context, null);
         return externalStorageVolumes[0];
 
     }
@@ -121,12 +115,12 @@ public abstract class BaseExporter {
         return success;
     }
 
-    abstract protected ExportResult doExport(ExportInfo exportInfo)
-            throws IOException, IllegalArgumentException, JSONException, ParseException, InterruptedException;
+    abstract protected ExportResult doExport(ExportInfo exportInfo) throws IOException, IllegalArgumentException, JSONException, ParseException, InterruptedException;
 
     /**
      * helper method to check whether there is some data
      */
+    @SuppressLint("Range")
     protected boolean dataValid(Cursor cursor, String string) {
         if (cursor.getColumnIndex(string) == -1) {
             if (DEBUG) Log.d(TAG, "dataValid: no such columnIndex!: " + string);
@@ -143,21 +137,17 @@ public abstract class BaseExporter {
      * create a notification that informs the user about the progress
      **/
     public Notification getExportProgressNotification(ExportInfo exportInfo) {
-        mNotificationBuilder.setProgress(0, 0, false)
-                .setContentText(getExportMessage(exportInfo));
+        mNotificationBuilder.setProgress(0, 0, false).setContentText(getExportMessage(exportInfo));
 
         return mNotificationBuilder.build();
     }
 
     public void notifyExportFinished(String message) {
-        mNotificationBuilder.setProgress(0, 0, false)
-                .setContentText(message);
+        mNotificationBuilder.setProgress(0, 0, false).setContentText(message);
     }
 
     protected String getExportTitle(ExportInfo exportInfo) {
-        return mContext.getString(R.string.notification_title,
-                mContext.getString(getAction().getIngId()),
-                mContext.getString(exportInfo.getExportType().getUiId()));
+        return mContext.getString(R.string.notification_title, mContext.getString(getAction().getIngId()), mContext.getString(exportInfo.getExportType().getUiId()));
     }
 
     protected String getExportMessage(ExportInfo exportInfo) {
@@ -178,10 +168,7 @@ public abstract class BaseExporter {
                 break;
         }
 
-        return mContext.getString(notification_format_id,
-                mContext.getString(getAction().getIngId()),
-                mContext.getString(format.getUiNameId()),
-                workoutName);
+        return mContext.getString(notification_format_id, mContext.getString(getAction().getIngId()), mContext.getString(format.getUiNameId()), workoutName);
     }
 
     // copied code from getExportMessage
@@ -203,14 +190,12 @@ public abstract class BaseExporter {
                 break;
         }
 
-        return mContext.getString(notification_format_id,
-                mContext.getString(getAction().getPastId()),
-                mContext.getString(format.getUiNameId()),
-                workoutName);
+        return mContext.getString(notification_format_id, mContext.getString(getAction().getPastId()), mContext.getString(format.getUiNameId()), workoutName);
     }
 
     protected abstract Action getAction();
 
+    @SuppressLint("MissingPermission")
     protected void notifyProgress(int max, int count) {
         if ((count % (10 * 60)) == 0) {  // TODO take sampling time into account?
             mNotificationBuilder.setProgress(max, count, false);
@@ -226,6 +211,7 @@ public abstract class BaseExporter {
         }
     }
 
+    @SuppressLint("Range")
     protected String myGetStringFromCursor(Cursor cursor, String key) {
         String result = null;
 
@@ -239,6 +225,7 @@ public abstract class BaseExporter {
         return result;
     }
 
+    @SuppressLint("Range")
     protected boolean myGetBooleanFromCursor(Cursor cursor, String key) {
 
         if (!cursor.isNull(cursor.getColumnIndex(key))) {
@@ -249,11 +236,10 @@ public abstract class BaseExporter {
     }
 
     protected enum Action {
-        UPLOAD(R.string.uploading, R.string.uploaded),
-        EXPORT(R.string.exporting, R.string.exported);
+        UPLOAD(R.string.uploading, R.string.uploaded), EXPORT(R.string.exporting, R.string.exported);
 
-        private int mIngId;
-        private int mPastId;
+        private final int mIngId;
+        private final int mPastId;
 
         Action(int ingId, int pastId) {
             mIngId = ingId;

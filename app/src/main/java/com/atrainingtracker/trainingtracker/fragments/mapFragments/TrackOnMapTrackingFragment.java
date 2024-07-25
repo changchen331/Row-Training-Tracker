@@ -1,13 +1,18 @@
 package com.atrainingtracker.trainingtracker.fragments.mapFragments;
 
 import android.Manifest;
+import android.annotation.SuppressLint;
 import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
 import android.location.LocationManager;
+import android.os.Build;
 import android.os.Bundle;
 import android.util.Log;
+
+import androidx.annotation.NonNull;
+import androidx.annotation.RequiresApi;
 
 import com.atrainingtracker.banalservice.BANALService;
 import com.atrainingtracker.trainingtracker.TrainingApplication;
@@ -22,9 +27,7 @@ import com.google.android.gms.maps.model.PolylineOptions;
 
 import java.util.List;
 
-
-public class TrackOnMapTrackingFragment
-        extends TrackOnMapBaseFragment {
+public class TrackOnMapTrackingFragment extends TrackOnMapBaseFragment {
     public static final String TAG = TrackOnMapTrackingFragment.class.getName();
     private static final boolean DEBUG = TrainingApplication.DEBUG && false;
 
@@ -36,13 +39,9 @@ public class TrackOnMapTrackingFragment
     BroadcastReceiver mNewLocationReceiver = new BroadcastReceiver() {
         @Override
         public void onReceive(Context context, Intent intent) {
-            if (LocationManager.GPS_PROVIDER.equals(intent.getStringExtra(BANALService.LOCATION_PROVIDER))
-                    && intent.hasExtra(BANALService.LATITUDE)
-                    && intent.hasExtra(BANALService.LONGITUDE)) {
-                if (getActivity() != null
-                        && ((TrainingApplication) getActivity().getApplication()).isTracking()) {  // only add the received location when we are tracking
-                    addLatLng(intent.getDoubleExtra(BANALService.LATITUDE, 0.0),
-                            intent.getDoubleExtra(BANALService.LONGITUDE, 0.0));
+            if (LocationManager.GPS_PROVIDER.equals(intent.getStringExtra(BANALService.LOCATION_PROVIDER)) && intent.hasExtra(BANALService.LATITUDE) && intent.hasExtra(BANALService.LONGITUDE)) {
+                if (getActivity() != null && TrainingApplication.isTracking()) {  // only add the received location when we are tracking
+                    addLatLng(intent.getDoubleExtra(BANALService.LATITUDE, 0.0), intent.getDoubleExtra(BANALService.LONGITUDE, 0.0));
                 }
             }
         }
@@ -60,34 +59,32 @@ public class TrackOnMapTrackingFragment
     };
 
     // TODO: does this really make sense when we try to get the workoutId during onResume???
+    @NonNull
     public static TrackOnMapTrackingFragment newInstance() {
         if (DEBUG) Log.i(TAG, "newInstance");
-        TrackOnMapTrackingFragment trackOnMapTrackingFragment = new TrackOnMapTrackingFragment();
-
-        return trackOnMapTrackingFragment;
+        return new TrackOnMapTrackingFragment();
     }
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         if (DEBUG) Log.i(TAG, "onCreate");
-
     }
-
 
     ////////////////////////////////////////////////////////////////////////////////////////////////
     // map methods
     ////////////////////////////////////////////////////////////////////////////////////////////////
 
+    @RequiresApi(api = Build.VERSION_CODES.TIRAMISU)
     @Override
     public void onResume() {
         super.onResume();
         if (DEBUG) Log.i(TAG, "onResume()");
 
-        mWorkoutID = ((TrainingApplication) getActivity().getApplication()).getWorkoutID();
+        mWorkoutID = ((TrainingApplication) requireActivity().getApplication()).getWorkoutID();
 
-        getActivity().registerReceiver(mNewLocationReceiver, mNewLocationFilter);
-        getActivity().registerReceiver(mTrackingStartedReceiver, mTrackingStartedFilter);
+        requireActivity().registerReceiver(mNewLocationReceiver, mNewLocationFilter, Context.RECEIVER_EXPORTED);
+        requireActivity().registerReceiver(mTrackingStartedReceiver, mTrackingStartedFilter, Context.RECEIVER_EXPORTED);
 
         if (mMap != null && mWorkoutID > 0) {
             showTrackOnMap();
@@ -101,19 +98,22 @@ public class TrackOnMapTrackingFragment
         if (DEBUG) Log.i(TAG, "onPause()");
 
         try {
-            getActivity().unregisterReceiver(mNewLocationReceiver);
+            requireActivity().unregisterReceiver(mNewLocationReceiver);
         } catch (Exception e) {
+            throw new RuntimeException(e);
         }
         try {
-            getActivity().unregisterReceiver(mTrackingStartedReceiver);
+            requireActivity().unregisterReceiver(mTrackingStartedReceiver);
         } catch (Exception e) {
+            throw new RuntimeException(e);
         }
 
         mPolylineOptions = null;
     }
 
+    @SuppressLint("MissingPermission")
     @Override
-    public void onMapReady(final GoogleMap map) {
+    public void onMapReady(@NonNull final GoogleMap map) {
         if (DEBUG) Log.i(TAG, "onMapReady");
         super.onMapReady(map);
 
@@ -124,8 +124,7 @@ public class TrackOnMapTrackingFragment
 
         showStarredSegmentsOnMap(SegmentHelper.SegmentType.ALL);
 
-        if (TrainingApplication.havePermission(Manifest.permission.ACCESS_FINE_LOCATION)
-                || TrainingApplication.havePermission(Manifest.permission.ACCESS_COARSE_LOCATION)) {
+        if (TrainingApplication.havePermission(Manifest.permission.ACCESS_FINE_LOCATION) || TrainingApplication.havePermission(Manifest.permission.ACCESS_COARSE_LOCATION)) {
             mMap.setMyLocationEnabled(true);
         }
         centerMapOnMyLocation(15, 0);
@@ -172,5 +171,4 @@ public class TrackOnMapTrackingFragment
             // }
         }
     }
-
 }

@@ -1,8 +1,8 @@
 package com.atrainingtracker.trainingtracker.fragments.mapFragments;
 
+import android.annotation.SuppressLint;
 import android.app.ProgressDialog;
 import android.content.Context;
-import android.content.DialogInterface;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
 import android.graphics.Bitmap;
@@ -22,6 +22,7 @@ import android.widget.EditText;
 import android.widget.SeekBar;
 import android.widget.TextView;
 
+import androidx.annotation.NonNull;
 import androidx.appcompat.app.AlertDialog;
 import androidx.fragment.app.Fragment;
 
@@ -55,20 +56,18 @@ import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 
-
-public class MyLocationsFragment
-        extends Fragment {
+public class MyLocationsFragment extends Fragment {
     public static final String TAG = MyLocationsFragment.class.getName();
     private static final boolean DEBUG = TrainingApplication.DEBUG & false;
-
 
     MapView mMapView;
     GoogleMap mMap;
 
     MultiSelectionSpinner mSportSpinner, mExtremaTypeSpinner;
 
-    HashMap<Long, EnumMap<ExtremaType, List<Marker>>> mMarkerMap = new HashMap<Long, EnumMap<ExtremaType, List<Marker>>>();
+    HashMap<Long, EnumMap<ExtremaType, List<Marker>>> mMarkerMap = new HashMap<>();
 
     Map<Marker, Long> mMarker2WorkoutIdMap = new HashMap<>();
     Map<Marker, Long> mMarker2MyLocationsIdMap = new HashMap<>();
@@ -80,6 +79,7 @@ public class MyLocationsFragment
     /**
      * stolen from BaseExporter
      */
+    @SuppressLint("Range")
     protected static boolean dataValid(Cursor cursor, String string) {
         if (cursor.getColumnIndex(string) == -1) {
             if (DEBUG) Log.d(TAG, "dataValid: no such columnIndex!: " + string);
@@ -107,44 +107,38 @@ public class MyLocationsFragment
         mSportSpinner.setItems(mSportTypesUiNamList);
         // mSportSpinner.setSelection(new int[]{TTSportType.RUN.ordinal(), TTSportType.ROWING.ordinal(), TTSportType.MTB.ordinal()});
         mSportSpinner.setSelection(new int[]{});
-        mSportSpinner.setmMSSOnitemClickedListener(new MultiSelectionSpinner.MSSOnItemClickedListener() {
-            @Override
-            public void onItemClicked(int position, boolean isChecked) {
-                if (DEBUG)
-                    Log.i(TAG, "sportSpinner: onItemClicked position=" + position + ", isChecked=" + isChecked);
-                long sportTypeId = mSportTypesIdList.get(position);
-                if (isChecked) {
-                    addSportTypeLocations(sportTypeId);
-                } else {
-                    removeSportTypeLocations(sportTypeId);
-                }
+        mSportSpinner.setmMSSOnitemClickedListener((position, isChecked) -> {
+            if (DEBUG)
+                Log.i(TAG, "sportSpinner: onItemClicked position=" + position + ", isChecked=" + isChecked);
+            long sportTypeId = mSportTypesIdList.get(position);
+            if (isChecked) {
+                addSportTypeLocations(sportTypeId);
+            } else {
+                removeSportTypeLocations(sportTypeId);
             }
         });
 
         mExtremaTypeSpinner.setItems(ExtremaType.getLocationNameList());
         // mExtremaTypeSpinner.setSelection(new int[]{0, 1, 2});
         mExtremaTypeSpinner.setSelection(new int[]{});
-        mExtremaTypeSpinner.setmMSSOnitemClickedListener(new MultiSelectionSpinner.MSSOnItemClickedListener() {
-            @Override
-            public void onItemClicked(int position, boolean isChecked) {
-                if (DEBUG)
-                    Log.i(TAG, "extremaTypeSpinner: onItemClicked position=" + position + ", isChecked=" + isChecked);
-                ExtremaType selectedExtremaType = ExtremaType.LOCATION_EXTREMA_TYPES[position];
-                if (isChecked) {
-                    addExtremaTypeLocations(selectedExtremaType);
-                } else {
-                    removeExtremaTypeLocations(selectedExtremaType);
-                }
+        mExtremaTypeSpinner.setmMSSOnitemClickedListener((position, isChecked) -> {
+            if (DEBUG)
+                Log.i(TAG, "extremaTypeSpinner: onItemClicked position=" + position + ", isChecked=" + isChecked);
+            ExtremaType selectedExtremaType = ExtremaType.LOCATION_EXTREMA_TYPES[position];
+            if (isChecked) {
+                addExtremaTypeLocations(selectedExtremaType);
+            } else {
+                removeExtremaTypeLocations(selectedExtremaType);
             }
         });
-
 
         // Gets the MapView from the XML layout and creates it
         mMapView.onCreate(savedInstanceState);
         // Gets to GoogleMap from the MapView and does initialization stuff
         mMapView.getMapAsync(new OnMapReadyCallback() {
+            @SuppressLint("MissingPermission")
             @Override
-            public void onMapReady(GoogleMap googleMap) {
+            public void onMapReady(@NonNull GoogleMap googleMap) {
                 mMap = googleMap;
 
                 if (getContext() != null) {
@@ -156,54 +150,47 @@ public class MyLocationsFragment
                 mMap.setMyLocationEnabled(true);
                 centerMapOnMyLocation(11);
 
-                mMap.setOnMarkerClickListener(new GoogleMap.OnMarkerClickListener() {
-                    @Override
-                    public boolean onMarkerClick(Marker marker) {
-                        if (mMarker2WorkoutIdMap.containsKey(marker)) {
-                            long workoutId = mMarker2WorkoutIdMap.get(marker);
+                mMap.setOnMarkerClickListener(marker -> {
+                    if (mMarker2WorkoutIdMap.containsKey(marker)) {
+                        long workoutId = mMarker2WorkoutIdMap.get(marker);
 
-                            MyMapViewHolder myMapViewHolder = new MyMapViewHolder(mMap, mMapView);
-                            ((TrainingApplication) getActivity().getApplication()).trackOnMapHelper.showTrackOnMap(myMapViewHolder, workoutId, Roughness.ALL, TrackOnMapHelper.TrackType.BEST, false, true);
-                            // TODO: keep track but remove on second click?
-                            return true;
-                        } else if (mMarker2MyLocationsIdMap.containsKey(marker)) {
-                            long myLocationId = mMarker2MyLocationsIdMap.get(marker);
+                        MyMapViewHolder myMapViewHolder = new MyMapViewHolder(mMap, mMapView);
+                        ((TrainingApplication) requireActivity().getApplication()).trackOnMapHelper.showTrackOnMap(myMapViewHolder, workoutId, Roughness.ALL, TrackOnMapHelper.TrackType.BEST, false, true);
+                        // TODO: keep track but remove on second click?
+                        return true;
+                    } else if (mMarker2MyLocationsIdMap.containsKey(marker)) {
+                        long myLocationId = mMarker2MyLocationsIdMap.get(marker);
 
-                            showEditMyLocationsDialog(myLocationId);
+                        showEditMyLocationsDialog(myLocationId);
 
-                            return true;
-                        } else {
-                            return false;
-                        }
-
+                        return true;
+                    } else {
+                        return false;
                     }
                 });
 
                 mMap.setOnMarkerDragListener(new GoogleMap.OnMarkerDragListener() {
                     @Override
-                    public void onMarkerDragStart(Marker marker) {
+                    public void onMarkerDragStart(@NonNull Marker marker) {
 
                     }
 
                     @Override
-                    public void onMarkerDrag(Marker marker) {
+                    public void onMarkerDrag(@NonNull Marker marker) {
                         // move circle
-                        mMarkerId2CircleMap.get(mMarker2MyLocationsIdMap.get(marker)).setCenter(marker.getPosition());
+                        Objects.requireNonNull(mMarkerId2CircleMap.get(mMarker2MyLocationsIdMap.get(marker))).setCenter(marker.getPosition());
                     }
 
                     @Override
-                    public void onMarkerDragEnd(Marker marker) {
+                    public void onMarkerDragEnd(@NonNull Marker marker) {
                         // update position in database
                         KnownLocationsDatabaseManager.updateLocation(mMarker2MyLocationsIdMap.get(marker), marker.getPosition());
                     }
                 });
 
-                mMap.setOnMapLongClickListener(new GoogleMap.OnMapLongClickListener() {
-                    @Override
-                    public void onMapLongClick(LatLng latLng) {
-                        // create new MyLocation
-                        new CreateNewMyLocation(getContext()).execute(latLng);
-                    }
+                mMap.setOnMapLongClickListener(latLng -> {
+                    // create new MyLocation
+                    new CreateNewMyLocation(getContext()).execute(latLng);
                 });
 
                 addMyLocationMarkers();
@@ -235,7 +222,6 @@ public class MyLocationsFragment
         super.onDestroy();
         mMapView.onDestroy();
     }
-
 
     ////////////////////////////////////////////////////////////////////////////////////////////////
     // FOO
@@ -271,7 +257,7 @@ public class MyLocationsFragment
         if (DEBUG) Log.i(TAG, "removeSportTypeLocations: sportTypeId=" + sportTypeId);
 
         if (mMarkerMap.containsKey(sportTypeId)) {
-            for (ExtremaType extremaType : mMarkerMap.get(sportTypeId).keySet()) {
+            for (ExtremaType extremaType : Objects.requireNonNull(mMarkerMap.get(sportTypeId)).keySet()) {
                 removeMarkers(sportTypeId, extremaType);
             }
         }
@@ -281,7 +267,7 @@ public class MyLocationsFragment
         if (DEBUG) Log.i(TAG, "removeExtremaTypeLocations: ExtremaType=" + extremaType);
 
         for (long sportTypeId : mMarkerMap.keySet()) {
-            if (mMarkerMap.get(sportTypeId).containsKey(extremaType)) {
+            if (Objects.requireNonNull(mMarkerMap.get(sportTypeId)).containsKey(extremaType)) {
                 removeMarkers(sportTypeId, extremaType);
             }
         }
@@ -291,33 +277,26 @@ public class MyLocationsFragment
         if (DEBUG)
             Log.i(TAG, "removeMarkers: sportTypeId=" + sportTypeId + ", ExtremaType=" + extremaType);
 
-        for (Marker marker : mMarkerMap.get(sportTypeId).get(extremaType)) {
+        for (Marker marker : Objects.requireNonNull(Objects.requireNonNull(mMarkerMap.get(sportTypeId)).get(extremaType))) {
             mMarker2WorkoutIdMap.remove(marker);
             marker.remove();
         }
 
-        mMarkerMap.get(sportTypeId).remove(extremaType);
+        Objects.requireNonNull(mMarkerMap.get(sportTypeId)).remove(extremaType);
     }
 
     protected void addMyLocationToMap(MyLocation myLocation) {
 
-        Marker marker = mMap.addMarker(new MarkerOptions()
-                .position(myLocation.latLng)
-                .title(myLocation.name)
-                .icon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_BLUE))
-                .draggable(true));  // TODO: much larger?
+        Marker marker = mMap.addMarker(new MarkerOptions().position(myLocation.latLng).title(myLocation.name).icon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_BLUE)).draggable(true));  // TODO: much larger?
         mMarker2MyLocationsIdMap.put(marker, myLocation.id);
 
-        Circle circle = mMap.addCircle(new CircleOptions()
-                .center(myLocation.latLng)
-                .radius(myLocation.radius)
-                .fillColor(Color.argb(75, 0, 0, 255))
-                .strokeColor(Color.BLUE));
+        Circle circle = mMap.addCircle(new CircleOptions().center(myLocation.latLng).radius(myLocation.radius).fillColor(Color.argb(75, 0, 0, 255)).strokeColor(Color.BLUE));
         mMarkerId2CircleMap.put(myLocation.id, circle);
     }
 
+    @SuppressLint("SetTextI18n")
     protected void showEditMyLocationsDialog(final long myLocationId) {
-        LayoutInflater inflater = getActivity().getLayoutInflater();
+        LayoutInflater inflater = requireActivity().getLayoutInflater();
         View view = inflater.inflate(R.layout.edit_my_location, null);
 
         final EditText etName = view.findViewById(R.id.etLocationName);
@@ -333,74 +312,49 @@ public class MyLocationsFragment
         sbRadius.setOnSeekBarChangeListener(new SeekBar.OnSeekBarChangeListener() {
             @Override
             public void onProgressChanged(SeekBar seekBar, int progress, boolean fromUser) {
-                mMarkerId2CircleMap.get(myLocationId).setRadius(progress);
-                tvRadius.setText(getString(R.string.radius_format, getString(R.string.LocationRadius),
-                        progress,
-                        getString(R.string.units_radius)));
+                Objects.requireNonNull(mMarkerId2CircleMap.get(myLocationId)).setRadius(progress);
+                tvRadius.setText(getString(R.string.radius_format, getString(R.string.LocationRadius), progress, getString(R.string.units_radius)));
             }
 
             @Override
             public void onStartTrackingTouch(SeekBar seekBar) {
-
             }
 
             @Override
             public void onStopTrackingTouch(SeekBar seekBar) {
-
             }
         });
 
-        AlertDialog.Builder alertDialogBuilder = new AlertDialog.Builder(getContext());
-        alertDialogBuilder.setMessage(R.string.edit_my_location)
-                .setView(view)
+        AlertDialog.Builder alertDialogBuilder = new AlertDialog.Builder(requireContext());
+        alertDialogBuilder.setMessage(R.string.edit_my_location).setView(view)
                 // .setCancelable(false)
-                .setPositiveButton(R.string.OK, new DialogInterface.OnClickListener() {
-                    public void onClick(DialogInterface dialog, int id) {
-                        myLocation.name = etName.getText().toString();
-                        try {
-                            myLocation.altitude = Integer.parseInt(etAltitude.getText().toString());  // hopefully, this works
-                        } catch (Exception e) {
-                        }
-                        myLocation.radius = sbRadius.getProgress();
-
-                        KnownLocationsDatabaseManager.updateMyLocation(myLocationId, myLocation);
+                .setPositiveButton(R.string.OK, (dialog, id) -> {
+                    myLocation.name = etName.getText().toString();
+                    try {
+                        myLocation.altitude = Integer.parseInt(etAltitude.getText().toString());  // hopefully, this works
+                    } catch (Exception e) {
+                        throw new RuntimeException(e);
                     }
+                    myLocation.radius = sbRadius.getProgress();
+
+                    KnownLocationsDatabaseManager.updateMyLocation(myLocationId, myLocation);
                 });
-        alertDialogBuilder.setNeutralButton(R.string.Cancel, new DialogInterface.OnClickListener() {
-            public void onClick(DialogInterface dialog, int id) {
-                mMarkerId2CircleMap.get(myLocationId).setRadius(myLocation.radius);
-                dialog.cancel();
-            }
+        alertDialogBuilder.setNeutralButton(R.string.Cancel, (dialog, id) -> {
+            Objects.requireNonNull(mMarkerId2CircleMap.get(myLocationId)).setRadius(myLocation.radius);
+            dialog.cancel();
         });
-        alertDialogBuilder.setNegativeButton(R.string.delete_location, new DialogInterface.OnClickListener() {
-            @Override
-            public void onClick(DialogInterface dialog, int which) {
-                deleteMyLocation(myLocation);
-            }
-        });
+        alertDialogBuilder.setNegativeButton(R.string.delete_location, (dialog, which) -> deleteMyLocation(myLocation));
         AlertDialog alert = alertDialogBuilder.create();
 
         Window window = alert.getWindow();
-        window.setGravity(Gravity.TOP);
+        Objects.requireNonNull(window).setGravity(Gravity.TOP);
 
         alert.show();
     }
 
     private void deleteMyLocation(final MyLocation myLocation) {
-        AlertDialog.Builder builder = new AlertDialog.Builder(getActivity());
-        builder.setTitle(R.string.delete_location)
-                .setMessage(R.string.really_delete_location)
-                .setIcon(android.R.drawable.ic_menu_delete)
-                .setPositiveButton(R.string.delete_location, new DialogInterface.OnClickListener() {
-                    public void onClick(DialogInterface dialog, int whichButton) {
-                        reallyDeleteLocation(myLocation);
-                    }
-                })
-                .setNegativeButton(R.string.Cancel, new DialogInterface.OnClickListener() {
-                    public void onClick(DialogInterface dialog, int which) {
-                        dialog.dismiss();
-                    }
-                });
+        AlertDialog.Builder builder = new AlertDialog.Builder(requireActivity());
+        builder.setTitle(R.string.delete_location).setMessage(R.string.really_delete_location).setIcon(android.R.drawable.ic_menu_delete).setPositiveButton(R.string.delete_location, (dialog, whichButton) -> reallyDeleteLocation(myLocation)).setNegativeButton(R.string.Cancel, (dialog, which) -> dialog.dismiss());
 
         builder.create().show();
     }
@@ -410,7 +364,7 @@ public class MyLocationsFragment
         KnownLocationsDatabaseManager.deleteId(myLocation.id);
 
         // remove circle
-        mMarkerId2CircleMap.get(myLocation.id).remove();
+        Objects.requireNonNull(mMarkerId2CircleMap.get(myLocation.id)).remove();
 
         // remove marker
         for (Marker marker : mMarker2MyLocationsIdMap.keySet()) {
@@ -429,12 +383,10 @@ public class MyLocationsFragment
             return null;
         }
 
-        Bitmap marker = ((BitmapDrawable) getResources().getDrawable(drawableId)).getBitmap();
+        @SuppressLint("UseCompatLoadingForDrawables") Bitmap marker = ((BitmapDrawable) getResources().getDrawable(drawableId)).getBitmap();
         Bitmap scaledMarker = Bitmap.createScaledBitmap(marker, (int) (marker.getWidth() * scale), (int) (marker.getHeight() * scale), false);
 
-        return mMap.addMarker(new MarkerOptions()
-                .position(position)
-                .icon(BitmapDescriptorFactory.fromBitmap(scaledMarker)));
+        return mMap.addMarker(new MarkerOptions().position(Objects.requireNonNull(position)).icon(BitmapDescriptorFactory.fromBitmap(scaledMarker)));
     }
 
     // again, copied code from BaseMapFragment
@@ -444,15 +396,15 @@ public class MyLocationsFragment
         long gpsTime = 1;
         long networkTime = 0;
 
-        LocationManager locationManager = (LocationManager) getActivity().getSystemService(Context.LOCATION_SERVICE);
+        LocationManager locationManager = (LocationManager) requireActivity().getSystemService(Context.LOCATION_SERVICE);
 
-        Location locationGPS = locationManager.getLastKnownLocation(LocationManager.GPS_PROVIDER);
+        @SuppressLint("MissingPermission") Location locationGPS = locationManager.getLastKnownLocation(LocationManager.GPS_PROVIDER);
         if (locationGPS != null) {
             if (DEBUG) Log.i(TAG, "locationGPS: time=" + locationGPS.getTime());
             gpsTime = locationGPS.getTime();
         }
 
-        Location locationNetwork = locationManager.getLastKnownLocation(LocationManager.NETWORK_PROVIDER);
+        @SuppressLint("MissingPermission") Location locationNetwork = locationManager.getLastKnownLocation(LocationManager.NETWORK_PROVIDER);
         if (locationNetwork != null) {
             if (DEBUG) Log.i(TAG, "locationNetwork: time=" + locationNetwork.getTime());
             networkTime = locationNetwork.getTime();
@@ -467,7 +419,7 @@ public class MyLocationsFragment
         }
     }
 
-    private class LatLngId {
+    private static class LatLngId {
         LatLng latLng;
         long id;
 
@@ -477,6 +429,7 @@ public class MyLocationsFragment
         }
     }
 
+    @SuppressLint("StaticFieldLeak")
     class ShowExtremaLocations extends AsyncTask<Integer, LatLngId, Float> {
         private long mSportTypeId;
         private ExtremaType mExtremaType;
@@ -510,7 +463,6 @@ public class MyLocationsFragment
             progressDialog.setCanceledOnTouchOutside(false);
             progressDialog.show();
 
-
             switch (mExtremaType) {
                 case START:
                     mMarkerId = R.drawable.start_logo_map;  // TODO: other color?
@@ -525,54 +477,36 @@ public class MyLocationsFragment
 
             // make sure that mMarkerMap it correctly initialized
             if (!mMarkerMap.containsKey(mSportTypeId)) {
-                mMarkerMap.put(mSportTypeId, new EnumMap<ExtremaType, List<Marker>>(ExtremaType.class));
+                mMarkerMap.put(mSportTypeId, new EnumMap<>(ExtremaType.class));
             }
-            if (!mMarkerMap.get(mSportTypeId).containsKey(mExtremaType)) {
-                mMarkerMap.get(mSportTypeId).put(mExtremaType, new LinkedList<Marker>());
+            if (!Objects.requireNonNull(mMarkerMap.get(mSportTypeId)).containsKey(mExtremaType)) {
+                Objects.requireNonNull(mMarkerMap.get(mSportTypeId)).put(mExtremaType, new LinkedList<>());
             }
-
         }
 
-
+        @SuppressLint("Range")
         @Override
         protected Float doInBackground(Integer... params) {
 
             // TODO: copied code from WorkoutSummariesDatabaseManager
             SQLiteDatabase db = WorkoutSummariesDatabaseManager.getInstance().getOpenDatabase();
 
-            Cursor latCursor = null;
-            Cursor lonCursor = null;
+            Cursor latCursor;
+            Cursor lonCursor;
             double latitude, longitude;
 
-            Cursor cursor = db.query(WorkoutSummaries.TABLE,
-                    null,
-                    WorkoutSummaries.SPORT_ID + "=?",
-                    new String[]{Long.toString(mSportTypeId)},
-                    null,
-                    null,
-                    null);
+            Cursor cursor = db.query(WorkoutSummaries.TABLE, null, WorkoutSummaries.SPORT_ID + "=?", new String[]{Long.toString(mSportTypeId)}, null, null, null);
 
             boolean calculatedMaxLineDistance = false;
 
             while (cursor.moveToNext()) {
-                long workoutId = cursor.getLong(cursor.getColumnIndex(WorkoutSummaries.C_ID));
+                @SuppressLint("Range") long workoutId = cursor.getLong(cursor.getColumnIndex(WorkoutSummaries.C_ID));
                 if (DEBUG) Log.i(TAG, "checking workoutId=" + workoutId);
 
-                latCursor = db.query(WorkoutSummaries.TABLE_EXTREMA_VALUES,
-                        null,
-                        WorkoutSummaries.WORKOUT_ID + "=? AND " + WorkoutSummaries.SENSOR_TYPE + "=? AND " + WorkoutSummaries.EXTREMA_TYPE + "=?",
-                        new String[]{Long.toString(workoutId), SensorType.LATITUDE.name(), mExtremaType.name()},
-                        null, null, null);
-                lonCursor = db.query(WorkoutSummaries.TABLE_EXTREMA_VALUES,
-                        null,
-                        WorkoutSummaries.WORKOUT_ID + "=? AND " + WorkoutSummaries.SENSOR_TYPE + "=? AND " + WorkoutSummaries.EXTREMA_TYPE + "=?",
-                        new String[]{Long.toString(workoutId), SensorType.LONGITUDE.name(), mExtremaType.name()},
-                        null, null, null);
+                latCursor = db.query(WorkoutSummaries.TABLE_EXTREMA_VALUES, null, WorkoutSummaries.WORKOUT_ID + "=? AND " + WorkoutSummaries.SENSOR_TYPE + "=? AND " + WorkoutSummaries.EXTREMA_TYPE + "=?", new String[]{Long.toString(workoutId), SensorType.LATITUDE.name(), mExtremaType.name()}, null, null, null);
+                lonCursor = db.query(WorkoutSummaries.TABLE_EXTREMA_VALUES, null, WorkoutSummaries.WORKOUT_ID + "=? AND " + WorkoutSummaries.SENSOR_TYPE + "=? AND " + WorkoutSummaries.EXTREMA_TYPE + "=?", new String[]{Long.toString(workoutId), SensorType.LONGITUDE.name(), mExtremaType.name()}, null, null, null);
 
-                if (latCursor.moveToFirst()
-                        && lonCursor.moveToFirst()
-                        && dataValid(latCursor, WorkoutSummaries.VALUE)
-                        && dataValid(lonCursor, WorkoutSummaries.VALUE)) {
+                if (latCursor.moveToFirst() && lonCursor.moveToFirst() && dataValid(latCursor, WorkoutSummaries.VALUE) && dataValid(lonCursor, WorkoutSummaries.VALUE)) {
                     latitude = latCursor.getDouble(latCursor.getColumnIndex(WorkoutSummaries.VALUE));
                     longitude = lonCursor.getDouble(latCursor.getColumnIndex(WorkoutSummaries.VALUE));
                     publishProgress(new LatLngId(latitude, longitude, workoutId));
@@ -582,7 +516,6 @@ public class MyLocationsFragment
                     CalcExtremaValuesTask.calcAndSaveMaxLineDistancePosition(workoutId);
                     cursor.moveToPrevious();
                     calculatedMaxLineDistance = true;
-
                 }
                 calculatedMaxLineDistance = false;
                 if (DEBUG)
@@ -604,7 +537,7 @@ public class MyLocationsFragment
             if (DEBUG) Log.i(TAG, "add new extrema position.");
 
             Marker marker = addScaledMarker(values[0].latLng, mMarkerId, 0.666);
-            mMarkerMap.get(mSportTypeId).get(mExtremaType).add(marker);
+            Objects.requireNonNull(Objects.requireNonNull(mMarkerMap.get(mSportTypeId)).get(mExtremaType)).add(marker);
             mMarker2WorkoutIdMap.put(marker, values[0].id);
         }
 
@@ -629,7 +562,6 @@ public class MyLocationsFragment
             mSportSpinner.setClickable(true);
             mExtremaTypeSpinner.setEnabled(true);
             mExtremaTypeSpinner.setClickable(true);
-
         }
     }
 
@@ -637,6 +569,7 @@ public class MyLocationsFragment
      * helper method to check whether there is some data
      */
 
+    @SuppressLint("StaticFieldLeak")
     class AddMyLocationMarkers extends AsyncTask<Integer, MyLocation, Float> {
         private ProgressDialog progressDialog;
         private Context context;
@@ -655,27 +588,21 @@ public class MyLocationsFragment
             progressDialog.show();
         }
 
-
         @Override
         protected Float doInBackground(Integer... params) {
 
             SQLiteDatabase db = KnownLocationsDatabaseManager.getInstance().getOpenDatabase();
-            Cursor cursor = db.query(KnownLocationsDbHelper.TABLE,
-                    null,
-                    null, // KnownLocationsDbHelper.EXTREMA_TYPE + "=?",
+            Cursor cursor = db.query(KnownLocationsDbHelper.TABLE, null, null, // KnownLocationsDbHelper.EXTREMA_TYPE + "=?",
                     null, // new String[] { extremaType.name() },
-                    null,
-                    null,
-                    null,
-                    null);  // sorting
+                    null, null, null, null);  // sorting
 
             while (cursor.moveToNext()) {
-                long id = cursor.getLong(cursor.getColumnIndex(KnownLocationsDbHelper.C_ID));
-                double latitude = cursor.getDouble(cursor.getColumnIndex(KnownLocationsDbHelper.LATITUDE));
-                double longitude = cursor.getDouble(cursor.getColumnIndex(KnownLocationsDbHelper.LONGITUDE));
-                String name = cursor.getString(cursor.getColumnIndex(KnownLocationsDbHelper.NAME));
-                int altitude = cursor.getInt(cursor.getColumnIndex(KnownLocationsDbHelper.ALTITUDE));
-                int radius = cursor.getInt(cursor.getColumnIndex(KnownLocationsDbHelper.RADIUS));
+                @SuppressLint("Range") long id = cursor.getLong(cursor.getColumnIndex(KnownLocationsDbHelper.C_ID));
+                @SuppressLint("Range") double latitude = cursor.getDouble(cursor.getColumnIndex(KnownLocationsDbHelper.LATITUDE));
+                @SuppressLint("Range") double longitude = cursor.getDouble(cursor.getColumnIndex(KnownLocationsDbHelper.LONGITUDE));
+                @SuppressLint("Range") String name = cursor.getString(cursor.getColumnIndex(KnownLocationsDbHelper.NAME));
+                @SuppressLint("Range") int altitude = cursor.getInt(cursor.getColumnIndex(KnownLocationsDbHelper.ALTITUDE));
+                @SuppressLint("Range") int radius = cursor.getInt(cursor.getColumnIndex(KnownLocationsDbHelper.RADIUS));
 
                 publishProgress(new MyLocation(id, latitude, longitude, name, altitude, radius));
             }
@@ -710,10 +637,10 @@ public class MyLocationsFragment
             } else {
                 if (DEBUG) Log.d(TAG, "dialog no longer showing, so do nothing?");
             }
-
         }
     }
 
+    @SuppressLint("StaticFieldLeak")
     class CreateNewMyLocation extends AsyncTask<LatLng, Void, MyLocation> {
         private ProgressDialog progressDialog;
         private Context context;
@@ -732,13 +659,11 @@ public class MyLocationsFragment
             progressDialog.show();
         }
 
-
         @Override
         protected MyLocation doInBackground(LatLng... params) {
-            Double altitude = WorkoutSamplesDatabaseManager.calcAverageAroundLocation(params[0], 100, SensorType.ALTITUDE);
+            double altitude = WorkoutSamplesDatabaseManager.calcAverageAroundLocation(params[0], 100, SensorType.ALTITUDE);
 
-            return KnownLocationsDatabaseManager.addNewLocation("", altitude.intValue(), KnownLocationsDatabaseManager.DEFAULT_RADIUS, params[0].latitude, params[0].longitude);
-
+            return KnownLocationsDatabaseManager.addNewLocation("", (int) altitude, KnownLocationsDatabaseManager.DEFAULT_RADIUS, params[0].latitude, params[0].longitude);
         }
 
         @Override
@@ -760,8 +685,6 @@ public class MyLocationsFragment
             } else {
                 if (DEBUG) Log.d(TAG, "dialog no longer showing, so do nothing?");
             }
-
         }
     }
-
 }

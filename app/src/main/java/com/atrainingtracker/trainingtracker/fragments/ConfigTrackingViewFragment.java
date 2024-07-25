@@ -3,6 +3,7 @@ package com.atrainingtracker.trainingtracker.fragments;
 import static com.atrainingtracker.banalservice.fragments.ConfigureFilterDialogFragment.FILTERS_CHANGED_INTENT;
 import static com.atrainingtracker.trainingtracker.dialogs.EditFieldDialog.TRACKING_VIEW_CHANGED_INTENT;
 
+import android.annotation.SuppressLint;
 import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
@@ -19,12 +20,12 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
 import android.widget.CheckBox;
-import android.widget.CompoundButton;
 import android.widget.EditText;
 import android.widget.LinearLayout;
 import android.widget.RadioButton;
 import android.widget.TextView;
 
+import androidx.annotation.NonNull;
 import androidx.fragment.app.FragmentManager;
 import androidx.fragment.app.FragmentTransaction;
 
@@ -37,13 +38,12 @@ import com.atrainingtracker.trainingtracker.activities.ConfigViewsActivity;
 import com.atrainingtracker.trainingtracker.database.TrackingViewsDatabaseManager;
 import com.atrainingtracker.trainingtracker.dialogs.EditFieldDialog;
 
+import java.util.Objects;
 import java.util.TreeMap;
-
 
 public class ConfigTrackingViewFragment extends ConfigViewFragment {
     protected static final SensorType SENSOR_TYPE_DEFAULT = SensorType.SPEED_mps;
     protected static final int TEXT_SIZE_DEFAULT = 30;
-
 
     // public static final String NAME_CHANGED_INTENT   = "NAME_CHANGED_INTENT";
     // public static final String VIEW_CHANGED_INTENT = "VIEW_CHANGED_INTENT";
@@ -78,7 +78,6 @@ public class ConfigTrackingViewFragment extends ConfigViewFragment {
         return fragment;
     }
 
-
     // @Override
     // public void onAttach(Context context) {
     //     super.onAttach(context);
@@ -90,12 +89,12 @@ public class ConfigTrackingViewFragment extends ConfigViewFragment {
         super.onCreate(savedInstanceState);
         if (DEBUG) Log.i(TAG, "onCreate");
 
-        mViewId = getArguments().getLong(ConfigViewsActivity.VIEW_ID);
+        mViewId = requireArguments().getLong(ConfigViewsActivity.VIEW_ID);
         if (DEBUG) Log.i(TAG, "mViewId=" + mViewId);
     }
 
     @Override
-    public View onCreateView(LayoutInflater inflater, final ViewGroup container, Bundle savedInstanceState) {
+    public View onCreateView(@NonNull LayoutInflater inflater, final ViewGroup container, Bundle savedInstanceState) {
         super.onCreateView(inflater, container, savedInstanceState);
         if (DEBUG) Log.d(TAG, "onCreateView, mViewId=" + mViewId);
 
@@ -131,57 +130,26 @@ public class ConfigTrackingViewFragment extends ConfigViewFragment {
 
         RadioButton rb = view.findViewById(R.id.rbNightDay_SystemSetting);
         rb.setChecked(TrackingViewsDatabaseManager.systemSettings(mViewId));
-        rb.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
-            @Override
-            public void onCheckedChanged(CompoundButton compoundButton, boolean isChecked) {
-                TrackingViewsDatabaseManager.updateSystemSetting(mViewId, isChecked);
-            }
-        });
+        rb.setOnCheckedChangeListener((compoundButton, isChecked) -> TrackingViewsDatabaseManager.updateSystemSetting(mViewId, isChecked));
 
         rb = view.findViewById(R.id.rbNightDay_Day);
         rb.setChecked(TrackingViewsDatabaseManager.day(mViewId));
-        rb.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
-            @Override
-            public void onCheckedChanged(CompoundButton compoundButton, boolean isChecked) {
-                TrackingViewsDatabaseManager.updateDay(mViewId, isChecked);
-            }
-        });
+        rb.setOnCheckedChangeListener((compoundButton, isChecked) -> TrackingViewsDatabaseManager.updateDay(mViewId, isChecked));
 
         rb = view.findViewById(R.id.rbNightDay_Night);
         rb.setChecked(TrackingViewsDatabaseManager.night(mViewId));
-        rb.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
-            @Override
-            public void onCheckedChanged(CompoundButton compoundButton, boolean isChecked) {
-                TrackingViewsDatabaseManager.updateNight(mViewId, isChecked);
-            }
-        });
+        rb.setOnCheckedChangeListener((compoundButton, isChecked) -> TrackingViewsDatabaseManager.updateNight(mViewId, isChecked));
         CheckBox checkBox = view.findViewById(R.id.cbFullScreen);
         checkBox.setChecked(TrackingViewsDatabaseManager.fullscreen(mViewId));
-        checkBox.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
-            @Override
-            public void onCheckedChanged(CompoundButton compoundButton, boolean isChecked) {
-                TrackingViewsDatabaseManager.updateFullscreen(mViewId, isChecked);
-            }
-        });
+        checkBox.setOnCheckedChangeListener((compoundButton, isChecked) -> TrackingViewsDatabaseManager.updateFullscreen(mViewId, isChecked));
 
         checkBox = view.findViewById(R.id.cbShowMap);
         checkBox.setChecked(TrackingViewsDatabaseManager.showMap(mViewId));
-        checkBox.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
-            @Override
-            public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
-                TrackingViewsDatabaseManager.updateShowMap(mViewId, isChecked);
-            }
-        });
+        checkBox.setOnCheckedChangeListener((buttonView, isChecked) -> TrackingViewsDatabaseManager.updateShowMap(mViewId, isChecked));
 
         checkBox = view.findViewById(R.id.cbShowLapButton);
         checkBox.setChecked(TrackingViewsDatabaseManager.showLapButton(mViewId));
-        checkBox.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
-            @Override
-            public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
-                TrackingViewsDatabaseManager.updateShowLapButton(mViewId, isChecked);
-            }
-        });
-
+        checkBox.setOnCheckedChangeListener((buttonView, isChecked) -> TrackingViewsDatabaseManager.updateShowLapButton(mViewId, isChecked));
 
         if (DEBUG) Log.i(TAG, "finished onCreateView");
 
@@ -193,14 +161,14 @@ public class ConfigTrackingViewFragment extends ConfigViewFragment {
         super.onResume();
         if (DEBUG) Log.i(TAG, "onResume, mViewId=" + mViewId);
 
-        getActivity().setTitle(R.string.application_name);
+        requireActivity().setTitle(R.string.application_name);
         setHasOptionsMenu(true);
 
         getViewInfoMapAndAddSensorFields();
 
         mViewChangedFilter.addAction(FILTERS_CHANGED_INTENT);
         mViewChangedFilter.addAction(TRACKING_VIEW_CHANGED_INTENT);
-        getContext().registerReceiver(mFilterChangedReceiver, mViewChangedFilter);
+        requireContext().registerReceiver(mFilterChangedReceiver, mViewChangedFilter);
     }
 
     protected void getViewInfoMapAndAddSensorFields() {
@@ -214,11 +182,10 @@ public class ConfigTrackingViewFragment extends ConfigViewFragment {
         // first, remove everything
         mLLSensors.removeAllViews();
 
-
         // finally, update the views
         for (int rowNr : mViewInfoMap.keySet()) {
             if (DEBUG) Log.i(TAG, "adding rowNr=" + rowNr);
-            addRow(mViewInfoMap.get(rowNr));
+            addRow(Objects.requireNonNull(mViewInfoMap.get(rowNr)));
         }
     }
 
@@ -227,15 +194,14 @@ public class ConfigTrackingViewFragment extends ConfigViewFragment {
         TrackingViewsDatabaseManager.updateNameOfView(mViewId, name);
     }
 
-
+    @SuppressLint("SetTextI18n")
     protected void addRow(final TreeMap<Integer, TrackingViewsDatabaseManager.ViewInfo> rowMap) {
-        if (rowMap.size() == 0) {
+        if (rowMap.isEmpty()) {
             if (DEBUG) Log.i(TAG, "row contains no entries => returning");
             return;
         }
 
-
-        final LinearLayout linearLayout = (LinearLayout) mLayoutInflater.inflate(R.layout.config_tracking_view_row, null);
+        @SuppressLint("InflateParams") final LinearLayout linearLayout = (LinearLayout) mLayoutInflater.inflate(R.layout.config_tracking_view_row, null);
         mLLSensors.addView(linearLayout);
 
         LinearLayout llFields = linearLayout.findViewById(R.id.llFields);
@@ -249,7 +215,7 @@ public class ConfigTrackingViewFragment extends ConfigViewFragment {
             llFields.addView(llView);
 
             TextView tvSensor = llView.findViewById(R.id.tvSensor);
-            tvSensor.setText(viewInfo.sensorType.toString());
+            tvSensor.setText(Objects.requireNonNull(viewInfo).sensorType.toString());
 
             TextView tvSource = llView.findViewById(R.id.tvSource);
             if (viewInfo.sourceDeviceId <= 0) {
@@ -274,78 +240,64 @@ public class ConfigTrackingViewFragment extends ConfigViewFragment {
             tvSize.setText(viewInfo.textSize + "");
 
             LinearLayout llSummary = llView.findViewById(R.id.llConfigSummary);
-            llSummary.setOnClickListener(new View.OnClickListener() {
-                @Override
-                public void onClick(View v) {
-                    showEditFieldDialog(viewInfo);
-                }
-            });
+            llSummary.setOnClickListener(v -> showEditFieldDialog(viewInfo));
 
             Button deleteButton = llView.findViewById(R.id.buttonDelete);
-            deleteButton.setOnClickListener(new View.OnClickListener() {
-                public void onClick(View v) {
-                    if (DEBUG) Log.i(TAG, "delete button pressed");
-                    TrackingViewsDatabaseManager.deleteRow(viewInfo.rowId);
+            deleteButton.setOnClickListener(v -> {
+                if (DEBUG) Log.i(TAG, "delete button pressed");
+                TrackingViewsDatabaseManager.deleteRow(viewInfo.rowId);
 
-                    mViewInfoMap.get(viewInfo.rowNr).remove(viewInfo.colNr);
-                    addSensorFields();
-                }
+                Objects.requireNonNull(mViewInfoMap.get(viewInfo.rowNr)).remove(viewInfo.colNr);
+                addSensorFields();
             });
         }
 
         Button addView = linearLayout.findViewById(R.id.buttonAddSensorToRow);
-        addView.setOnClickListener(new View.OnClickListener() {
-            public void onClick(View v) {
-                if (DEBUG) Log.i(TAG, "add view button clicked");
+        addView.setOnClickListener(v -> {
+            if (DEBUG) Log.i(TAG, "add view button clicked");
 
-                TrackingViewsDatabaseManager.ViewInfo viewInfo = rowMap.get(rowMap.lastKey());
-                viewInfo = TrackingViewsDatabaseManager.addSensorToRow(viewInfo.viewId, viewInfo.rowNr, SENSOR_TYPE_DEFAULT, TEXT_SIZE_DEFAULT);
+            TrackingViewsDatabaseManager.ViewInfo viewInfo = rowMap.get(rowMap.lastKey());
+            viewInfo = TrackingViewsDatabaseManager.addSensorToRow(Objects.requireNonNull(viewInfo).viewId, viewInfo.rowNr, SENSOR_TYPE_DEFAULT, TEXT_SIZE_DEFAULT);
 
-                mViewInfoMap.get(viewInfo.rowNr).put(viewInfo.colNr, viewInfo);
-                addSensorFields();
-            }
+            Objects.requireNonNull(mViewInfoMap.get(viewInfo.rowNr)).put(viewInfo.colNr, viewInfo);
+            addSensorFields();
         });
 
         Button addRow = linearLayout.findViewById(R.id.buttonAddNewRow);
-        addRow.setOnClickListener(new View.OnClickListener() {
-            public void onClick(View v) {
-                Log.i(TAG, "buttonAddNewRow clicked");
-                TrackingViewsDatabaseManager.ViewInfo viewInfo = rowMap.get(rowMap.lastKey());
-                viewInfo = TrackingViewsDatabaseManager.addRowAfter(viewInfo.viewId, viewInfo.rowNr, SENSOR_TYPE_DEFAULT, TEXT_SIZE_DEFAULT);
+        addRow.setOnClickListener(v -> {
+            Log.i(TAG, "buttonAddNewRow clicked");
+            TrackingViewsDatabaseManager.ViewInfo viewInfo = rowMap.get(rowMap.lastKey());
+            viewInfo = TrackingViewsDatabaseManager.addRowAfter(Objects.requireNonNull(viewInfo).viewId, viewInfo.rowNr, SENSOR_TYPE_DEFAULT, TEXT_SIZE_DEFAULT);
 
-                getViewInfoMapAndAddSensorFields();
+            getViewInfoMapAndAddSensorFields();
 
-                showEditFieldDialog(viewInfo);
-            }
+            showEditFieldDialog(viewInfo);
         });
-
     }
-
 
     public void onPause() {
         super.onPause();
         if (DEBUG) Log.i(TAG, "onPause()");
 
-        getActivity().sendBroadcast(new Intent(TRACKING_VIEW_CHANGED_INTENT));
+        requireActivity().sendBroadcast(new Intent(TRACKING_VIEW_CHANGED_INTENT));
 
-        getContext().unregisterReceiver(mFilterChangedReceiver);
+        requireContext().unregisterReceiver(mFilterChangedReceiver);
     }
-
 
     /**
      * Called first time user clicks on the menu button
      */
     @Override
-    public void onCreateOptionsMenu(Menu menu, MenuInflater inflater) {
+    public void onCreateOptionsMenu(@NonNull Menu menu, @NonNull MenuInflater inflater) {
         super.onCreateOptionsMenu(menu, inflater);
         if (DEBUG) Log.d(TAG, "onCreateOptionsMenu");
 
         inflater.inflate(R.menu.preview, menu);
     }
 
-
+    @SuppressLint("NonConstantResourceId")
     @Override
-    public boolean onOptionsItemSelected(MenuItem item) {
+    public boolean onOptionsItemSelected(@NonNull MenuItem item) {
         if (DEBUG) Log.i(TAG, "onOptionsItemSelected");
 
         switch (item.getItemId()) {
@@ -360,18 +312,17 @@ public class ConfigTrackingViewFragment extends ConfigViewFragment {
 
     private void showEditFieldDialog(TrackingViewsDatabaseManager.ViewInfo viewInfo) {
         EditFieldDialog editFieldDialog = EditFieldDialog.newInstance(mActivityType, viewInfo);
-        editFieldDialog.show(getFragmentManager(), EditFieldDialog.TAG);
+        editFieldDialog.show(requireFragmentManager(), EditFieldDialog.TAG);
     }
 
     protected void showPreview() {
         setHasOptionsMenu(false);
-        getActivity().setTitle(getString(R.string.preview_name_format, mName));
+        requireActivity().setTitle(getString(R.string.preview_name_format, mName));
 
-        FragmentManager fragmentManager = getActivity().getSupportFragmentManager();
+        FragmentManager fragmentManager = requireActivity().getSupportFragmentManager();
         FragmentTransaction fragmentTransaction = fragmentManager.beginTransaction();
         fragmentTransaction.replace(R.id.content, TrackingFragment.newInstance(mViewId, TrackingFragment.Mode.PREVIEW, mActivityType));
         fragmentTransaction.addToBackStack(null);
         fragmentTransaction.commit();
     }
-
 }

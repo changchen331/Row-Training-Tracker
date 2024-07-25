@@ -6,6 +6,7 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 
+import androidx.annotation.NonNull;
 import androidx.fragment.app.Fragment;
 import androidx.fragment.app.FragmentManager;
 import androidx.fragment.app.FragmentPagerAdapter;
@@ -17,7 +18,6 @@ import com.atrainingtracker.R;
 import com.atrainingtracker.banalservice.BSportType;
 import com.atrainingtracker.banalservice.database.SportTypeDatabaseManager;
 import com.atrainingtracker.trainingtracker.TrainingApplication;
-
 
 public class StarredSegmentsTabbedContainer extends Fragment {
 
@@ -40,7 +40,7 @@ public class StarredSegmentsTabbedContainer extends Fragment {
     SectionsPagerAdapter mSectionsPagerAdapter;
 
     @Override
-    public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
+    public View onCreateView(@NonNull LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
         super.onCreateView(inflater, container, savedInstanceState);
         if (DEBUG) Log.i(TAG, "onCreateView(), savedInstanceState=" + savedInstanceState);
 
@@ -97,6 +97,7 @@ public class StarredSegmentsTabbedContainer extends Fragment {
             super(fm);
         }
 
+        @NonNull
         @Override
         public Fragment getItem(int position) {
             // getItem is called to instantiate the fragment for the given page.
@@ -112,7 +113,6 @@ public class StarredSegmentsTabbedContainer extends Fragment {
                 default:
                     return new Fragment();
             }
-
         }
 
         @Override
@@ -128,9 +128,7 @@ public class StarredSegmentsTabbedContainer extends Fragment {
 
                 case 1:
                     return getString(R.string.starred_run_segments);
-
             }
-
             return null;
         }
     }

@@ -11,14 +11,12 @@ public class SensorData<T> {
     private T mValue;
     private String mStringValue;
 
-
     public SensorData(SensorType sensorType, T value, String stringValue, String deviceName) {
         mSensorType = sensorType;
         mValue = value;
         mStringValue = stringValue;
         mDeviceName = deviceName;
     }
-
 
     public SensorType getSensorType() {
         return mSensorType;
@@ -35,5 +33,4 @@ public class SensorData<T> {
     public String getDeviceName() {
         return mDeviceName;
     }
-
 }

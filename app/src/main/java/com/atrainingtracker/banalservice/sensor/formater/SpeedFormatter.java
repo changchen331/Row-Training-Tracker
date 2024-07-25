@@ -2,9 +2,12 @@ package com.atrainingtracker.banalservice.sensor.formater;
 
 // import java.text.NumberFormat;
 
+import android.annotation.SuppressLint;
+
 import com.atrainingtracker.trainingtracker.TrainingApplication;
 
 public class SpeedFormatter implements MyFormatter<Number> {
+    @SuppressLint("DefaultLocale")
     @Override
     public String format(Number speed_mps) {
         if (speed_mps == null) {

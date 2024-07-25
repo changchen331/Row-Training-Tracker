@@ -4,6 +4,7 @@ import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
+import android.os.Build;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.LayoutInflater;
@@ -14,6 +15,7 @@ import android.widget.LinearLayout;
 import android.widget.ProgressBar;
 import android.widget.TextView;
 
+import androidx.annotation.NonNull;
 import androidx.fragment.app.Fragment;
 
 import com.atrainingtracker.R;
@@ -25,7 +27,6 @@ import com.atrainingtracker.banalservice.devices.MyRemoteDevice;
 import com.atrainingtracker.banalservice.helpers.UIHelper;
 import com.atrainingtracker.trainingtracker.TrackingMode;
 import com.atrainingtracker.trainingtracker.TrainingApplication;
-
 
 public class TrackingModeFragment extends Fragment {
     private static final String TAG = TrackingModeFragment.class.getName();
@@ -50,7 +51,7 @@ public class TrackingModeFragment extends Fragment {
     // onCreate()
 
     @Override
-    public void onAttach(final Context context) {
+    public void onAttach(@NonNull final Context context) {
         super.onAttach(context);
         if (DEBUG) Log.i(TAG, "onAttach");
 
@@ -68,13 +69,13 @@ public class TrackingModeFragment extends Fragment {
                 }
             });
         } catch (ClassCastException e) {
-            throw new ClassCastException(context.toString() + " must implement GetBanalServiceInterface");
+            throw new ClassCastException(context + " must implement GetBanalServiceInterface");
         }
 
     }
 
     @Override
-    public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
+    public View onCreateView(@NonNull LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
         super.onCreateView(inflater, container, savedInstanceState);
         if (DEBUG) Log.d(TAG, "onCreateView");
 
@@ -104,7 +105,9 @@ public class TrackingModeFragment extends Fragment {
         mUpdateViewFilter.addAction(BANALService.SEARCHING_STARTED_FOR_ONE_INTENT);
         mUpdateViewFilter.addAction(BANALService.SPORT_TYPE_CHANGED_BY_USER_INTENT);
         mUpdateViewFilter.addAction(TrainingApplication.TRACKING_STATE_CHANGED);
-        getActivity().registerReceiver(mUpdateViewReceiver, mUpdateViewFilter);
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+            requireActivity().registerReceiver(mUpdateViewReceiver, mUpdateViewFilter, Context.RECEIVER_NOT_EXPORTED);
+        }
     }
 
     @Override
@@ -112,7 +115,7 @@ public class TrackingModeFragment extends Fragment {
         super.onPause();
         if (DEBUG) Log.i(TAG, "onPause");
 
-        getActivity().unregisterReceiver(mUpdateViewReceiver);
+        requireActivity().unregisterReceiver(mUpdateViewReceiver);
     }
 
     public void updateView(Context context) {

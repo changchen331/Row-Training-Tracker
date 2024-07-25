@@ -1,5 +1,6 @@
 package com.atrainingtracker.trainingtracker.tracker;
 
+import android.annotation.SuppressLint;
 import android.app.Service;
 import android.content.BroadcastReceiver;
 import android.content.ComponentName;
@@ -11,8 +12,11 @@ import android.content.ServiceConnection;
 import android.database.Cursor;
 import android.database.SQLException;
 import android.database.sqlite.SQLiteDatabase;
+import android.os.Build;
 import android.os.IBinder;
 import android.util.Log;
+
+import androidx.annotation.RequiresApi;
 
 import com.atrainingtracker.banalservice.BANALService;
 import com.atrainingtracker.banalservice.BANALService.BANALServiceComm;
@@ -37,6 +41,7 @@ import java.util.Date;
 import java.util.HashMap;
 import java.util.Locale;
 import java.util.Map;
+import java.util.Objects;
 import java.util.SortedSet;
 import java.util.TreeSet;
 import java.util.concurrent.Executors;
@@ -50,7 +55,7 @@ public class TrackerService extends Service {
     public static final String WORKOUT_NAME = "de.rainerblind.trainingtracker.TrackerService.WORKOUT_NAME";
     public static final String TRACKING_STARTED_INTENT = "de.rainerblind.trainingtracker.TrackerService.TRACKING_STARTED_INTENT";
     public static final String TRACKING_FINISHED_INTENT = "de.rainerblind.trainingtracker.TrackerService.TRACKING_FINISHED_INTENT";
-    // public static final String WORKOUT_ID               = "de.rainerblind.trainingtracker.TrackerService.WORKOUT_ID";
+    //    public static final String WORKOUT_ID = "de.rainerblind.trainingtracker.TrackerService.WORKOUT_ID";
     public static final String START_TYPE = "START_TYPE";
     private static final String TAG = "TrackerService";
     private static final boolean DEBUG = TrainingApplication.DEBUG & false;
@@ -73,10 +78,8 @@ public class TrackerService extends Service {
     // int            mCalories        = 0;
     // double         mSpeedAverage_mps = 0.0;
 
-
     // int    mPrevLapTimeTotal_s      = 0;
     // double mPrevLapDistanceTotal_m  = 0.0;
-
 
     // private long mSportTypeId = SportTypeDatabaseManager.getDefaultSportTypeId();
     private int mSamplingTime;
@@ -85,10 +88,7 @@ public class TrackerService extends Service {
         public void onReceive(Context context, Intent intent) {
             if (DEBUG) Log.i(TAG, "received lap summary intent");
 
-            saveLap(intent.getIntExtra(BANALService.PREV_LAP_NR, 0),
-                    intent.getIntExtra(BANALService.PREV_LAP_TIME_S, 0),
-                    intent.getDoubleExtra(BANALService.PREV_LAP_DISTANCE_m, 0),
-                    intent.getDoubleExtra(BANALService.PREV_LAP_SPEED_mps, 0));
+            saveLap(intent.getIntExtra(BANALService.PREV_LAP_NR, 0), intent.getIntExtra(BANALService.PREV_LAP_TIME_S, 0), intent.getDoubleExtra(BANALService.PREV_LAP_DISTANCE_m, 0), intent.getDoubleExtra(BANALService.PREV_LAP_SPEED_mps, 0));
         }
     };
     private String mBaseFileName;
@@ -98,7 +98,6 @@ public class TrackerService extends Service {
     // private String[] mSensorNames;
     private String mSamplesTableName;
     private final BroadcastReceiver mAltitudeCorrectionReceiver = new BroadcastReceiver() {
-
         @Override
         public void onReceive(Context context, Intent intent) {
             double altitudeCorrection = intent.getDoubleExtra(AltitudeFromPressureDevice.ALTITUDE_CORRECTION_VALUE, 0.0);
@@ -109,8 +108,7 @@ public class TrackerService extends Service {
 
             WorkoutSamplesDatabaseManager databaseManager = WorkoutSamplesDatabaseManager.getInstance();
             SQLiteDatabase samplesDb = databaseManager.getOpenDatabase();
-            samplesDb.execSQL("UPDATE " + mSamplesTableName
-                    + " set " + SensorType.ALTITUDE.name() + " = " + SensorType.ALTITUDE.name() + operator + Math.abs(altitudeCorrection));
+            samplesDb.execSQL("UPDATE " + mSamplesTableName + " set " + SensorType.ALTITUDE.name() + " = " + SensorType.ALTITUDE.name() + operator + Math.abs(altitudeCorrection));
             // + " where " + Keys.Key_SKU + " = " + SKU + " and " + Keys.Key_STATUS + " = 0");
             // no where statement required because we want to update all previous ones.
             databaseManager.closeDatabase(); // samplesDb.close();
@@ -137,14 +135,11 @@ public class TrackerService extends Service {
             }
 
             if (mBanalService != null) {
-
                 sampleAndWriteToDb();
 
                 // update notification
                 if (DEBUG) Log.i(TAG, "updating notification");
-                mTrainingApplication.updateTimeAndDistanceToNotification(mBanalService.getBestSensorData(SensorType.TIME_ACTIVE),
-                        mBanalService.getBestSensorData(SensorType.DISTANCE_m),
-                        SportTypeDatabaseManager.getUIName(mBanalService.getSportTypeId()));
+                mTrainingApplication.updateTimeAndDistanceToNotification(mBanalService.getBestSensorData(SensorType.TIME_ACTIVE), mBanalService.getBestSensorData(SensorType.DISTANCE_m), SportTypeDatabaseManager.getUIName(mBanalService.getSportTypeId()));
                 if (DEBUG) Log.i(TAG, "updated notification");
 
             }
@@ -184,6 +179,7 @@ public class TrackerService extends Service {
         }
     };
 
+    @RequiresApi(api = Build.VERSION_CODES.TIRAMISU)
     @Override
     public void onCreate() {
         super.onCreate();
@@ -196,11 +192,12 @@ public class TrackerService extends Service {
         // request bind to the BANAL Service
         bindService(new Intent(this, BANALService.class), mBanalConnection, Context.BIND_AUTO_CREATE);
 
-        registerReceiver(mSearchingFinishedReceiver, mSearchingFinishedFilter);
-        registerReceiver(mAltitudeCorrectionReceiver, mAltitudeCorrectionFilter);
-        registerReceiver(mLapSummaryReceiver, mLapSummaryFilter);
+        registerReceiver(mSearchingFinishedReceiver, mSearchingFinishedFilter, Context.RECEIVER_EXPORTED);
+        registerReceiver(mAltitudeCorrectionReceiver, mAltitudeCorrectionFilter, Context.RECEIVER_EXPORTED);
+        registerReceiver(mLapSummaryReceiver, mLapSummaryFilter, Context.RECEIVER_EXPORTED);
     }
 
+    @SuppressLint("ForegroundServiceType")
     @Override
     public int onStartCommand(Intent intent, int flags, int startId) {
         super.onStartCommand(intent, flags, startId);
@@ -253,7 +250,7 @@ public class TrackerService extends Service {
         }
 
         // start tracking
-        mTrackerHandle = mScheduler.scheduleAtFixedRate(tracker, 0, // initial delay
+        mTrackerHandle = mScheduler.scheduleWithFixedDelay(tracker, 0, // initial delay
                 mSamplingTime, // sampling time
                 TimeUnit.SECONDS);
 
@@ -299,6 +296,7 @@ public class TrackerService extends Service {
         unregisterReceiver(mLapSummaryReceiver);
     }
 
+    @SuppressLint("Range")
     private void recreateValuesWhenResuming() {
 
         SQLiteDatabase db = WorkoutSummariesDatabaseManager.getInstance().getOpenDatabase();
@@ -316,13 +314,7 @@ public class TrackerService extends Service {
         cursor.close();
         WorkoutSummariesDatabaseManager.getInstance().closeDatabase(); // instead of db.close();
 
-        Log.d(TAG, "resuming with mBaseFileName=" + mBaseFileName
-                + ", mWorkoutId=" + mWorkoutID
-                + ", time_total_s=" + time_total_s
-                + ", time_active_s=" + time_active_s
-                + ", calories=" + calories
-                + ", lapNr=" + lapNr
-                + ", distance_m=" + distance_m);
+        Log.d(TAG, "resuming with mBaseFileName=" + mBaseFileName + ", mWorkoutId=" + mWorkoutID + ", time_total_s=" + time_total_s + ", time_active_s=" + time_active_s + ", calories=" + calories + ", lapNr=" + lapNr + ", distance_m=" + distance_m);
 
         BANALService.setInitialSensorValue(SensorType.TIME_TOTAL, time_total_s);
         BANALService.setInitialSensorValue(SensorType.TIME_ACTIVE, time_active_s);
@@ -338,7 +330,6 @@ public class TrackerService extends Service {
         if (mBanalService == null) {
             mCreateNewLapWhenConnectedToBanalService = true;
         } else {
-
             SensorData sensorData;
 
             int prevLapNr = 0;
@@ -349,15 +340,13 @@ public class TrackerService extends Service {
 
             int lapTime_s = 0;
             sensorData = mBanalService.getBestSensorData(SensorType.TIME_LAP);
-            if (sensorData != null
-                    && sensorData.getValue() != null) {
+            if (sensorData != null && sensorData.getValue() != null) {
                 lapTime_s = (Integer) sensorData.getValue();
             }
 
             double lapDistance = 0.0;
             sensorData = mBanalService.getBestSensorData(SensorType.DISTANCE_m_LAP);
-            if (sensorData != null
-                    && sensorData.getValue() != null) {
+            if (sensorData != null && sensorData.getValue() != null) {
                 lapDistance = (Double) sensorData.getValue();
             }
 
@@ -383,11 +372,9 @@ public class TrackerService extends Service {
         SQLiteDatabase lapDb = LapsDatabaseManager.getInstance().getOpenDatabase();
         lapDb.insert(LapsDatabaseManager.Laps.TABLE, null, values);
         LapsDatabaseManager.getInstance().closeDatabase(); // instead of lapDb.close();
-
     }
 
     protected long getSportTypeId() {
-
         long sportTypeId = BANALService.getDefaultSportTypeId();
         if (mBanalService != null) {
             if (averageSpeedCalculateable()) {
@@ -403,7 +390,6 @@ public class TrackerService extends Service {
 
     // not necessary when resuming an already started workout
     protected long createNewWorkout() {
-
         if (DEBUG) Log.d(TAG, "createNewWorkout");
 
         long sportTypeId = getSportTypeId();
@@ -420,7 +406,6 @@ public class TrackerService extends Service {
         values.put(WorkoutSummaries.WORKOUT_NAME, mBaseFileName);
         values.put(WorkoutSummaries.FILE_BASE_NAME, mBaseFileName);
         values.put(WorkoutSummaries.PRIVATE, TrainingApplication.defaultToPrivate());
-
 
         WorkoutSummariesDatabaseManager databaseManager = WorkoutSummariesDatabaseManager.getInstance();
         SQLiteDatabase summariesDb = databaseManager.getOpenDatabase();
@@ -459,10 +444,7 @@ public class TrackerService extends Service {
 
         WorkoutSummariesDatabaseManager databaseManager = WorkoutSummariesDatabaseManager.getInstance();
         SQLiteDatabase summariesDb = databaseManager.getOpenDatabase();
-        summariesDb.update(WorkoutSummaries.TABLE,
-                values,
-                WorkoutSummaries.C_ID + "=?",
-                new String[]{Long.toString(mWorkoutID)});
+        summariesDb.update(WorkoutSummaries.TABLE, values, WorkoutSummaries.C_ID + "=?", new String[]{Long.toString(mWorkoutID)});
         databaseManager.closeDatabase(); // summariesDb.close();
     }
 
@@ -509,10 +491,7 @@ public class TrackerService extends Service {
 
         WorkoutSummariesDatabaseManager databaseManager = WorkoutSummariesDatabaseManager.getInstance();
         SQLiteDatabase summariesDb = databaseManager.getOpenDatabase();
-        summariesDb.update(WorkoutSummaries.TABLE,
-                summaryValues,
-                WorkoutSummaries.C_ID + "=" + mWorkoutID,
-                null);
+        summariesDb.update(WorkoutSummaries.TABLE, summaryValues, WorkoutSummaries.C_ID + "=" + mWorkoutID, null);
         databaseManager.closeDatabase(); //    summariesDb.close();
 
         ExportManager exportManager = new ExportManager(this, TAG);
@@ -546,11 +525,10 @@ public class TrackerService extends Service {
                 continue;
             }
 
-
             SensorType sensorType = sensorData.getSensorType();
             String sensorName = sensorType.name();
             String deviceName = sensorData.getDeviceName();
-            if (deviceName != null) {                                       // when it is not the best sensor (or the clock, or...), we add the the name of the source device
+            if (deviceName != null) {                                                                                 // when it is not the best sensor (or the clock, or...), we add the the name of the source device
                 if (deviceName.equals("gps") || deviceName.equals("network") || deviceName.equals("google_fused")) {  // for the location related stuff, we want to be compatible with pre 3.8
                     sensorName += "_" + deviceName;                                                                   // this is especially important for track on map views and so on...
                 } else {
@@ -561,6 +539,7 @@ public class TrackerService extends Service {
             SensorValueType type = sensorType.getSensorValueType();
             sensorName2Type.put(sensorName, type);
 
+            // 我改过哦
             switch (type) {
                 case INTEGER:
                     if (DEBUG)
@@ -569,7 +548,7 @@ public class TrackerService extends Service {
                     break;
                 case DOUBLE:
                     if (DEBUG)
-                        Log.d(TAG, "tracking DOUBLE data for " + sensorName + ": " + sensorData.getValue().doubleValue());
+                        Log.d(TAG, "tracking DOUBLE data for " + sensorName + ": " + sensorData.getValue().toString());
                     samplingValues.put(sensorName, sensorData.getValue().doubleValue());
                     break;
                 default:
@@ -608,20 +587,18 @@ public class TrackerService extends Service {
         SQLiteDatabase samplesDb = samplesDatabaseManager.getOpenDatabase();
 
         try {
-            samplesDb.insertOrThrow(mSamplesTableName,
-                    null,
-                    samplingValues);
+            samplesDb.insertOrThrow(mSamplesTableName, null, samplingValues);
         } catch (SQLException e) {  // ok, probably the column is missing
             if (DEBUG) Log.i(TAG, "SQLException.  Probably, column(s) missing");
-            Cursor cursor = samplesDb.query(mSamplesTableName, null, null, null, null, null, null, "1");
+            @SuppressLint("Recycle") Cursor cursor = samplesDb.query(mSamplesTableName, null, null, null, null, null, null, "1");
 
             SortedSet<String> keys = new TreeSet<>(samplingValues.keySet());
             for (String key : keys) {
                 String queryKey = key.replace("'", "");
                 if (cursor.getColumnIndex(queryKey) < 0) {  // column is really missing
                     if (DEBUG) Log.i(TAG, "column " + key + " is missing.  Adding it.");
-                    String type = "";
-                    switch (sensorName2Type.get(key)) {
+                    String type;
+                    switch (Objects.requireNonNull(sensorName2Type.get(key))) {
                         case INTEGER:
                             type = "int";
                             break;
@@ -645,15 +622,13 @@ public class TrackerService extends Service {
 
             // now, try again...
             try {
-                samplesDb.insertOrThrow(mSamplesTableName,
-                        null,
-                        samplingValues);
+                samplesDb.insertOrThrow(mSamplesTableName, null, samplingValues);
             } catch (
                     SQLException retryException) {  //  still did not work => try to insert them one by one...
                 Log.i(TAG, "Failed to insert the samples after altering the table.  Try to insert them one by one.");
                 for (String key : samplingValues.keySet()) {
                     ContentValues oneSamplingValue = new ContentValues();
-                    switch (sensorName2Type.get(key)) {
+                    switch (Objects.requireNonNull(sensorName2Type.get(key))) {
                         case INTEGER:
                             oneSamplingValue.put(key, samplingValues.getAsInteger(key));
                             break;
@@ -664,9 +639,7 @@ public class TrackerService extends Service {
                             oneSamplingValue.put(key, samplingValues.getAsString(key));
                     }
                     try {
-                        samplesDb.insertOrThrow(mSamplesTableName,
-                                null,
-                                oneSamplingValue);
+                        samplesDb.insertOrThrow(mSamplesTableName, null, oneSamplingValue);
                     } catch (SQLException retryRetryException) {
                         Log.i(TAG, "Inserting " + key + " finally failed.  Giving up for this key; still trying to save the rest.");
                     }
@@ -675,7 +648,6 @@ public class TrackerService extends Service {
         }
 
         samplesDatabaseManager.closeDatabase();
-
 
         // Update the summary data
         if (DEBUG) Log.d(TAG, "writing to Summaries db");
@@ -686,10 +658,7 @@ public class TrackerService extends Service {
 
         WorkoutSummariesDatabaseManager summariesDatabaseManager = WorkoutSummariesDatabaseManager.getInstance();
         SQLiteDatabase summariesDb = summariesDatabaseManager.getOpenDatabase();
-        summariesDb.update(WorkoutSummaries.TABLE,
-                summaryValues,
-                WorkoutSummaries.C_ID + "=" + mWorkoutID,
-                null);
+        summariesDb.update(WorkoutSummaries.TABLE, summaryValues, WorkoutSummaries.C_ID + "=" + mWorkoutID, null);
         summariesDatabaseManager.closeDatabase(); // summariesDb.close();
     }
 

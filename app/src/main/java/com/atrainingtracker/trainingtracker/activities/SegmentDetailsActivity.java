@@ -1,6 +1,6 @@
 package com.atrainingtracker.trainingtracker.activities;
 
-
+import android.annotation.SuppressLint;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
 import android.os.Bundle;
@@ -8,6 +8,7 @@ import android.util.Log;
 import android.view.MenuItem;
 import android.view.WindowManager;
 
+import androidx.annotation.NonNull;
 import androidx.appcompat.app.ActionBar;
 import androidx.appcompat.app.ActionBarDrawerToggle;
 import androidx.appcompat.app.AppCompatActivity;
@@ -24,9 +25,9 @@ import com.atrainingtracker.trainingtracker.segments.SegmentsDatabaseManager;
 import com.atrainingtracker.trainingtracker.segments.SimpleSegmentOnMapFragment;
 import com.google.android.material.navigation.NavigationView;
 
+import java.util.Objects;
 
-public class SegmentDetailsActivity extends AppCompatActivity
-        implements NavigationView.OnNavigationItemSelectedListener {
+public class SegmentDetailsActivity extends AppCompatActivity implements NavigationView.OnNavigationItemSelectedListener {
     public static final String SELECTED_FRAGMENT = "SELECTED_FRAGMENT";
     public static final String SELECTED_FRAGMENT_ID = "SELECTED_FRAGMENT_ID";
     private static final String TAG = SegmentDetailsActivity.class.getName();
@@ -48,15 +49,12 @@ public class SegmentDetailsActivity extends AppCompatActivity
         if (DEBUG) Log.d(TAG, "onCreate");
 
         Bundle bundle = this.getIntent().getExtras();
-        mSegmentId = bundle.getLong(SegmentsDatabaseManager.Segments.SEGMENT_ID);
+        mSegmentId = Objects.requireNonNull(bundle).getLong(SegmentsDatabaseManager.Segments.SEGMENT_ID);
         if (DEBUG) Log.d(TAG, "got segment id: " + mSegmentId);
 
         // set the title
         SQLiteDatabase db = SegmentsDatabaseManager.getInstance().getOpenDatabase();
-        Cursor cursor = db.query(SegmentsDatabaseManager.Segments.TABLE_STARRED_SEGMENTS,
-                new String[]{SegmentsDatabaseManager.Segments.SEGMENT_NAME},
-                SegmentsDatabaseManager.Segments.SEGMENT_ID + "=?", new String[]{mSegmentId + ""},
-                null, null, null);
+        Cursor cursor = db.query(SegmentsDatabaseManager.Segments.TABLE_STARRED_SEGMENTS, new String[]{SegmentsDatabaseManager.Segments.SEGMENT_NAME}, SegmentsDatabaseManager.Segments.SEGMENT_ID + "=?", new String[]{mSegmentId + ""}, null, null, null);
         if (cursor.moveToFirst()) {
             String segmentName = cursor.getString(0);
             setTitle(segmentName);
@@ -72,7 +70,7 @@ public class SegmentDetailsActivity extends AppCompatActivity
 
         final ActionBar supportAB = getSupportActionBar();
         // supportAB.setHomeAsUpIndicator(R.drawable.abc_ic_ab_back_mtrl_am_alpha);
-        supportAB.setDisplayHomeAsUpEnabled(true);
+        Objects.requireNonNull(supportAB).setDisplayHomeAsUpEnabled(true);
 
         mDrawerLayout = findViewById(R.id.drawer_layout);
 
@@ -113,7 +111,7 @@ public class SegmentDetailsActivity extends AppCompatActivity
     }
 
     @Override
-    public void onSaveInstanceState(Bundle savedInstanceState) {
+    public void onSaveInstanceState(@NonNull Bundle savedInstanceState) {
         if (DEBUG) Log.i(TAG, "onSaveInstanceState");
 
         savedInstanceState.putInt(SELECTED_FRAGMENT_ID, mSelectedFragmentId);
@@ -151,7 +149,7 @@ public class SegmentDetailsActivity extends AppCompatActivity
     }
 
     @Override
-    public boolean onNavigationItemSelected(MenuItem menuItem) {
+    public boolean onNavigationItemSelected(@NonNull MenuItem menuItem) {
         if (DEBUG) Log.i(TAG, "onNavigationItemSelected");
 
         mDrawerLayout.closeDrawers();
@@ -176,6 +174,7 @@ public class SegmentDetailsActivity extends AppCompatActivity
     }
 
     // TODO: inline???
+    @SuppressLint("NonConstantResourceId")
     private void setContentFragment(int menuId) {
         Fragment fragment = null;
         String tag = null;
@@ -198,7 +197,5 @@ public class SegmentDetailsActivity extends AppCompatActivity
         }
     }
 
-
     public enum SelectedFragment {MAP, LEADERBOARD}
-
 }

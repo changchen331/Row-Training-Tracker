@@ -1,5 +1,6 @@
 package com.atrainingtracker.trainingtracker.fragments.mapFragments;
 
+import android.annotation.SuppressLint;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
 import android.graphics.Bitmap;
@@ -28,9 +29,7 @@ import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
 
-
-public abstract class TrackOnMapBaseFragment
-        extends BaseMapFragment {
+public abstract class TrackOnMapBaseFragment extends BaseMapFragment {
     public static final String TAG = TrackOnMapBaseFragment.class.getName();
     protected static final String START_AND_FINISH_LINE_POINTS = 5 + "";
     protected static final double START_LINE_LENGTH = 15;                 // essentially only halve the length ;-)
@@ -39,7 +38,6 @@ public abstract class TrackOnMapBaseFragment
 
     private boolean mTrackOnMapLoaded = false;
     private HashMap<Long, Boolean> mSegmentLoaded = new HashMap<>();
-
 
     ////////////////////////////////////////////////////////////////////////////////////////////////
     // lifecycle methods
@@ -88,16 +86,17 @@ public abstract class TrackOnMapBaseFragment
 
         MyMapViewHolder myMapViewHolder = new MyMapViewHolder(mMap, null);
 
-        ((TrainingApplication) getActivity().getApplication()).trackOnMapHelper.showTrackOnMap(myMapViewHolder, mWorkoutID, Roughness.ALL, TrackOnMapHelper.TrackType.BEST, zoomToShowTrack, true);
+        ((TrainingApplication) requireActivity().getApplication()).trackOnMapHelper.showTrackOnMap(myMapViewHolder, mWorkoutID, Roughness.ALL, TrackOnMapHelper.TrackType.BEST, zoomToShowTrack, true);
         mTrackOnMapLoaded = true;
-
     }
 
 
-    /** helper method to check whether there is some data */
     /**
+     * helper method to check whether there is some data
+     * <p>
      * stolen from BaseExporter
      */
+    @SuppressLint("Range")
     protected boolean dataValid(Cursor cursor, String string) {
         if (cursor.getColumnIndex(string) == -1) {
             if (DEBUG) Log.d(TAG, "dataValid: no such columnIndex!: " + string);
@@ -124,7 +123,6 @@ public abstract class TrackOnMapBaseFragment
         addMarker(latLngStop, R.drawable.stop_logo_map, getString(R.string.Stop));
     }
 
-
     // helper method to get START and END position
     LatLng getExtremaPosition(ExtremaType extremaType, boolean calculateWhenNotInDb) {
         String baseFileName = WorkoutSummariesDatabaseManager.getBaseFileName(mWorkoutID);
@@ -141,11 +139,11 @@ public abstract class TrackOnMapBaseFragment
         return (lat != null & lon != null) ? new LatLng(lat, lon) : null;
     }
 
-
     ////////////////////////////////////////////////////////////////////////////////////////////////
     // helpers for Segments
     ////////////////////////////////////////////////////////////////////////////////////////////////
 
+    @SuppressLint("Range")
     public void showStarredSegmentsOnMap(SegmentHelper.SegmentType segmentType) {
         String selection = SegmentsDatabaseManager.Segments.ACTIVITY_TYPE + "=?";
         String[] selectionArgs = null;
@@ -165,15 +163,12 @@ public abstract class TrackOnMapBaseFragment
         }
 
         SQLiteDatabase db = SegmentsDatabaseManager.getInstance().getOpenDatabase();
-        Cursor cursor = db.query(SegmentsDatabaseManager.Segments.TABLE_STARRED_SEGMENTS, null,
-                selection, selectionArgs,
-                null, null, null);
+        @SuppressLint("Recycle") Cursor cursor = db.query(SegmentsDatabaseManager.Segments.TABLE_STARRED_SEGMENTS, null, selection, selectionArgs, null, null, null);
 
         while (cursor.moveToNext()) {
             showSegmentOnMap(cursor.getLong(cursor.getColumnIndex(SegmentsDatabaseManager.Segments.SEGMENT_ID)), false);
             if (DEBUG)
-                Log.i(TAG, "segmentId=" + cursor.getLong(cursor.getColumnIndex(SegmentsDatabaseManager.Segments.SEGMENT_ID)) +
-                        ", segment name=" + cursor.getString(cursor.getColumnIndex(SegmentsDatabaseManager.Segments.SEGMENT_NAME)));
+                Log.i(TAG, "segmentId=" + cursor.getLong(cursor.getColumnIndex(SegmentsDatabaseManager.Segments.SEGMENT_ID)) + ", segment name=" + cursor.getString(cursor.getColumnIndex(SegmentsDatabaseManager.Segments.SEGMENT_NAME)));
         }
 
         SegmentsDatabaseManager.getInstance().closeDatabase();
@@ -182,54 +177,48 @@ public abstract class TrackOnMapBaseFragment
     public void showSegmentOnMap(long segmentId, boolean zoomToShowTrack) {
         if (DEBUG) Log.i(TAG, "showSegmentOnMap: segmentId=" + segmentId);
 
-        if (mSegmentLoaded.containsKey(segmentId) && mSegmentLoaded.get(segmentId)) {
+        if (mSegmentLoaded.containsKey(segmentId) && Boolean.TRUE.equals(mSegmentLoaded.get(segmentId))) {
             Log.i(TAG, "returning from showSegmentOnMap, segmentId=" + segmentId);
             return;
         }
 
         MyMapViewHolder myMapViewHolder = new MyMapViewHolder(mMap, null);
 
-        ((TrainingApplication) getActivity().getApplication()).segmentOnMapHelper.showSegmentOnMap(getContext(), myMapViewHolder, segmentId, Roughness.ALL, zoomToShowTrack, true);
+        ((TrainingApplication) requireActivity().getApplication()).segmentOnMapHelper.showSegmentOnMap(getContext(), myMapViewHolder, segmentId, Roughness.ALL, zoomToShowTrack, true);
         mSegmentLoaded.put(segmentId, true);
 
         addSegmentDirectionMarkers(segmentId, true);
         addSegmentStartAndFinishLine(segmentId);
     }
 
+    @SuppressLint("Range")
     @Deprecated
     // use addSegmentDirectionMarkers instead
     protected void addSegmentStartAndFinishMarker(long segmentId, boolean zoomToStart) {
         SQLiteDatabase db = SegmentsDatabaseManager.getInstance().getOpenDatabase();
-        Cursor cursor = db.query(SegmentsDatabaseManager.Segments.TABLE_STARRED_SEGMENTS, null,
-                SegmentsDatabaseManager.Segments.SEGMENT_ID + "=?", new String[]{segmentId + ""},
-                null, null, null);
+        @SuppressLint("Recycle") Cursor cursor = db.query(SegmentsDatabaseManager.Segments.TABLE_STARRED_SEGMENTS, null, SegmentsDatabaseManager.Segments.SEGMENT_ID + "=?", new String[]{segmentId + ""}, null, null, null);
         if (cursor.moveToFirst()) {
 
-            LatLng latLng = new LatLng(cursor.getDouble(cursor.getColumnIndex(SegmentsDatabaseManager.Segments.START_LATITUDE)),
-                    cursor.getDouble(cursor.getColumnIndex(SegmentsDatabaseManager.Segments.START_LONGITUDE)));
+            @SuppressLint("Range") LatLng latLng = new LatLng(cursor.getDouble(cursor.getColumnIndex(SegmentsDatabaseManager.Segments.START_LATITUDE)), cursor.getDouble(cursor.getColumnIndex(SegmentsDatabaseManager.Segments.START_LONGITUDE)));
 
             addMarker(latLng, R.drawable.start_logo_map, getString(R.string.Start));
             if (zoomToStart) {
                 mMap.moveCamera(CameraUpdateFactory.newLatLngZoom(latLng, 12));
             }
 
-            latLng = new LatLng(cursor.getDouble(cursor.getColumnIndex(SegmentsDatabaseManager.Segments.END_LATITUDE)),
-                    cursor.getDouble(cursor.getColumnIndex(SegmentsDatabaseManager.Segments.END_LONGITUDE)));
+            latLng = new LatLng(cursor.getDouble(cursor.getColumnIndex(SegmentsDatabaseManager.Segments.END_LATITUDE)), cursor.getDouble(cursor.getColumnIndex(SegmentsDatabaseManager.Segments.END_LONGITUDE)));
 
             addMarker(latLng, R.drawable.stop_logo_map, getString(R.string.Stop));
-
         }
-
         SegmentsDatabaseManager.getInstance().closeDatabase();
     }
 
+    @SuppressLint("Range")
     protected void addSegmentDirectionMarkers(long segmentId, boolean zoomToStart) {
         SQLiteDatabase db = SegmentsDatabaseManager.getInstance().getOpenDatabase();
-        Cursor cursor = db.query(SegmentsDatabaseManager.Segments.TABLE_SEGMENT_STREAMS, null,
-                SegmentsDatabaseManager.Segments.SEGMENT_ID + "=?", new String[]{segmentId + ""},
-                null, null, null);
+        @SuppressLint("Recycle") Cursor cursor = db.query(SegmentsDatabaseManager.Segments.TABLE_SEGMENT_STREAMS, null, SegmentsDatabaseManager.Segments.SEGMENT_ID + "=?", new String[]{segmentId + ""}, null, null, null);
 
-        if (zoomToStart && cursor.moveToFirst()) {
+        if (cursor.moveToFirst()) {
             LatLng latLng = new LatLng(cursor.getDouble(cursor.getColumnIndex(SegmentsDatabaseManager.Segments.LATITUDE)), cursor.getDouble(cursor.getColumnIndex(SegmentsDatabaseManager.Segments.LONGITUDE)));
             mMap.moveCamera(CameraUpdateFactory.newLatLngZoom(latLng, 13));
         }
@@ -248,7 +237,7 @@ public abstract class TrackOnMapBaseFragment
 
                 float bearing = startLocation.bearingTo(endLocation);
 
-                Bitmap arrowhead = ((BitmapDrawable) getContext().getResources().getDrawable(R.drawable.arrowhead)).getBitmap();
+                @SuppressLint("UseCompatLoadingForDrawables") Bitmap arrowhead = ((BitmapDrawable) requireContext().getResources().getDrawable(R.drawable.arrowhead)).getBitmap();
 
                 // mMap.addMarker(new MarkerOptions()
                 //        .position(middle)
@@ -256,12 +245,7 @@ public abstract class TrackOnMapBaseFragment
                 //        .anchor((float) 0.5, (float) 0.5)
                 //        .rotation(bearing)
                 //        .icon(BitmapDescriptorFactory.fromBitmap(arrowheadScaled)));
-                mMap.addGroundOverlay(new GroundOverlayOptions()
-                        .position(middle, (float) START_LINE_LENGTH)
-                        .anchor(0.5f, 0.5f)
-                        .bearing(bearing)
-                        .transparency(0.25f)
-                        .zIndex(10)
+                mMap.addGroundOverlay(new GroundOverlayOptions().position(middle, (float) START_LINE_LENGTH).anchor(0.5f, 0.5f).bearing(bearing).transparency(0.25f).zIndex(10)
                         // .image(BitmapDescriptorFactory.fromBitmap(arrowheadScaled)));
                         .image(BitmapDescriptorFactory.fromBitmap(arrowhead)));
 
@@ -275,29 +259,21 @@ public abstract class TrackOnMapBaseFragment
 
         SQLiteDatabase db = SegmentsDatabaseManager.getInstance().getOpenDatabase();
 
-        Cursor cursor = db.query(SegmentsDatabaseManager.Segments.TABLE_SEGMENT_STREAMS, null,
-                SegmentsDatabaseManager.Segments.SEGMENT_ID + "=?", new String[]{segmentId + ""},
-                null, null,
-                SegmentsDatabaseManager.Segments.DISTANCE + " ASC", START_AND_FINISH_LINE_POINTS);
+        Cursor cursor = db.query(SegmentsDatabaseManager.Segments.TABLE_SEGMENT_STREAMS, null, SegmentsDatabaseManager.Segments.SEGMENT_ID + "=?", new String[]{segmentId + ""}, null, null, SegmentsDatabaseManager.Segments.DISTANCE + " ASC", START_AND_FINISH_LINE_POINTS);
         addOrthogonalLine(cursor);
 
-        cursor = db.query(SegmentsDatabaseManager.Segments.TABLE_SEGMENT_STREAMS, null,
-                SegmentsDatabaseManager.Segments.SEGMENT_ID + "=?", new String[]{segmentId + ""},
-                null, null,
-                SegmentsDatabaseManager.Segments.C_ID + " DESC", START_AND_FINISH_LINE_POINTS);   // using DISTANCE does not work :-(
+        cursor = db.query(SegmentsDatabaseManager.Segments.TABLE_SEGMENT_STREAMS, null, SegmentsDatabaseManager.Segments.SEGMENT_ID + "=?", new String[]{segmentId + ""}, null, null, SegmentsDatabaseManager.Segments.C_ID + " DESC", START_AND_FINISH_LINE_POINTS);   // using DISTANCE does not work :-(
         addOrthogonalLine(cursor);
 
         SegmentsDatabaseManager.getInstance().closeDatabase();
-
     }
 
     protected void addOrthogonalLine(Cursor cursor) {
         if (cursor.moveToFirst()) {
             if (DEBUG) Log.i(TAG, "moved to first :-)");
 
-            double startLatitude = cursor.getDouble(cursor.getColumnIndex(SegmentsDatabaseManager.Segments.LATITUDE));
-            double startLongitude = cursor.getDouble(cursor.getColumnIndex(SegmentsDatabaseManager.Segments.LONGITUDE));
-
+            @SuppressLint("Range") double startLatitude = cursor.getDouble(cursor.getColumnIndex(SegmentsDatabaseManager.Segments.LATITUDE));
+            @SuppressLint("Range") double startLongitude = cursor.getDouble(cursor.getColumnIndex(SegmentsDatabaseManager.Segments.LONGITUDE));
 
             double latitudeDegreeInMeters = SegmentHelper.LatitudeDegreeInMeters(new LatLng(startLatitude, startLongitude));
             double longitudeDegreeInMeters = SegmentHelper.LongitudeDegreeInMeters(new LatLng(startLatitude, startLongitude));
@@ -305,22 +281,19 @@ public abstract class TrackOnMapBaseFragment
             if (cursor.moveToLast()) {
                 if (DEBUG) Log.i(TAG, "moved to last :-)");
 
-                double deltaLatitude_m = (cursor.getDouble(cursor.getColumnIndex(SegmentsDatabaseManager.Segments.LATITUDE)) - startLatitude) * latitudeDegreeInMeters;
-                double deltaLongitude_m = (cursor.getDouble(cursor.getColumnIndex(SegmentsDatabaseManager.Segments.LONGITUDE)) - startLongitude) * longitudeDegreeInMeters;
+                @SuppressLint("Range") double deltaLatitude_m = (cursor.getDouble(cursor.getColumnIndex(SegmentsDatabaseManager.Segments.LATITUDE)) - startLatitude) * latitudeDegreeInMeters;
+                @SuppressLint("Range") double deltaLongitude_m = (cursor.getDouble(cursor.getColumnIndex(SegmentsDatabaseManager.Segments.LONGITUDE)) - startLongitude) * longitudeDegreeInMeters;
 
                 double length = Math.sqrt(deltaLatitude_m * deltaLatitude_m + deltaLongitude_m * deltaLongitude_m);
                 deltaLatitude_m = START_LINE_LENGTH * deltaLatitude_m / length;
                 deltaLongitude_m = START_LINE_LENGTH * deltaLongitude_m / length;
 
                 List<LatLng> latLngs = new LinkedList<>();
-                latLngs.add(new LatLng(startLatitude + deltaLongitude_m / latitudeDegreeInMeters,
-                        startLongitude - deltaLatitude_m / longitudeDegreeInMeters));
+                latLngs.add(new LatLng(startLatitude + deltaLongitude_m / latitudeDegreeInMeters, startLongitude - deltaLatitude_m / longitudeDegreeInMeters));
                 latLngs.add(new LatLng(startLatitude, startLongitude));
-                latLngs.add(new LatLng(startLatitude - deltaLongitude_m / latitudeDegreeInMeters,
-                        startLongitude + deltaLatitude_m / longitudeDegreeInMeters));
+                latLngs.add(new LatLng(startLatitude - deltaLongitude_m / latitudeDegreeInMeters, startLongitude + deltaLatitude_m / longitudeDegreeInMeters));
 
-                addPolyline(latLngs, getContext().getResources().getColor(R.color.strava));
-
+                addPolyline(latLngs, requireContext().getResources().getColor(R.color.strava));
             } else {
                 Log.i(TAG, "could not move to last :-(");
             }
@@ -328,5 +301,4 @@ public abstract class TrackOnMapBaseFragment
             Log.i(TAG, "could not move to first :-(");
         }
     }
-
 }

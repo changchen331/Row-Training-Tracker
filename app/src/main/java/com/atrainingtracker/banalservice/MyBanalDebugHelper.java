@@ -1,5 +1,6 @@
 package com.atrainingtracker.banalservice;
 
+import android.annotation.SuppressLint;
 import android.os.Environment;
 import android.util.Log;
 
@@ -16,6 +17,7 @@ public class MyBanalDebugHelper {
     static String dateString;
     static BufferedWriter bufferedWriter;
 
+    @SuppressLint("SimpleDateFormat")
     public MyBanalDebugHelper() {
         if (DEBUG && dateString == null) {
             try {
@@ -32,21 +34,22 @@ public class MyBanalDebugHelper {
             } catch (IOException e) {
                 if (DEBUG) Log.d(TAG, "IOException in MyBanalDebugHelper()");
                 // TODO Auto-generated catch block
-                e.printStackTrace();
+                throw new RuntimeException(e);
             }
 
         }
     }
 
+    @SuppressLint("SimpleDateFormat")
     public void log(String tag, String text) {
         if (DEBUG) {
             try {
-                bufferedWriter.append((new SimpleDateFormat("yyyy-MM-dd HH:mm:ss")).format(new Date()) + ": " + tag + ", " + text + "\n");
+                bufferedWriter.append((new SimpleDateFormat("yyyy-MM-dd HH:mm:ss")).format(new Date())).append(": ").append(tag).append(", ").append(text).append("\n");
                 bufferedWriter.flush();
             } catch (IOException e) {
                 Log.e(TAG, "IOException in MyBanalDebugHelper()");
                 // TODO Auto-generated catch block
-                e.printStackTrace();
+                throw new RuntimeException(e);
             }
         }
     }

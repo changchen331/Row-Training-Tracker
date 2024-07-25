@@ -1,10 +1,8 @@
 package com.atrainingtracker.banalservice.devices.bluetooth_le;
 
-import android.annotation.TargetApi;
 import android.bluetooth.BluetoothGatt;
 import android.bluetooth.BluetoothGattCharacteristic;
 import android.content.Context;
-import android.os.Build;
 import android.util.Log;
 
 import com.atrainingtracker.banalservice.BANALService;
@@ -14,7 +12,6 @@ import com.atrainingtracker.banalservice.sensor.MySensor;
 import com.atrainingtracker.banalservice.sensor.MySensorManager;
 import com.atrainingtracker.banalservice.sensor.SensorType;
 
-@TargetApi(Build.VERSION_CODES.JELLY_BEAN_MR2)
 abstract public class BTLEBikeDevice extends MyBTLEDevice {
     protected static final int MAX_IDENTICAL = 4;
     private static final boolean DEBUG = BANALService.DEBUG & false;
@@ -47,15 +44,15 @@ abstract public class BTLEBikeDevice extends MyBTLEDevice {
     protected void addCadenceSensor() {
         if (DEBUG) Log.i(TAG, "addCadenceSensor()");
 
-        mCadenceSensor = new MySensor<Double>(this, SensorType.CADENCE);
+        mCadenceSensor = new MySensor<>(this, SensorType.CADENCE);
         addSensor(mCadenceSensor);
     }
 
     protected void addSpeedAndDistanceSensors() {
         if (DEBUG) Log.i(TAG, "addSpeedAndDistanceSensors()");
 
-        mSpeedSensor = new MySensor<Double>(this, SensorType.SPEED_mps);
-        mPaceSensor = new MySensor<Double>(this, SensorType.PACE_spm);
+        mSpeedSensor = new MySensor<>(this, SensorType.SPEED_mps);
+        mPaceSensor = new MySensor<>(this, SensorType.PACE_spm);
         mDistanceSensor = new MyDoubleAccumulatorSensor(this, SensorType.DISTANCE_m);
         mLapDistanceSensor = new MyDoubleAccumulatorSensor(this, SensorType.DISTANCE_m_LAP);
 
@@ -145,7 +142,7 @@ abstract public class BTLEBikeDevice extends MyBTLEDevice {
                     long timeDiff = crankEventTime - mLastCrankEventTime;
                     if (DEBUG) Log.i(TAG, "revDiff=" + revDiff + ", timeDiff=" + timeDiff);
 
-                    double cadence = 60 * revDiff * 1024 / timeDiff;
+                    double cadence = (double) (60 * revDiff * 1024) / timeDiff;
                     if (DEBUG) Log.i(TAG, "got new cadence: " + cadence);
                     mCadenceSensor.newValue(cadence);
                 } else {

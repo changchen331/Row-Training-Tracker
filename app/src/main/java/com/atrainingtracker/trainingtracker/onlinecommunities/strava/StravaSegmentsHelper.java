@@ -13,7 +13,6 @@ import android.util.Log;
 
 import com.atrainingtracker.trainingtracker.TrainingApplication;
 
-
 public class StravaSegmentsHelper {
     private static final String TAG = StravaSegmentsHelper.class.getSimpleName();
     private static final boolean DEBUG = TrainingApplication.DEBUG && false;
@@ -53,7 +52,7 @@ public class StravaSegmentsHelper {
         if (DEBUG) Log.i(TAG, "getSegmentLeaderboard");
 
         if (((TrainingApplication) mContext.getApplicationContext()).isLeaderboardUpdating(segmentId)) {
-
+            // yeah, do nothing. Sorry.
         } else {
             Intent intent = new Intent(mContext, StravaSegmentsIntentService.class);
             intent.putExtra(REQUEST_TYPE, REQUEST_UPDATE_LEADERBOARD);
@@ -62,5 +61,4 @@ public class StravaSegmentsHelper {
             mContext.startService(intent);
         }
     }
-
 }

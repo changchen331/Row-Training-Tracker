@@ -22,7 +22,7 @@ public class ANTBikeCadenceAsyncSearchDevice extends MyANTAsyncSearchDevice {
 
     @Override
     protected PccReleaseHandle requestAccess() {
-        return AntPlusBikeCadencePcc.requestAccess(mContext, mDeviceFound.getAntDeviceNumber(), 0, false, new MyResultReceiver<AntPlusBikeCadencePcc>(), new MyDeviceStateChangeReceiver());
+        return AntPlusBikeCadencePcc.requestAccess(mContext, mDeviceFound.getAntDeviceNumber(), 0, false, new MyResultReceiver<>(), new MyDeviceStateChangeReceiver());
     }
 
 }

@@ -1,6 +1,5 @@
 package com.atrainingtracker.trainingtracker.onlinecommunities.runkeeper;
 
-
 import android.app.Activity;
 import android.content.Intent;
 import android.os.Bundle;
@@ -47,5 +46,4 @@ public class RunkeeperTestActivity extends Activity {
                 break;
         }
     }
-
 }

@@ -1,5 +1,6 @@
 package com.atrainingtracker.trainingtracker.fragments;
 
+import android.annotation.SuppressLint;
 import android.app.Activity;
 import android.app.Dialog;
 import android.content.BroadcastReceiver;
@@ -10,6 +11,7 @@ import android.content.IntentFilter;
 import android.database.Cursor;
 import android.database.SQLException;
 import android.database.sqlite.SQLiteDatabase;
+import android.os.Build;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.LayoutInflater;
@@ -21,7 +23,6 @@ import android.widget.AdapterView.OnItemSelectedListener;
 import android.widget.ArrayAdapter;
 import android.widget.Button;
 import android.widget.CheckBox;
-import android.widget.CompoundButton;
 import android.widget.CompoundButton.OnCheckedChangeListener;
 import android.widget.EditText;
 import android.widget.ListView;
@@ -30,6 +31,8 @@ import android.widget.RadioGroup;
 import android.widget.Spinner;
 import android.widget.TextView;
 
+import androidx.annotation.NonNull;
+import androidx.annotation.RequiresApi;
 import androidx.appcompat.app.AlertDialog;
 import androidx.fragment.app.Fragment;
 
@@ -54,6 +57,7 @@ import com.atrainingtracker.trainingtracker.interfaces.ReallyDeleteDialogInterfa
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Objects;
 
 public class EditWorkoutFragment extends Fragment {
     public static final String TAG = "EditWorkoutFragment";
@@ -116,8 +120,7 @@ public class EditWorkoutFragment extends Fragment {
     private static final String TEMPERATURE_MAX = "TEMPERATURE_MAX";
     private static final String TEMPERATURE_MIN = "TEMPERATURE_MIN";
     private static final String SHOW_DELETE_BUTTON = "SHOW_DELETE_BUTTON";
-    private static final List<Integer> TR_IDS_EXTREMA_VALUES = Arrays.asList(R.id.trAltitude, R.id.trCadence, R.id.trHR, R.id.trPace, R.id.trPedalPowerBalance,
-            R.id.trPedalSmoothnessLeft, R.id.trPedalSmoothnessRight, R.id.trPower, R.id.trSpeed, R.id.trTemperature, R.id.trTorque);
+    private static final List<Integer> TR_IDS_EXTREMA_VALUES = Arrays.asList(R.id.trAltitude, R.id.trCadence, R.id.trHR, R.id.trPace, R.id.trPedalPowerBalance, R.id.trPedalSmoothnessLeft, R.id.trPedalSmoothnessRight, R.id.trPower, R.id.trSpeed, R.id.trTemperature, R.id.trTorque);
     private final IntentFilter mFinishedCalculatingExtremaValueFilter = new IntentFilter(CalcExtremaValuesTask.FINISHED_CALCULATING_EXTREMA_VALUE);
     private final IntentFilter mFinishedGuessingCommuteAndTrainerFilter = new IntentFilter(CalcExtremaValuesTask.FINISHED_GUESSING_COMMUTE_AND_TRAINER);
     private final IntentFilter mFinishedCalculatingFancyNameFilter = new IntentFilter(CalcExtremaValuesTask.FINISHED_CALCULATING_FANCY_NAME);
@@ -142,7 +145,7 @@ public class EditWorkoutFragment extends Fragment {
     private final BroadcastReceiver mFinishedCalculatingFancyNameReceiver = new BroadcastReceiver() {
         @Override
         public void onReceive(Context context, Intent intent) {
-            String workoutName = intent.getExtras().getString(CalcExtremaValuesTask.FANCY_NAME);
+            String workoutName = Objects.requireNonNull(intent.getExtras()).getString(CalcExtremaValuesTask.FANCY_NAME);
             editExportName.setText(workoutName);
         }
     };
@@ -150,16 +153,11 @@ public class EditWorkoutFragment extends Fragment {
     private RadioGroup rgCommuteTrainer;
     private RadioButton rbCommute, rbTrainer;
     private final BroadcastReceiver mFinishedGuessingCommuteAndTrainerReceiver = new BroadcastReceiver() {
+        @SuppressLint("Range")
         public void onReceive(Context context, Intent intent) {
             WorkoutSummariesDatabaseManager databaseManager = WorkoutSummariesDatabaseManager.getInstance();
             SQLiteDatabase db = databaseManager.getOpenDatabase();
-            Cursor cursor = db.query(WorkoutSummaries.TABLE,
-                    null,
-                    WorkoutSummaries.C_ID + "=?",
-                    new String[]{Long.toString(mWorkoutID)},
-                    null,
-                    null,
-                    null);
+            Cursor cursor = db.query(WorkoutSummaries.TABLE, null, WorkoutSummaries.C_ID + "=?", new String[]{Long.toString(mWorkoutID)}, null, null, null);
             cursor.moveToFirst();
             rbCommute.setChecked(cursor.getInt(cursor.getColumnIndex(WorkoutSummaries.COMMUTE)) > 0);
             rbTrainer.setChecked(cursor.getInt(cursor.getColumnIndex(WorkoutSummaries.TRAINER)) > 0);
@@ -174,7 +172,7 @@ public class EditWorkoutFragment extends Fragment {
     private boolean mPaceExtremaValuesAvailable = false;
     private final BroadcastReceiver mFinishedCalculatingExtremaValueReceiver = new BroadcastReceiver() {
         public void onReceive(Context context, Intent intent) {
-            SensorType sensorType = SensorType.valueOf(intent.getExtras().getString(CalcExtremaValuesTask.SENSOR_TYPE));
+            SensorType sensorType = SensorType.valueOf(Objects.requireNonNull(intent.getExtras()).getString(CalcExtremaValuesTask.SENSOR_TYPE));
 
             WorkoutSummariesDatabaseManager databaseManager = WorkoutSummariesDatabaseManager.getInstance();
             SQLiteDatabase db = databaseManager.getOpenDatabase();
@@ -194,14 +192,14 @@ public class EditWorkoutFragment extends Fragment {
     }
 
     @Override
-    public void onAttach(Context context) {
+    public void onAttach(@NonNull Context context) {
         super.onAttach(context);
         if (DEBUG) Log.d(TAG, "onAttach");
 
         try {
             mReallyDeleteDialogInterface = (ReallyDeleteDialogInterface) context;
         } catch (ClassCastException e) {
-            throw new ClassCastException(context.toString() + " must implement ReallyDeleteDialogInterface");
+            throw new ClassCastException(context + " must implement ReallyDeleteDialogInterface");
         }
     }
 
@@ -213,11 +211,13 @@ public class EditWorkoutFragment extends Fragment {
         super.onCreate(savedInstanceState);
         if (DEBUG) Log.i(TAG, "onCreate");
 
-        mWorkoutID = getArguments().getLong(WorkoutSummaries.WORKOUT_ID);
+        if (getArguments() != null) {
+            mWorkoutID = getArguments().getLong(WorkoutSummaries.WORKOUT_ID);
+        }
     }
 
     @Override
-    public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
+    public View onCreateView(@NonNull LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
         if (DEBUG) Log.d(TAG, "onCreateView");
 
         setHasOptionsMenu(true);
@@ -244,7 +244,6 @@ public class EditWorkoutFragment extends Fragment {
         rbTrainer = view.findViewById(R.id.rbTrainer);
         cbPrivate = view.findViewById(R.id.cbPrivate);
 
-
         // configure the views
         ALL = getString(R.string.equipment_all);
 
@@ -256,8 +255,7 @@ public class EditWorkoutFragment extends Fragment {
             @Override
             public void onItemSelected(AdapterView<?> arg0, View arg1, int position, long id) {
                 if (DEBUG) Log.i(TAG, "spinnerSport.onItemSelected");
-                if (mShowAllSportTypes == false
-                        && spinnerSport.getSelectedItemPosition() == mSportTypeIdList.size()) {
+                if (!mShowAllSportTypes && spinnerSport.getSelectedItemPosition() == mSportTypeIdList.size()) {
                     if (DEBUG) Log.i(TAG, "all sport types selected");
                     mShowAllSportTypes = true;
                     setSpinnerSport();
@@ -299,20 +297,13 @@ public class EditWorkoutFragment extends Fragment {
         });
 
         // allow to uncheck the RadioButtons Commute and Trainer
-        OnCheckedChangeListener radioCheckChangeListener = new OnCheckedChangeListener() {
-            @Override
-            public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
-                radioButtonAlreadyChecked = false;
-            }
-        };
+        OnCheckedChangeListener radioCheckChangeListener = (buttonView, isChecked) -> radioButtonAlreadyChecked = false;
 
-        OnClickListener radioClickListener = new OnClickListener() {
-            public void onClick(View v) {
-                if (v.getId() == rgCommuteTrainer.getCheckedRadioButtonId() && radioButtonAlreadyChecked) {
-                    rgCommuteTrainer.clearCheck();
-                } else {
-                    radioButtonAlreadyChecked = true;
-                }
+        OnClickListener radioClickListener = v -> {
+            if (v.getId() == rgCommuteTrainer.getCheckedRadioButtonId() && radioButtonAlreadyChecked) {
+                rgCommuteTrainer.clearCheck();
+            } else {
+                radioButtonAlreadyChecked = true;
             }
         };
 
@@ -324,61 +315,48 @@ public class EditWorkoutFragment extends Fragment {
 
 
         final Context context = getActivity();
-        buttonSaveWorkout.setOnClickListener(new Button.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                if (DEBUG) Log.i(TAG, "buttonSaveWorkout pressed");
+        buttonSaveWorkout.setOnClickListener(view1 -> {
+            if (DEBUG) Log.i(TAG, "buttonSaveWorkout pressed");
 
-                // TODO: do in new thread?
-                saveWorkout();
+            // TODO: do in new thread?
+            saveWorkout();
 
-                Intent resultIntent = new Intent();
-                resultIntent.putExtra(WorkoutSummaries.WORKOUT_ID, mWorkoutID);
+            Intent resultIntent = new Intent();
+            resultIntent.putExtra(WorkoutSummaries.WORKOUT_ID, mWorkoutID);
 
-                if (mBaseFileName != null) {
-                    ExportManager exportManager = new ExportManager(getActivity().getApplicationContext(), TAG);
-                    exportManager.exportWorkout(mBaseFileName);
-                    exportManager.onFinished(TAG);
+            if (mBaseFileName != null) {
+                ExportManager exportManager = new ExportManager(requireActivity().getApplicationContext(), TAG);
+                exportManager.exportWorkout(mBaseFileName);
+                exportManager.onFinished(TAG);
 
-                    getActivity().startService(new Intent(context, ExportWorkoutIntentService.class));
+                requireActivity().startService(new Intent(context, ExportWorkoutIntentService.class));
 
-                    getActivity().setResult(Activity.RESULT_OK, resultIntent);
-                } else {
-                    if (DEBUG) Log.d(TAG, "mBaseFileName is null!");
-                    getActivity().setResult(Activity.RESULT_CANCELED, resultIntent);
-                }
-
-                getActivity().onBackPressed();
+                requireActivity().setResult(Activity.RESULT_OK, resultIntent);
+            } else {
+                if (DEBUG) Log.d(TAG, "mBaseFileName is null!");
+                requireActivity().setResult(Activity.RESULT_CANCELED, resultIntent);
             }
+
+            requireActivity().onBackPressed();
         });
 
-        buttonDeleteWorkout.setOnClickListener(new Button.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                mReallyDeleteDialogInterface.confirmDeleteWorkout(mWorkoutID);
-            }
-        });
+        buttonDeleteWorkout.setOnClickListener(view12 -> mReallyDeleteDialogInterface.confirmDeleteWorkout(mWorkoutID));
 
-        buttonFancyName.setOnClickListener(new OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                showFancyWorkoutNameDialog();
-            }
-        });
+        buttonFancyName.setOnClickListener(v -> showFancyWorkoutNameDialog());
 
         return view;
     }
 
+    @RequiresApi(api = Build.VERSION_CODES.TIRAMISU)
     @Override
     public void onActivityCreated(Bundle savedInstanceState) {
         super.onActivityCreated(savedInstanceState);
         if (DEBUG) Log.d(TAG, "onActivityCreated");
 
         // register receivers
-        getActivity().registerReceiver(mFinishedCalculatingExtremaValueReceiver, mFinishedCalculatingExtremaValueFilter);
-        getActivity().registerReceiver(mFinishedGuessingCommuteAndTrainerReceiver, mFinishedGuessingCommuteAndTrainerFilter);
-        getActivity().registerReceiver(mFinishedCalculatingFancyNameReceiver, mFinishedCalculatingFancyNameFilter);
-
+        requireActivity().registerReceiver(mFinishedCalculatingExtremaValueReceiver, mFinishedCalculatingExtremaValueFilter, Context.RECEIVER_EXPORTED);
+        requireActivity().registerReceiver(mFinishedGuessingCommuteAndTrainerReceiver, mFinishedGuessingCommuteAndTrainerFilter, Context.RECEIVER_EXPORTED);
+        requireActivity().registerReceiver(mFinishedCalculatingFancyNameReceiver, mFinishedCalculatingFancyNameFilter, Context.RECEIVER_EXPORTED);
 
         // fill the views
         // first, remove all  TODO: still necessary?
@@ -410,13 +388,13 @@ public class EditWorkoutFragment extends Fragment {
         super.onDestroyView();
         if (DEBUG) Log.i(TAG, "onDestroyView");
 
-        getActivity().unregisterReceiver(mFinishedCalculatingExtremaValueReceiver);
-        getActivity().unregisterReceiver(mFinishedGuessingCommuteAndTrainerReceiver);
-        getActivity().unregisterReceiver(mFinishedCalculatingFancyNameReceiver);
+        requireActivity().unregisterReceiver(mFinishedCalculatingExtremaValueReceiver);
+        requireActivity().unregisterReceiver(mFinishedGuessingCommuteAndTrainerReceiver);
+        requireActivity().unregisterReceiver(mFinishedCalculatingFancyNameReceiver);
     }
 
     @Override
-    public void onSaveInstanceState(Bundle savedInstanceState)//savedInstanceState)
+    public void onSaveInstanceState(@NonNull Bundle savedInstanceState)//savedInstanceState)
     {
         if (DEBUG) Log.i(TAG, "onSaveInstanceState");
 
@@ -477,17 +455,18 @@ public class EditWorkoutFragment extends Fragment {
         addString(savedInstanceState, TEMPERATURE_MAX, R.id.tvTemperatureMax);
         addString(savedInstanceState, TEMPERATURE_MIN, R.id.tvTemperatureMin);
 
-        savedInstanceState.putBoolean(SHOW_DELETE_BUTTON, getActivity().findViewById(R.id.buttonDeleteWorkout).getVisibility() == View.VISIBLE);
+        savedInstanceState.putBoolean(SHOW_DELETE_BUTTON, requireActivity().findViewById(R.id.buttonDeleteWorkout).getVisibility() == View.VISIBLE);
 
         super.onSaveInstanceState(savedInstanceState);
     }
 
     protected void addString(Bundle savedInstanceState, String key, int id) {
-        if (getActivity().findViewById(id).isShown()) {
-            savedInstanceState.putString(key, ((TextView) getActivity().findViewById(id)).getText().toString());
+        if (requireActivity().findViewById(id).isShown()) {
+            savedInstanceState.putString(key, ((TextView) requireActivity().findViewById(id)).getText().toString());
         }
     }
 
+    @SuppressLint("Range")
     private void fillViewsFromDb() {
         if (DEBUG) Log.d(TAG, "fillViewsFromDb()");
         if (DEBUG) Log.i(TAG, "mWorkoutID=" + mWorkoutID);
@@ -495,13 +474,7 @@ public class EditWorkoutFragment extends Fragment {
         // first, open the database and get a valid cursor
         WorkoutSummariesDatabaseManager databaseManager = WorkoutSummariesDatabaseManager.getInstance();
         SQLiteDatabase db = databaseManager.getOpenDatabase();
-        Cursor cursor = db.query(WorkoutSummaries.TABLE,
-                null,
-                WorkoutSummaries.C_ID + "=?",
-                new String[]{Long.toString(mWorkoutID)},
-                null,
-                null,
-                null);
+        Cursor cursor = db.query(WorkoutSummaries.TABLE, null, WorkoutSummaries.C_ID + "=?", new String[]{Long.toString(mWorkoutID)}, null, null, null);
         cursor.moveToFirst();
         if (DEBUG) Log.d(TAG, "after cursor.moveToFirst()");
 
@@ -514,10 +487,10 @@ public class EditWorkoutFragment extends Fragment {
         // next, the equipment
         if (DEBUG) {
             Log.d(TAG, "equipmentId form db: " + cursor.getInt(cursor.getColumnIndex(WorkoutSummaries.EQUIPMENT_ID)));
-            Log.d(TAG, "equipmentName: " + new EquipmentDbHelper(getActivity()).getEquipmentFromId(cursor.getInt(cursor.getColumnIndex(WorkoutSummaries.EQUIPMENT_ID))));
+            Log.d(TAG, "equipmentName: " + new EquipmentDbHelper(requireActivity()).getEquipmentFromId(cursor.getInt(cursor.getColumnIndex(WorkoutSummaries.EQUIPMENT_ID))));
         }
         if (!cursor.isNull(cursor.getColumnIndex(WorkoutSummaries.EQUIPMENT_ID))) {
-            mEquipmentName = new EquipmentDbHelper(getActivity()).getEquipmentFromId(cursor.getInt(cursor.getColumnIndex(WorkoutSummaries.EQUIPMENT_ID)));
+            mEquipmentName = new EquipmentDbHelper(requireActivity()).getEquipmentFromId(cursor.getInt(cursor.getColumnIndex(WorkoutSummaries.EQUIPMENT_ID)));
         }
 
         // now, the remaining interactive views
@@ -532,38 +505,37 @@ public class EditWorkoutFragment extends Fragment {
 
         // finally, the remaining views
         // ((TextView) getActivity().findViewById(R.id.tvStartTime)).setText(cursor.getString(cursor.getColumnIndexOrThrow(WorkoutSummaries.TIME_START)));
-        ((TextView) getActivity().findViewById(R.id.tvStartTime)).setText(WorkoutSummariesDatabaseManager.getStartTime(mWorkoutID, "localtime"));
+        ((TextView) requireActivity().findViewById(R.id.tvStartTime)).setText(WorkoutSummariesDatabaseManager.getStartTime(mWorkoutID, "localtime"));
 
         int totalTime = cursor.getInt(cursor.getColumnIndexOrThrow(WorkoutSummaries.TIME_TOTAL_s));
-        ((TextView) getActivity().findViewById(R.id.tvTotalTime)).setText((new TimeFormatter()).format(totalTime));
+        ((TextView) requireActivity().findViewById(R.id.tvTotalTime)).setText((new TimeFormatter()).format(totalTime));
         // do not show the delete button on "long" workouts or when tracking
-        if (totalTime > MAX_WORKOUT_TIME_TO_SHOW_DELETE_BUTTON
-                | TrainingApplication.isTracking()) {
+        if (totalTime > MAX_WORKOUT_TIME_TO_SHOW_DELETE_BUTTON | TrainingApplication.isTracking()) {
             buttonDeleteWorkout.setVisibility(View.GONE);
         }
         int activeTime = cursor.getInt(cursor.getColumnIndexOrThrow(WorkoutSummaries.TIME_ACTIVE_s));
-        ((TextView) getActivity().findViewById(R.id.tvActiveTime)).setText((new TimeFormatter()).format(activeTime));
+        ((TextView) requireActivity().findViewById(R.id.tvActiveTime)).setText((new TimeFormatter()).format(activeTime));
 
-        ((TextView) getActivity().findViewById(R.id.tvSensorTypes)).setText(cursor.getString(cursor.getColumnIndex(WorkoutSummaries.GC_DATA)));  // wtf, confusing wording?
+        ((TextView) requireActivity().findViewById(R.id.tvSensorTypes)).setText(cursor.getString(cursor.getColumnIndex(WorkoutSummaries.GC_DATA)));  // wtf, confusing wording?
 
         // distance
         String distance = (new DistanceFormatter()).format(cursor.getDouble(cursor.getColumnIndexOrThrow(WorkoutSummaries.DISTANCE_TOTAL_m)));
         String unit = getString(MyHelper.getDistanceUnitNameId());
-        ((TextView) getActivity().findViewById(R.id.tvDistance)).setText(getString(R.string.value_unit_string_string, distance, unit));
+        ((TextView) requireActivity().findViewById(R.id.tvDistance)).setText(getString(R.string.value_unit_string_string, distance, unit));
 
         // max line distance
         fillTvExtrema(db, SensorType.LINE_DISTANCE_m, ExtremaType.MAX, R.id.tvMaxLineDistance);
-        TextView tvMaxLineDistance = getActivity().findViewById(R.id.tvMaxLineDistance);
+        TextView tvMaxLineDistance = requireActivity().findViewById(R.id.tvMaxLineDistance);
         CharSequence maxLineDistance = tvMaxLineDistance.getText();
         tvMaxLineDistance.setText(getString(R.string.value_unit_string_string, maxLineDistance, unit));
 
         // calories when available and not zero
-        TextView tvCalories = getActivity().findViewById(R.id.tvCalories);
+        TextView tvCalories = requireActivity().findViewById(R.id.tvCalories);
         Integer calories = cursor.getInt(cursor.getColumnIndex(WorkoutSummaries.CALORIES));
         if (calories == null || calories == 0) {
-            getActivity().findViewById(R.id.trCalories).setVisibility(View.GONE);
+            requireActivity().findViewById(R.id.trCalories).setVisibility(View.GONE);
         } else {
-            getActivity().findViewById(R.id.trCalories).setVisibility(View.VISIBLE);
+            requireActivity().findViewById(R.id.trCalories).setVisibility(View.VISIBLE);
             tvCalories.setText(getString(R.string.value_unit_int_string, calories, getString(R.string.units_calories)));
         }
 
@@ -593,31 +565,29 @@ public class EditWorkoutFragment extends Fragment {
         fillTrExtrema(db, SensorType.PEDAL_SMOOTHNESS_R);
         fillTrExtrema(db, SensorType.ALTITUDE);
         fillTrExtrema(db, SensorType.TEMPERATURE);
-
     }
 
     protected void removeAllExtremaValuesViews() {
         for (Integer trId : TR_IDS_EXTREMA_VALUES) {
-            getActivity().findViewById(trId).setVisibility(View.GONE);
+            requireActivity().findViewById(trId).setVisibility(View.GONE);
         }
     }
 
     protected void removeExtremaValuesSeparator() {
-        getActivity().findViewById(R.id.separatorViewMeanMaxValues).setVisibility(View.GONE);
-        getActivity().findViewById(R.id.tlMeanMaxValues).setVisibility(View.GONE);
+        requireActivity().findViewById(R.id.separatorViewMeanMaxValues).setVisibility(View.GONE);
+        requireActivity().findViewById(R.id.tlMeanMaxValues).setVisibility(View.GONE);
     }
 
     protected void showExtremaValuesSeparator() {
-        getActivity().findViewById(R.id.separatorViewMeanMaxValues).setVisibility(View.VISIBLE);
-        getActivity().findViewById(R.id.tlMeanMaxValues).setVisibility(View.VISIBLE);
+        requireActivity().findViewById(R.id.separatorViewMeanMaxValues).setVisibility(View.VISIBLE);
+        requireActivity().findViewById(R.id.tlMeanMaxValues).setVisibility(View.VISIBLE);
     }
 
     protected void showOrHideTrPace() {
-        if (SportTypeDatabaseManager.getBSportType(mSportTypeId) == BSportType.RUN
-                && mPaceExtremaValuesAvailable) {
-            getActivity().findViewById(R.id.trPace).setVisibility(View.VISIBLE);
+        if (SportTypeDatabaseManager.getBSportType(mSportTypeId) == BSportType.RUN && mPaceExtremaValuesAvailable) {
+            requireActivity().findViewById(R.id.trPace).setVisibility(View.VISIBLE);
         } else {
-            getActivity().findViewById(R.id.trPace).setVisibility(View.GONE);
+            requireActivity().findViewById(R.id.trPace).setVisibility(View.GONE);
         }
     }
 
@@ -667,15 +637,13 @@ public class EditWorkoutFragment extends Fragment {
         if (DEBUG) Log.i(TAG, "fillTrExtrema for sensor: " + sensorType.name());
 
         // if one of the extrema values contains valid data (not 0), we want to show the complete row
-        boolean dataAvailable = fillTvExtrema(db, sensorType, ExtremaType.AVG, tvMeanId)
-                | fillTvExtrema(db, sensorType, ExtremaType.MAX, tvMaxId)
-                | fillTvExtrema(db, sensorType, ExtremaType.MIN, tvMinId);
+        boolean dataAvailable = fillTvExtrema(db, sensorType, ExtremaType.AVG, tvMeanId) | fillTvExtrema(db, sensorType, ExtremaType.MAX, tvMaxId) | fillTvExtrema(db, sensorType, ExtremaType.MIN, tvMinId);
 
         if (dataAvailable) {  // there seems to be valid data, show it
-            getActivity().findViewById(trId).setVisibility(View.VISIBLE);
+            requireActivity().findViewById(trId).setVisibility(View.VISIBLE);
             showExtremaValuesSeparator();
         } else {   // no valid data available, remove the complete row
-            getActivity().findViewById(trId).setVisibility(View.GONE);
+            requireActivity().findViewById(trId).setVisibility(View.GONE);
         }
 
         if (sensorType == SensorType.PACE_spm) {
@@ -687,19 +655,15 @@ public class EditWorkoutFragment extends Fragment {
 
     protected boolean fillTvExtrema(SQLiteDatabase db, SensorType sensorType, ExtremaType extremaType, int tvId) {
         boolean validData = false;
-        ((TextView) getActivity().findViewById(tvId)).setText(R.string.NoData);
+        ((TextView) requireActivity().findViewById(tvId)).setText(R.string.NoData);
 
-        Cursor cursor = db.query(WorkoutSummaries.TABLE_EXTREMA_VALUES,
-                null,
-                WorkoutSummaries.WORKOUT_ID + "=? AND " + WorkoutSummaries.SENSOR_TYPE + "=? AND " + WorkoutSummaries.EXTREMA_TYPE + "=?",
-                new String[]{Long.toString(mWorkoutID), sensorType.name(), extremaType.name()},
-                null, null, null);
+        Cursor cursor = db.query(WorkoutSummaries.TABLE_EXTREMA_VALUES, null, WorkoutSummaries.WORKOUT_ID + "=? AND " + WorkoutSummaries.SENSOR_TYPE + "=? AND " + WorkoutSummaries.EXTREMA_TYPE + "=?", new String[]{Long.toString(mWorkoutID), sensorType.name(), extremaType.name()}, null, null, null);
         if (cursor.moveToFirst()) {
-            Double value = cursor.getDouble(cursor.getColumnIndex(WorkoutSummaries.VALUE));
+            @SuppressLint("Range") Double value = cursor.getDouble(cursor.getColumnIndex(WorkoutSummaries.VALUE));
             if (DEBUG)
                 Log.i(TAG, "got " + value + " for " + extremaType.name() + " " + sensorType.name() + " of workout " + mWorkoutID);
             if (value != null) {
-                ((TextView) getActivity().findViewById(tvId)).setText(sensorType.getMyFormatter().format(value));
+                ((TextView) requireActivity().findViewById(tvId)).setText(sensorType.getMyFormatter().format(value));
                 if (value != 0) {
                     validData = true;
                 }
@@ -729,147 +693,147 @@ public class EditWorkoutFragment extends Fragment {
         // update the views
         editExportName.setText(savedInstanceState.getString(EXPORT_NAME));
 
-        ((RadioButton) getActivity().findViewById(R.id.rbCommute)).setChecked(savedInstanceState.getBoolean(COMMUTE));
-        ((RadioButton) getActivity().findViewById(R.id.rbTrainer)).setChecked(savedInstanceState.getBoolean(TRAINER));
-        ((CheckBox) getActivity().findViewById(R.id.cbPrivate)).setChecked(savedInstanceState.getBoolean(PRIVATE));
-        ((EditText) getActivity().findViewById(R.id.editDescription)).setText(savedInstanceState.getString(DESCRIPTION));
-        ((EditText) getActivity().findViewById(R.id.editGoal)).setText(savedInstanceState.getString(GOAL));
-        ((EditText) getActivity().findViewById(R.id.editMethod)).setText(savedInstanceState.getString(METHOD));
-        ((TextView) getActivity().findViewById(R.id.tvStartTime)).setText(savedInstanceState.getString(START_TIME));
-        ((TextView) getActivity().findViewById(R.id.tvTotalTime)).setText(savedInstanceState.getString(TOTAL_TIME));
-        ((TextView) getActivity().findViewById(R.id.tvActiveTime)).setText(savedInstanceState.getString(ACTIVE_TIME));
-        ((TextView) getActivity().findViewById(R.id.tvSensorTypes)).setText(savedInstanceState.getString(SENSOR_TYPES));
-        ((TextView) getActivity().findViewById(R.id.tvDistance)).setText(savedInstanceState.getString(DISTANCE));
-        ((TextView) getActivity().findViewById(R.id.tvMaxLineDistance)).setText(savedInstanceState.getString(MAX_LINE_DISTANCE));
+        ((RadioButton) requireActivity().findViewById(R.id.rbCommute)).setChecked(savedInstanceState.getBoolean(COMMUTE));
+        ((RadioButton) requireActivity().findViewById(R.id.rbTrainer)).setChecked(savedInstanceState.getBoolean(TRAINER));
+        ((CheckBox) requireActivity().findViewById(R.id.cbPrivate)).setChecked(savedInstanceState.getBoolean(PRIVATE));
+        ((EditText) requireActivity().findViewById(R.id.editDescription)).setText(savedInstanceState.getString(DESCRIPTION));
+        ((EditText) requireActivity().findViewById(R.id.editGoal)).setText(savedInstanceState.getString(GOAL));
+        ((EditText) requireActivity().findViewById(R.id.editMethod)).setText(savedInstanceState.getString(METHOD));
+        ((TextView) requireActivity().findViewById(R.id.tvStartTime)).setText(savedInstanceState.getString(START_TIME));
+        ((TextView) requireActivity().findViewById(R.id.tvTotalTime)).setText(savedInstanceState.getString(TOTAL_TIME));
+        ((TextView) requireActivity().findViewById(R.id.tvActiveTime)).setText(savedInstanceState.getString(ACTIVE_TIME));
+        ((TextView) requireActivity().findViewById(R.id.tvSensorTypes)).setText(savedInstanceState.getString(SENSOR_TYPES));
+        ((TextView) requireActivity().findViewById(R.id.tvDistance)).setText(savedInstanceState.getString(DISTANCE));
+        ((TextView) requireActivity().findViewById(R.id.tvMaxLineDistance)).setText(savedInstanceState.getString(MAX_LINE_DISTANCE));
 
         if (savedInstanceState.containsKey(CALORIES)) {
-            getActivity().findViewById(R.id.tvCalories).setVisibility(View.VISIBLE);
-            ((TextView) getActivity().findViewById(R.id.tvCalories)).setText(savedInstanceState.getString(CALORIES));
+            requireActivity().findViewById(R.id.tvCalories).setVisibility(View.VISIBLE);
+            ((TextView) requireActivity().findViewById(R.id.tvCalories)).setText(savedInstanceState.getString(CALORIES));
         } else {
-            getActivity().findViewById(R.id.tvCalories).setVisibility(View.GONE);
+            requireActivity().findViewById(R.id.tvCalories).setVisibility(View.GONE);
         }
 
         if (savedInstanceState.containsKey(HR_MEAN)) {
             showExtremaValuesSeparator();
-            getActivity().findViewById(R.id.trHR).setVisibility(View.VISIBLE);
-            ((TextView) getActivity().findViewById(R.id.tvHRMean)).setText(savedInstanceState.getString(HR_MEAN));
-            ((TextView) getActivity().findViewById(R.id.tvHRMax)).setText(savedInstanceState.getString(HR_MAX));
-            ((TextView) getActivity().findViewById(R.id.tvHRMin)).setText(savedInstanceState.getString(HR_MIN));
+            requireActivity().findViewById(R.id.trHR).setVisibility(View.VISIBLE);
+            ((TextView) requireActivity().findViewById(R.id.tvHRMean)).setText(savedInstanceState.getString(HR_MEAN));
+            ((TextView) requireActivity().findViewById(R.id.tvHRMax)).setText(savedInstanceState.getString(HR_MAX));
+            ((TextView) requireActivity().findViewById(R.id.tvHRMin)).setText(savedInstanceState.getString(HR_MIN));
         } else {
-            getActivity().findViewById(R.id.trHR).setVisibility(View.GONE);
+            requireActivity().findViewById(R.id.trHR).setVisibility(View.GONE);
         }
 
         if (savedInstanceState.containsKey(SPEED_MEAN)) {
             showExtremaValuesSeparator();
-            getActivity().findViewById(R.id.trSpeed).setVisibility(View.VISIBLE);
-            ((TextView) getActivity().findViewById(R.id.tvSpeedMean)).setText(savedInstanceState.getString(SPEED_MEAN));
-            ((TextView) getActivity().findViewById(R.id.tvSpeedMax)).setText(savedInstanceState.getString(SPEED_MAX));
-            ((TextView) getActivity().findViewById(R.id.tvSpeedMin)).setText(savedInstanceState.getString(SPEED_MIN));
+            requireActivity().findViewById(R.id.trSpeed).setVisibility(View.VISIBLE);
+            ((TextView) requireActivity().findViewById(R.id.tvSpeedMean)).setText(savedInstanceState.getString(SPEED_MEAN));
+            ((TextView) requireActivity().findViewById(R.id.tvSpeedMax)).setText(savedInstanceState.getString(SPEED_MAX));
+            ((TextView) requireActivity().findViewById(R.id.tvSpeedMin)).setText(savedInstanceState.getString(SPEED_MIN));
         } else {
-            getActivity().findViewById(R.id.trSpeed).setVisibility(View.GONE);
+            requireActivity().findViewById(R.id.trSpeed).setVisibility(View.GONE);
         }
 
         if (savedInstanceState.containsKey(PACE_MEAN)) {
             showExtremaValuesSeparator();
-            ((TextView) getActivity().findViewById(R.id.tvPaceMean)).setText(savedInstanceState.getString(PACE_MEAN));
-            ((TextView) getActivity().findViewById(R.id.tvPaceMax)).setText(savedInstanceState.getString(PACE_MAX));
-            ((TextView) getActivity().findViewById(R.id.tvPaceMin)).setText(savedInstanceState.getString(PACE_MIN));
+            ((TextView) requireActivity().findViewById(R.id.tvPaceMean)).setText(savedInstanceState.getString(PACE_MEAN));
+            ((TextView) requireActivity().findViewById(R.id.tvPaceMax)).setText(savedInstanceState.getString(PACE_MAX));
+            ((TextView) requireActivity().findViewById(R.id.tvPaceMin)).setText(savedInstanceState.getString(PACE_MIN));
             showOrHideTrPace();
         } else {
-            getActivity().findViewById(R.id.trPace).setVisibility(View.GONE);
+            requireActivity().findViewById(R.id.trPace).setVisibility(View.GONE);
         }
 
         if (savedInstanceState.containsKey(CADENCE_MEAN)) {
             showExtremaValuesSeparator();
-            getActivity().findViewById(R.id.trCadence).setVisibility(View.VISIBLE);
-            ((TextView) getActivity().findViewById(R.id.tvCadenceMean)).setText(savedInstanceState.getString(CADENCE_MEAN));
-            ((TextView) getActivity().findViewById(R.id.tvCadenceMax)).setText(savedInstanceState.getString(CADENCE_MAX));
-            ((TextView) getActivity().findViewById(R.id.tvCadenceMin)).setText(savedInstanceState.getString(CADENCE_MIN));
+            requireActivity().findViewById(R.id.trCadence).setVisibility(View.VISIBLE);
+            ((TextView) requireActivity().findViewById(R.id.tvCadenceMean)).setText(savedInstanceState.getString(CADENCE_MEAN));
+            ((TextView) requireActivity().findViewById(R.id.tvCadenceMax)).setText(savedInstanceState.getString(CADENCE_MAX));
+            ((TextView) requireActivity().findViewById(R.id.tvCadenceMin)).setText(savedInstanceState.getString(CADENCE_MIN));
         } else {
-            getActivity().findViewById(R.id.trCadence).setVisibility(View.GONE);
+            requireActivity().findViewById(R.id.trCadence).setVisibility(View.GONE);
         }
 
         if (savedInstanceState.containsKey(POWER_MEAN)) {
             showExtremaValuesSeparator();
-            getActivity().findViewById(R.id.trPower).setVisibility(View.VISIBLE);
-            ((TextView) getActivity().findViewById(R.id.tvPowerMean)).setText(savedInstanceState.getString(POWER_MEAN));
-            ((TextView) getActivity().findViewById(R.id.tvPowerMax)).setText(savedInstanceState.getString(POWER_MAX));
-            ((TextView) getActivity().findViewById(R.id.tvPowerMin)).setText(savedInstanceState.getString(POWER_MIN));
+            requireActivity().findViewById(R.id.trPower).setVisibility(View.VISIBLE);
+            ((TextView) requireActivity().findViewById(R.id.tvPowerMean)).setText(savedInstanceState.getString(POWER_MEAN));
+            ((TextView) requireActivity().findViewById(R.id.tvPowerMax)).setText(savedInstanceState.getString(POWER_MAX));
+            ((TextView) requireActivity().findViewById(R.id.tvPowerMin)).setText(savedInstanceState.getString(POWER_MIN));
         } else {
-            getActivity().findViewById(R.id.trPower).setVisibility(View.GONE);
+            requireActivity().findViewById(R.id.trPower).setVisibility(View.GONE);
         }
 
         if (savedInstanceState.containsKey(TORQUE_MEAN)) {
             showExtremaValuesSeparator();
-            getActivity().findViewById(R.id.trTorque).setVisibility(View.VISIBLE);
-            ((TextView) getActivity().findViewById(R.id.tvTorqueMean)).setText(savedInstanceState.getString(TORQUE_MEAN));
-            ((TextView) getActivity().findViewById(R.id.tvTorqueMax)).setText(savedInstanceState.getString(TORQUE_MAX));
-            ((TextView) getActivity().findViewById(R.id.tvTorqueMin)).setText(savedInstanceState.getString(TORQUE_MIN));
+            requireActivity().findViewById(R.id.trTorque).setVisibility(View.VISIBLE);
+            ((TextView) requireActivity().findViewById(R.id.tvTorqueMean)).setText(savedInstanceState.getString(TORQUE_MEAN));
+            ((TextView) requireActivity().findViewById(R.id.tvTorqueMax)).setText(savedInstanceState.getString(TORQUE_MAX));
+            ((TextView) requireActivity().findViewById(R.id.tvTorqueMin)).setText(savedInstanceState.getString(TORQUE_MIN));
         } else {
-            getActivity().findViewById(R.id.trTorque).setVisibility(View.GONE);
+            requireActivity().findViewById(R.id.trTorque).setVisibility(View.GONE);
         }
 
         if (savedInstanceState.containsKey(PEDAL_POWER_BALANCE_MEAN)) {
             showExtremaValuesSeparator();
-            getActivity().findViewById(R.id.trPedalPowerBalance).setVisibility(View.VISIBLE);
-            ((TextView) getActivity().findViewById(R.id.tvPedalPowerBalanceMean)).setText(savedInstanceState.getString(PEDAL_POWER_BALANCE_MEAN));
-            ((TextView) getActivity().findViewById(R.id.tvPedalPowerBalanceMax)).setText(savedInstanceState.getString(PEDAL_POWER_BALANCE_MAX));
-            ((TextView) getActivity().findViewById(R.id.tvPedalPowerBalanceMin)).setText(savedInstanceState.getString(PEDAL_POWER_BALANCE_MIN));
+            requireActivity().findViewById(R.id.trPedalPowerBalance).setVisibility(View.VISIBLE);
+            ((TextView) requireActivity().findViewById(R.id.tvPedalPowerBalanceMean)).setText(savedInstanceState.getString(PEDAL_POWER_BALANCE_MEAN));
+            ((TextView) requireActivity().findViewById(R.id.tvPedalPowerBalanceMax)).setText(savedInstanceState.getString(PEDAL_POWER_BALANCE_MAX));
+            ((TextView) requireActivity().findViewById(R.id.tvPedalPowerBalanceMin)).setText(savedInstanceState.getString(PEDAL_POWER_BALANCE_MIN));
         } else {
-            getActivity().findViewById(R.id.trPedalPowerBalance).setVisibility(View.GONE);
+            requireActivity().findViewById(R.id.trPedalPowerBalance).setVisibility(View.GONE);
         }
 
         if (savedInstanceState.containsKey(PEDAL_SMOOTHNESS_LEFT_MEAN)) {
             showExtremaValuesSeparator();
-            getActivity().findViewById(R.id.trPedalSmoothnessLeft).setVisibility(View.VISIBLE);
-            ((TextView) getActivity().findViewById(R.id.tvPedalSmoothnessLeftMean)).setText(savedInstanceState.getString(PEDAL_SMOOTHNESS_LEFT_MEAN));
-            ((TextView) getActivity().findViewById(R.id.tvPedalSmoothnessLeftMax)).setText(savedInstanceState.getString(PEDAL_SMOOTHNESS_LEFT_MAX));
-            ((TextView) getActivity().findViewById(R.id.tvPedalSmoothnessLeftMin)).setText(savedInstanceState.getString(PEDAL_SMOOTHNESS_LEFT_MIN));
+            requireActivity().findViewById(R.id.trPedalSmoothnessLeft).setVisibility(View.VISIBLE);
+            ((TextView) requireActivity().findViewById(R.id.tvPedalSmoothnessLeftMean)).setText(savedInstanceState.getString(PEDAL_SMOOTHNESS_LEFT_MEAN));
+            ((TextView) requireActivity().findViewById(R.id.tvPedalSmoothnessLeftMax)).setText(savedInstanceState.getString(PEDAL_SMOOTHNESS_LEFT_MAX));
+            ((TextView) requireActivity().findViewById(R.id.tvPedalSmoothnessLeftMin)).setText(savedInstanceState.getString(PEDAL_SMOOTHNESS_LEFT_MIN));
         } else {
-            getActivity().findViewById(R.id.trPedalSmoothnessLeft).setVisibility(View.GONE);
+            requireActivity().findViewById(R.id.trPedalSmoothnessLeft).setVisibility(View.GONE);
         }
 
         if (savedInstanceState.containsKey(PEDAL_SMOOTHNESS_MEAN)) {
             showExtremaValuesSeparator();
-            getActivity().findViewById(R.id.trPedalSmoothness).setVisibility(View.VISIBLE);
-            ((TextView) getActivity().findViewById(R.id.tvPedalSmoothnessMean)).setText(savedInstanceState.getString(PEDAL_SMOOTHNESS_MEAN));
-            ((TextView) getActivity().findViewById(R.id.tvPedalSmoothnessMax)).setText(savedInstanceState.getString(PEDAL_SMOOTHNESS_MAX));
-            ((TextView) getActivity().findViewById(R.id.tvPedalSmoothnessMin)).setText(savedInstanceState.getString(PEDAL_SMOOTHNESS_MIN));
+            requireActivity().findViewById(R.id.trPedalSmoothness).setVisibility(View.VISIBLE);
+            ((TextView) requireActivity().findViewById(R.id.tvPedalSmoothnessMean)).setText(savedInstanceState.getString(PEDAL_SMOOTHNESS_MEAN));
+            ((TextView) requireActivity().findViewById(R.id.tvPedalSmoothnessMax)).setText(savedInstanceState.getString(PEDAL_SMOOTHNESS_MAX));
+            ((TextView) requireActivity().findViewById(R.id.tvPedalSmoothnessMin)).setText(savedInstanceState.getString(PEDAL_SMOOTHNESS_MIN));
         } else {
-            getActivity().findViewById(R.id.trPedalSmoothnessRight).setVisibility(View.GONE);
+            requireActivity().findViewById(R.id.trPedalSmoothnessRight).setVisibility(View.GONE);
         }
 
         if (savedInstanceState.containsKey(PEDAL_SMOOTHNESS_RIGHT_MEAN)) {
             showExtremaValuesSeparator();
-            getActivity().findViewById(R.id.trPedalSmoothnessRight).setVisibility(View.VISIBLE);
-            ((TextView) getActivity().findViewById(R.id.tvPedalSmoothnessRightMean)).setText(savedInstanceState.getString(PEDAL_SMOOTHNESS_RIGHT_MEAN));
-            ((TextView) getActivity().findViewById(R.id.tvPedalSmoothnessRightMax)).setText(savedInstanceState.getString(PEDAL_SMOOTHNESS_RIGHT_MAX));
-            ((TextView) getActivity().findViewById(R.id.tvPedalSmoothnessRightMin)).setText(savedInstanceState.getString(PEDAL_SMOOTHNESS_RIGHT_MIN));
+            requireActivity().findViewById(R.id.trPedalSmoothnessRight).setVisibility(View.VISIBLE);
+            ((TextView) requireActivity().findViewById(R.id.tvPedalSmoothnessRightMean)).setText(savedInstanceState.getString(PEDAL_SMOOTHNESS_RIGHT_MEAN));
+            ((TextView) requireActivity().findViewById(R.id.tvPedalSmoothnessRightMax)).setText(savedInstanceState.getString(PEDAL_SMOOTHNESS_RIGHT_MAX));
+            ((TextView) requireActivity().findViewById(R.id.tvPedalSmoothnessRightMin)).setText(savedInstanceState.getString(PEDAL_SMOOTHNESS_RIGHT_MIN));
         } else {
-            getActivity().findViewById(R.id.trPedalSmoothnessRight).setVisibility(View.GONE);
+            requireActivity().findViewById(R.id.trPedalSmoothnessRight).setVisibility(View.GONE);
         }
 
         if (savedInstanceState.containsKey(ALTITUDE_MEAN)) {
             showExtremaValuesSeparator();
-            getActivity().findViewById(R.id.trAltitude).setVisibility(View.VISIBLE);
-            ((TextView) getActivity().findViewById(R.id.tvAltitudeMean)).setText(savedInstanceState.getString(ALTITUDE_MEAN));
-            ((TextView) getActivity().findViewById(R.id.tvAltitudeMax)).setText(savedInstanceState.getString(ALTITUDE_MAX));
-            ((TextView) getActivity().findViewById(R.id.tvAltitudeMin)).setText(savedInstanceState.getString(ALTITUDE_MIN));
+            requireActivity().findViewById(R.id.trAltitude).setVisibility(View.VISIBLE);
+            ((TextView) requireActivity().findViewById(R.id.tvAltitudeMean)).setText(savedInstanceState.getString(ALTITUDE_MEAN));
+            ((TextView) requireActivity().findViewById(R.id.tvAltitudeMax)).setText(savedInstanceState.getString(ALTITUDE_MAX));
+            ((TextView) requireActivity().findViewById(R.id.tvAltitudeMin)).setText(savedInstanceState.getString(ALTITUDE_MIN));
         } else {
-            getActivity().findViewById(R.id.trAltitude).setVisibility(View.GONE);
+            requireActivity().findViewById(R.id.trAltitude).setVisibility(View.GONE);
         }
 
         if (savedInstanceState.containsKey(TEMPERATURE_MEAN)) {
             showExtremaValuesSeparator();
-            getActivity().findViewById(R.id.trTemperature).setVisibility(View.VISIBLE);
-            ((TextView) getActivity().findViewById(R.id.tvTemperatureMean)).setText(savedInstanceState.getString(TEMPERATURE_MEAN));
-            ((TextView) getActivity().findViewById(R.id.tvTemperatureMax)).setText(savedInstanceState.getString(TEMPERATURE_MAX));
-            ((TextView) getActivity().findViewById(R.id.tvTemperatureMin)).setText(savedInstanceState.getString(TEMPERATURE_MIN));
+            requireActivity().findViewById(R.id.trTemperature).setVisibility(View.VISIBLE);
+            ((TextView) requireActivity().findViewById(R.id.tvTemperatureMean)).setText(savedInstanceState.getString(TEMPERATURE_MEAN));
+            ((TextView) requireActivity().findViewById(R.id.tvTemperatureMax)).setText(savedInstanceState.getString(TEMPERATURE_MAX));
+            ((TextView) requireActivity().findViewById(R.id.tvTemperatureMin)).setText(savedInstanceState.getString(TEMPERATURE_MIN));
         } else {
-            getActivity().findViewById(R.id.trTemperature).setVisibility(View.GONE);
+            requireActivity().findViewById(R.id.trTemperature).setVisibility(View.GONE);
         }
 
-        getActivity().findViewById(R.id.buttonDeleteWorkout).setVisibility(savedInstanceState.getBoolean(SHOW_DELETE_BUTTON) ? View.VISIBLE : View.GONE);
+        requireActivity().findViewById(R.id.buttonDeleteWorkout).setVisibility(savedInstanceState.getBoolean(SHOW_DELETE_BUTTON) ? View.VISIBLE : View.GONE);
     }
 
     protected void onSportTypeChanged() {
@@ -884,7 +848,7 @@ public class EditWorkoutFragment extends Fragment {
         showOrHideTrPace();
 
         // adapt the indoor trainer, equipment name, and cadence name
-        TextView tvCadence = getActivity().findViewById(R.id.tvCadence);
+        TextView tvCadence = requireActivity().findViewById(R.id.tvCadence);
         switch (mBSportType) {
             case ROWING:
                 tvCadence.setText(R.string.cadence_row_short);
@@ -912,7 +876,6 @@ public class EditWorkoutFragment extends Fragment {
                 return;
         }
 
-
         spinnerEquipment.setClickable(true);
         spinnerEquipment.setVisibility(View.VISIBLE);
         tvEquipment.setVisibility(View.VISIBLE);
@@ -931,8 +894,7 @@ public class EditWorkoutFragment extends Fragment {
             if (DEBUG) Log.i(TAG, "do NOT show all sport types");
             mSportTypeUiNameList = SportTypeDatabaseManager.getSportTypesUiNameList(mBSportType, mAverageSpeed);
             mSportTypeIdList = SportTypeDatabaseManager.getSportTypesIdList(mBSportType, mAverageSpeed);
-            if (mSportTypeUiNameList.size() <= 1
-                    | !mSportTypeIdList.contains(mSportTypeId)) {
+            if (mSportTypeUiNameList.size() <= 1 | !mSportTypeIdList.contains(mSportTypeId)) {
                 mShowAllSportTypes = true;
                 setSpinnerSport();
                 return;
@@ -940,7 +902,7 @@ public class EditWorkoutFragment extends Fragment {
             mSportTypeUiNameList.add(getString(R.string.show_all_sport_types));
         }
 
-        spinnerSport.setAdapter(new ArrayAdapter<>(getActivity(), android.R.layout.simple_spinner_item, mSportTypeUiNameList.toArray(new String[mSportTypeUiNameList.size()])));
+        spinnerSport.setAdapter(new ArrayAdapter<>(requireActivity(), android.R.layout.simple_spinner_item, mSportTypeUiNameList.toArray(new String[0])));
         if (DEBUG) Log.i(TAG, "calling setSelection");
         spinnerSport.setSelection(mSportTypeIdList.indexOf(mSportTypeId));
         if (DEBUG) Log.i(TAG, "called setSelection");
@@ -949,8 +911,8 @@ public class EditWorkoutFragment extends Fragment {
     private void setSpinnerEquipment(boolean allEquipment) {
         if (DEBUG) Log.d(TAG, "setSpinnerEquipment " + (allEquipment ? "ALL" : "selected"));
 
-        EquipmentDbHelper equipmentDbHelper = new EquipmentDbHelper(getActivity());
-        List<String> equipmentList = new ArrayList<String>();
+        EquipmentDbHelper equipmentDbHelper = new EquipmentDbHelper(requireActivity());
+        List<String> equipmentList = new ArrayList<>();
 
         if (!allEquipment) {
             equipmentList = equipmentDbHelper.getLinkedEquipment((int) mWorkoutID);
@@ -979,7 +941,7 @@ public class EditWorkoutFragment extends Fragment {
             }
         }
 
-        if (equipmentList.size() == 0) {
+        if (equipmentList.isEmpty()) {
             // there is no equipment, so the spinner is removed.
             spinnerEquipment.setVisibility(View.GONE);
             return;
@@ -987,9 +949,9 @@ public class EditWorkoutFragment extends Fragment {
             spinnerEquipment.setVisibility(View.VISIBLE);
         }
 
-        String[] equipment = equipmentList.toArray(new String[equipmentList.size()]);
+        String[] equipment = equipmentList.toArray(new String[0]);
 
-        spinnerEquipment.setAdapter(new ArrayAdapter<String>(getActivity(), android.R.layout.simple_spinner_item, equipment));
+        spinnerEquipment.setAdapter(new ArrayAdapter<>(requireActivity(), android.R.layout.simple_spinner_item, equipment));
 
         if (mEquipmentName != null) {
             spinnerEquipment.setSelection(equipmentList.indexOf(mEquipmentName));
@@ -1016,22 +978,19 @@ public class EditWorkoutFragment extends Fragment {
         if (spinnerEquipment.getSelectedItem() != null) {
             if (DEBUG) {
                 Log.d(TAG, "selected equipment: " + spinnerEquipment.getSelectedItem());
-                Log.d(TAG, "equipmentId: " + new EquipmentDbHelper(getActivity()).getEquipmentId((String) spinnerEquipment.getSelectedItem()));
+                Log.d(TAG, "equipmentId: " + new EquipmentDbHelper(requireActivity()).getEquipmentId((String) spinnerEquipment.getSelectedItem()));
             }
-            values.put(WorkoutSummaries.EQUIPMENT_ID, new EquipmentDbHelper(getActivity()).getEquipmentId((String) spinnerEquipment.getSelectedItem()));
+            values.put(WorkoutSummaries.EQUIPMENT_ID, new EquipmentDbHelper(requireActivity()).getEquipmentId((String) spinnerEquipment.getSelectedItem()));
         }
 
         WorkoutSummariesDatabaseManager databaseManager = WorkoutSummariesDatabaseManager.getInstance();
         SQLiteDatabase db = databaseManager.getOpenDatabase();
 
         try {
-            db.update(WorkoutSummaries.TABLE,
-                    values,
-                    WorkoutSummaries.C_ID + "=" + mWorkoutID,
-                    null);
+            db.update(WorkoutSummaries.TABLE, values, WorkoutSummaries.C_ID + "=" + mWorkoutID, null);
         } catch (SQLException e) {
             // TODO: use Toast?
-            Log.e(TAG, "Error while writing" + e.toString());
+            Log.e(TAG, "Error while writing" + e);
         }
         databaseManager.closeDatabase(); // db.close();
 
@@ -1039,34 +998,27 @@ public class EditWorkoutFragment extends Fragment {
     }
 
     protected void showFancyWorkoutNameDialog() {
-        AlertDialog.Builder builder = new AlertDialog.Builder(getActivity());
+        AlertDialog.Builder builder = new AlertDialog.Builder(requireActivity());
         builder.setTitle(R.string.choose_auto_name);
         ListView listView = new ListView(getContext());
         builder.setView(listView);
         final Dialog dialog = builder.create();
 
         final List<String> fancyNameList = WorkoutSummariesDatabaseManager.getFancyNameList();
-        ArrayAdapter<String> arrayAdapter = new ArrayAdapter<>(getContext(), android.R.layout.simple_list_item_1, fancyNameList.toArray(new String[fancyNameList.size()]));
+        ArrayAdapter<String> arrayAdapter = new ArrayAdapter<>(requireContext(), android.R.layout.simple_list_item_1, fancyNameList.toArray(new String[0]));
         listView.setAdapter(arrayAdapter);
-        listView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
-            @Override
-            public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
-                String fullFancyName = WorkoutSummariesDatabaseManager.getFancyNameAndIncrement(fancyNameList.get(position));
-                editExportName.setText(fullFancyName);
-                dialog.dismiss();
-            }
+        listView.setOnItemClickListener((parent, view, position, id) -> {
+            String fullFancyName = WorkoutSummariesDatabaseManager.getFancyNameAndIncrement(fancyNameList.get(position));
+            editExportName.setText(fullFancyName);
+            dialog.dismiss();
         });
-        listView.setOnItemLongClickListener(new AdapterView.OnItemLongClickListener() {
-            @Override
-            public boolean onItemLongClick(AdapterView<?> parent, View view, int position, long id) {
-                long fancyNameId = WorkoutSummariesDatabaseManager.getFancyNameId(fancyNameList.get(position));
-                EditFancyWorkoutNameDialog dialog = EditFancyWorkoutNameDialog.newInstance(fancyNameId);
-                dialog.show(getFragmentManager(), EditFancyWorkoutNameDialog.TAG);
-                return true;
-            }
+        listView.setOnItemLongClickListener((parent, view, position, id) -> {
+            long fancyNameId = WorkoutSummariesDatabaseManager.getFancyNameId(fancyNameList.get(position));
+            EditFancyWorkoutNameDialog dialog1 = EditFancyWorkoutNameDialog.newInstance(fancyNameId);
+            dialog1.show(requireFragmentManager(), EditFancyWorkoutNameDialog.TAG);
+            return true;
         });
 
         dialog.show();
     }
-
 }

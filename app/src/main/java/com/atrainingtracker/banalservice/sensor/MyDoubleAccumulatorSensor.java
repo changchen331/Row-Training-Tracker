@@ -3,7 +3,6 @@ package com.atrainingtracker.banalservice.sensor;
 import com.atrainingtracker.banalservice.BANALService;
 import com.atrainingtracker.banalservice.devices.MyDevice;
 
-
 public class MyDoubleAccumulatorSensor extends MyAccumulatorSensor<Double> {
     private static final String TAG = "MyDoubleAccumulatorSensor";
 

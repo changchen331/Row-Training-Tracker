@@ -20,9 +20,7 @@ import com.atrainingtracker.trainingtracker.onlinecommunities.strava.StravaEquip
 import com.atrainingtracker.trainingtracker.onlinecommunities.strava.StravaGetAccessTokenActivity;
 import com.atrainingtracker.trainingtracker.onlinecommunities.strava.StravaSegmentsHelper;
 
-
-public class StravaUploadFragment extends androidx.preference.PreferenceFragmentCompat
-        implements SharedPreferences.OnSharedPreferenceChangeListener {
+public class StravaUploadFragment extends androidx.preference.PreferenceFragmentCompat implements SharedPreferences.OnSharedPreferenceChangeListener {
     public static final int GET_STRAVA_ACCESS_TOKEN = 3;
     private static final boolean DEBUG = TrainingApplication.DEBUG && false;
     private static final String TAG = StravaUploadFragment.class.getName();
@@ -37,7 +35,7 @@ public class StravaUploadFragment extends androidx.preference.PreferenceFragment
 
         setPreferencesFromResource(R.xml.prefs, rootKey);
 
-        mStravaUpload = (CheckBoxPreference) this.getPreferenceScreen().findPreference(TrainingApplication.SP_UPLOAD_TO_STRAVA);
+        mStravaUpload = this.getPreferenceScreen().findPreference(TrainingApplication.SP_UPLOAD_TO_STRAVA);
         mUpdateStravaEquipment = this.getPreferenceScreen().findPreference(TrainingApplication.UPDATE_STRAVA_EQUIPMENT);
     }
 
@@ -47,18 +45,14 @@ public class StravaUploadFragment extends androidx.preference.PreferenceFragment
         if (DEBUG) Log.i(TAG, "onResume()");
 
         mUpdateStravaEquipment.setSummary(TrainingApplication.getLastUpdateTimeOfStravaEquipment());
-        mUpdateStravaEquipment.setOnPreferenceClickListener(new Preference.OnPreferenceClickListener() {
-            @Override
-            public boolean onPreferenceClick(Preference preference) {
-                if (DEBUG) Log.d(TAG, "updateStravaEquipment has been clicked");
-                new StravaEquipmentSynchronizeTask(getActivity()).execute("foo");
-                return false;
-            }
+        mUpdateStravaEquipment.setOnPreferenceClickListener(preference -> {
+            if (DEBUG) Log.d(TAG, "updateStravaEquipment has been clicked");
+            new StravaEquipmentSynchronizeTask(getActivity()).execute("foo");
+            return false;
         });
 
-        mSharedPreferences = PreferenceManager.getDefaultSharedPreferences(getActivity());
+        mSharedPreferences = PreferenceManager.getDefaultSharedPreferences(requireActivity());
         mSharedPreferences.registerOnSharedPreferenceChangeListener(this);
-
     }
 
     @Override
@@ -68,7 +62,6 @@ public class StravaUploadFragment extends androidx.preference.PreferenceFragment
         // Unregister the listener whenever a key changes
         mSharedPreferences.unregisterOnSharedPreferenceChangeListener(this);
     }
-
 
     @Override
     public void onSharedPreferenceChanged(SharedPreferences sharedPreferences, String key) {
@@ -87,7 +80,6 @@ public class StravaUploadFragment extends androidx.preference.PreferenceFragment
                 startActivityForResult(new Intent(getActivity(), StravaGetAccessTokenActivity.class), GET_STRAVA_ACCESS_TOKEN);
             }
         }
-
     }
 
     @Override

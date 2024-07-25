@@ -1,5 +1,6 @@
 package com.atrainingtracker.trainingtracker.exporter;
 
+import android.annotation.SuppressLint;
 import android.content.Context;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
@@ -19,12 +20,12 @@ import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.Locale;
 
-
 public class RunkeeperFileExporter extends BaseFileExporter {
     protected static final boolean WRITE_ONLY_ON_NEW_GEO_DATA = true;
     private static final String TAG = "RunkeeperFileExporter";
     private static final boolean DEBUG = true;
     // DateFormats to convert from Db style dates to XML style dates
+    @SuppressLint("SimpleDateFormat")
     protected static SimpleDateFormat msdfFromDb = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
     protected static SimpleDateFormat msdfToRK = new SimpleDateFormat("EEE, dd MMM yyyy HH:mm:ss", Locale.US);
     // Sat, 1 Jan 2011 00:00:00
@@ -86,13 +87,7 @@ public class RunkeeperFileExporter extends BaseFileExporter {
 
         WorkoutSamplesDatabaseManager databaseManager = WorkoutSamplesDatabaseManager.getInstance();
         SQLiteDatabase db = databaseManager.getOpenDatabase();
-        Cursor cursor = db.query(WorkoutSamplesDatabaseManager.getTableName(exportInfo.getFileBaseName()),
-                null,
-                null,
-                null,
-                null,
-                null,
-                null);
+        Cursor cursor = db.query(WorkoutSamplesDatabaseManager.getTableName(exportInfo.getFileBaseName()), null, null, null, null, null, null);
 
         int lines = cursor.getCount();
         int count = 0;
@@ -112,7 +107,7 @@ public class RunkeeperFileExporter extends BaseFileExporter {
                     sample = new JSONObject();
                     sample.put(TIMESTAMP, cursor.getDouble(cursor.getColumnIndexOrThrow(SensorType.TIME_TOTAL.name())));
                     sample.put(HEART_RATE, Math.round(cursor.getDouble(cursor.getColumnIndexOrThrow(SensorType.HR.name()))));
-                    bufferedWriter.write(getSamplePrefix(isFirst) + sample.toString());
+                    bufferedWriter.write(getSamplePrefix(isFirst) + sample);
 
                     isFirst = false;
                 }
@@ -139,9 +134,7 @@ public class RunkeeperFileExporter extends BaseFileExporter {
             cursor.moveToFirst();
             cursor.moveToPrevious();
             while (cursor.moveToNext()) {
-                if (dataValid(cursor, SensorType.LATITUDE.name())
-                        & dataValid(cursor, SensorType.LONGITUDE.name())
-                        & dataValid(cursor, SensorType.ACCURACY.name())) {
+                if (dataValid(cursor, SensorType.LATITUDE.name()) & dataValid(cursor, SensorType.LONGITUDE.name()) & dataValid(cursor, SensorType.ACCURACY.name())) {
 
                     latitudeOld = latitude;
                     longitudeOld = longitude;
@@ -168,7 +161,7 @@ public class RunkeeperFileExporter extends BaseFileExporter {
                         }
                         sample.put(TYPE, type);
 
-                        bufferedWriter.write(getSamplePrefix(isFirst) + sample.toString());
+                        bufferedWriter.write(getSamplePrefix(isFirst) + sample);
                         isFirst = false;
                     }
                 }

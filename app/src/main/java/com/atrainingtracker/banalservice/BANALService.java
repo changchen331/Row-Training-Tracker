@@ -3,6 +3,7 @@ package com.atrainingtracker.banalservice;
 import static com.atrainingtracker.trainingtracker.TrainingApplication.REQUEST_NEW_LAP;
 import static com.atrainingtracker.trainingtracker.TrainingApplication.REQUEST_START_SEARCH_FOR_PAIRED_DEVICES;
 
+import android.annotation.SuppressLint;
 import android.app.Service;
 import android.content.BroadcastReceiver;
 import android.content.Context;
@@ -10,6 +11,7 @@ import android.content.Intent;
 import android.content.IntentFilter;
 import android.content.pm.PackageManager;
 import android.os.Binder;
+import android.os.Build;
 import android.os.IBinder;
 import android.util.Log;
 
@@ -35,8 +37,7 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Set;
 
-public class BANALService
-        extends Service {
+public class BANALService extends Service {
     public static final boolean DEBUG = false;
 
     /**
@@ -117,8 +118,11 @@ public class BANALService
     public static final String URI_ANT_USB_SERVICE = "com.dsi.ant.usbservice";
 
     public static final int INIT_LAP_NR = 1;
+    @SuppressLint("StaticFieldLeak")
     private static DeviceManager cDeviceManager;
+    @SuppressLint("StaticFieldLeak")
     private static MySensorManager cSensorManager;
+    @SuppressLint("StaticFieldLeak")
     private static FilterManager cFilterManager;
     protected ActivityType mActivityTypeMax = ActivityType.GENERIC;
     /***********************************************************************************************/
@@ -161,19 +165,17 @@ public class BANALService
     }
 
     public static boolean isANTProperlyInstalled(Context context) {
-        return (!isANTPluginServiceInstalled(context)
-                | !isANTRadioServiceInstalled()
-                | !hasUsbHostFeature(context) & isANTUSBServiceInstalled());
+        return (!isANTPluginServiceInstalled(context) | !isANTRadioServiceInstalled() | !hasUsbHostFeature(context) & isANTUSBServiceInstalled());
     }
 
+    @SuppressLint("ObsoleteSdkInt")
     public static boolean isProtocolSupported(Context context, Protocol protocol) {
         switch (protocol) {
             case ANT_PLUS:
                 return isANTPluginServiceInstalled(context); // TODO: more precise test possible?
 
             case BLUETOOTH_LE:
-                return (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.JELLY_BEAN_MR2)
-                        && context.getPackageManager().hasSystemFeature(PackageManager.FEATURE_BLUETOOTH_LE);
+                return (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.JELLY_BEAN_MR2) && context.getPackageManager().hasSystemFeature(PackageManager.FEATURE_BLUETOOTH_LE);
 
             default:
                 return false;
@@ -232,7 +234,7 @@ public class BANALService
         if (DEBUG)
             Log.d(TAG, "setInitialSensorValue: sensorType=" + sensorType + ", value=" + initialValue);
         cSensorManager.setInitialValue(sensorType, initialValue);
-        for (MyAccumulatorSensor<Double> myAccumulatorSensor : getAccumulatorSensorList(sensorType)) {
+        for (MyAccumulatorSensor myAccumulatorSensor : getAccumulatorSensorList(sensorType)) {
             if (DEBUG) Log.d(TAG, "initializing Sensor " + myAccumulatorSensor);
             myAccumulatorSensor.setInitialValue(initialValue);
         }
@@ -242,7 +244,7 @@ public class BANALService
         if (DEBUG)
             Log.d(TAG, "setInitialSensorValue: sensorType=" + sensorType + ", value=" + initialValue);
         cSensorManager.setInitialValue(sensorType, initialValue);
-        for (MyAccumulatorSensor<Integer> myAccumulatorSensor : getAccumulatorSensorList(sensorType)) {
+        for (MyAccumulatorSensor myAccumulatorSensor : getAccumulatorSensorList(sensorType)) {
             if (DEBUG) Log.d(TAG, "initializing Sensor " + myAccumulatorSensor);
             myAccumulatorSensor.setInitialValue(initialValue);
         }
@@ -353,7 +355,7 @@ public class BANALService
     {
         if (DEBUG) Log.d(TAG, "getSensorTypes()");
 
-        ArrayList<SensorType> sensorTypeArrayList = new ArrayList<SensorType>();
+        ArrayList<SensorType> sensorTypeArrayList = new ArrayList<>();
         for (MySensor mySensor : cSensorManager.getSensors()) {
             sensorTypeArrayList.add(mySensor.getSensorType());
         }
@@ -372,7 +374,7 @@ public class BANALService
     protected ActivityType getActivityType() {
         if (DEBUG) Log.d(TAG, "getActivityType");
 
-        ActivityType result = ActivityType.GENERIC;
+        ActivityType result;
 
         Set<SensorType> sensorTypes = EnumSet.copyOf(Arrays.asList(getSensorTypes()));
         BSportType sportType = getBSportType();
@@ -458,8 +460,10 @@ public class BANALService
         cDeviceManager = new DeviceManager(this, cSensorManager);
         cFilterManager = new FilterManager(this, cDeviceManager, cSensorManager);
 
-        registerReceiver(mStartSearchForPairedDevices, new IntentFilter(REQUEST_START_SEARCH_FOR_PAIRED_DEVICES));
-        registerReceiver(mNewLapReceiver, new IntentFilter(REQUEST_NEW_LAP));
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+            registerReceiver(mStartSearchForPairedDevices, new IntentFilter(REQUEST_START_SEARCH_FOR_PAIRED_DEVICES), Context.RECEIVER_NOT_EXPORTED);
+            registerReceiver(mNewLapReceiver, new IntentFilter(REQUEST_NEW_LAP), Context.RECEIVER_NOT_EXPORTED);
+        }
     }
 
     @Override
@@ -476,7 +480,7 @@ public class BANALService
         unregisterReceiver(mStartSearchForPairedDevices);
     }
 
-    /***********************************************************************************************/
+    /*********************************************************************************************/
     /* Broadcast Receivers                                                                         */
 
     /**
@@ -601,6 +605,4 @@ public class BANALService
             return cSensorManager.getSensor(SensorType.SENSORS).getStringValue();
         }
     }
-
-
 }

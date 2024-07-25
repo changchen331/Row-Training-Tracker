@@ -10,7 +10,6 @@ import com.atrainingtracker.banalservice.sensor.SensorType;
 
 import org.apache.http.HttpEntity;
 import org.apache.http.HttpResponse;
-import org.apache.http.client.ClientProtocolException;
 import org.apache.http.client.HttpClient;
 import org.apache.http.client.methods.HttpGet;
 import org.apache.http.impl.client.DefaultHttpClient;
@@ -21,6 +20,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.text.NumberFormat;
 import java.util.Locale;
+import java.util.Objects;
 
 public class MyHelper {
     public static final double METER_PER_MILE = 1609.344;
@@ -33,21 +33,16 @@ public class MyHelper {
         double result = Double.NaN;
         HttpClient httpClient = new DefaultHttpClient();
         HttpContext localContext = new BasicHttpContext();
-        String url = "http://gisdata.usgs.gov/"
-                + "xmlwebservices2/elevation_service.asmx/"
-                + "getElevation?X_Value=" + longitude
-                + "&Y_Value=" + latitude
-                + "&Elevation_Units=METERS&Source_Layer=-1&Elevation_Only=true";
+        String url = "http://gisdata.usgs.gov/" + "xmlwebservices2/elevation_service.asmx/" + "getElevation?X_Value=" + longitude + "&Y_Value=" + latitude + "&Elevation_Units=METERS&Source_Layer=-1&Elevation_Only=true";
         HttpGet httpGet = new HttpGet(url);
         try {
             HttpResponse response = httpClient.execute(httpGet, localContext);
             HttpEntity entity = response.getEntity();
             if (entity != null) {
                 InputStream inputStream = entity.getContent();
-                int r = -1;
-                StringBuffer respStr = new StringBuffer();
-                while ((r = inputStream.read()) != -1)
-                    respStr.append((char) r);
+                int r;
+                StringBuilder respStr = new StringBuilder();
+                while ((r = inputStream.read()) != -1) respStr.append((char) r);
                 String tagOpen = "<double>";
                 String tagClose = "</double>";
                 if (respStr.indexOf(tagOpen) != -1) {
@@ -58,8 +53,8 @@ public class MyHelper {
                 }
                 inputStream.close();
             }
-        } catch (ClientProtocolException e) {
         } catch (IOException e) {
+            throw new RuntimeException(e);
         }
         return result;
     }
@@ -70,20 +65,16 @@ public class MyHelper {
         double result = Double.NaN;
         HttpClient httpClient = new DefaultHttpClient();
         HttpContext localContext = new BasicHttpContext();
-        String url = "http://maps.googleapis.com/maps/api/elevation/"
-                + "xml?locations=" + latitude
-                + "," + longitude
-                + "&sensor=true";
+        String url = "http://maps.googleapis.com/maps/api/elevation/" + "xml?locations=" + latitude + "," + longitude + "&sensor=true";
         HttpGet httpGet = new HttpGet(url);
         try {
             HttpResponse response = httpClient.execute(httpGet, localContext);
             HttpEntity entity = response.getEntity();
             if (entity != null) {
                 InputStream inputStream = entity.getContent();
-                int r = -1;
-                StringBuffer respStr = new StringBuffer();
-                while ((r = inputStream.read()) != -1)
-                    respStr.append((char) r);
+                int r;
+                StringBuilder respStr = new StringBuilder();
+                while ((r = inputStream.read()) != -1) respStr.append((char) r);
                 String tagOpen = "<elevation>";
                 String tagClose = "</elevation>";
                 if (respStr.indexOf(tagOpen) != -1) {
@@ -94,13 +85,12 @@ public class MyHelper {
                 }
                 inputStream.close();
             }
-        } catch (ClientProtocolException e) {
         } catch (IOException e) {
+            throw new RuntimeException(e);
         }
 
         return result;
     }
-
 
     public static boolean isOnline() {
         ConnectivityManager cm = (ConnectivityManager) TrainingApplication.getAppContext().getSystemService(Context.CONNECTIVITY_SERVICE);
@@ -132,7 +122,7 @@ public class MyHelper {
             }
 
         }
-        return number.doubleValue();
+        return Objects.requireNonNull(number).doubleValue();
     }
 
     public static double mps2userUnit(double speed) {
@@ -256,8 +246,7 @@ public class MyHelper {
     }
 
     public static String formatRank(int i) {
-        int j = i % 10,
-                k = i % 100;
+        int j = i % 10, k = i % 100;
         if (j == 1 && k != 11) {
             return i + "st";
         }

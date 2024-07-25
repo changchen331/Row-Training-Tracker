@@ -1,5 +1,6 @@
 package com.atrainingtracker.trainingtracker.views;
 
+import android.annotation.SuppressLint;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.DialogInterface.OnMultiChoiceClickListener;
@@ -15,8 +16,7 @@ import java.util.LinkedList;
 import java.util.List;
 
 // code taken from http://v4all123.blogspot.de/2013/09/spinner-with-multiple-selection-in.html
-public class MultiSelectionSpinner extends AppCompatSpinner implements
-        OnMultiChoiceClickListener {
+public class MultiSelectionSpinner extends AppCompatSpinner implements OnMultiChoiceClickListener {
     String[] _items = null;
     boolean[] mSelection = null;
 
@@ -26,16 +26,14 @@ public class MultiSelectionSpinner extends AppCompatSpinner implements
     public MultiSelectionSpinner(Context context) {
         super(context);
 
-        simple_adapter = new ArrayAdapter<String>(context,
-                android.R.layout.simple_spinner_item);
+        simple_adapter = new ArrayAdapter<>(context, android.R.layout.simple_spinner_item);
         super.setAdapter(simple_adapter);
     }
 
     public MultiSelectionSpinner(Context context, AttributeSet attrs) {
         super(context, attrs);
 
-        simple_adapter = new ArrayAdapter<String>(context,
-                android.R.layout.simple_spinner_item);
+        simple_adapter = new ArrayAdapter<>(context, android.R.layout.simple_spinner_item);
         super.setAdapter(simple_adapter);
     }
 
@@ -55,11 +53,11 @@ public class MultiSelectionSpinner extends AppCompatSpinner implements
             simple_adapter.clear();
             simple_adapter.add(buildSelectedItemString());
         } else {
-            throw new IllegalArgumentException(
-                    "Argument 'which' is out of bounds.");
+            throw new IllegalArgumentException("Argument 'which' is out of bounds.");
         }
     }
 
+    @SuppressLint("ClickableViewAccessibility")
     @Override
     public boolean performClick() {
         AlertDialog.Builder builder = new AlertDialog.Builder(getContext());
@@ -70,8 +68,7 @@ public class MultiSelectionSpinner extends AppCompatSpinner implements
 
     @Override
     public void setAdapter(SpinnerAdapter adapter) {
-        throw new RuntimeException(
-                "setAdapter is not supported by MultiSelectSpinner.");
+        throw new RuntimeException("setAdapter is not supported by MultiSelectSpinner.");
     }
 
     public void setItems(String[] items) {
@@ -83,7 +80,7 @@ public class MultiSelectionSpinner extends AppCompatSpinner implements
     }
 
     public void setItems(List<String> items) {
-        _items = items.toArray(new String[items.size()]);
+        _items = items.toArray(new String[0]);
         mSelection = new boolean[_items.length];
         simple_adapter.clear();
         simple_adapter.add(_items[0]);
@@ -101,9 +98,7 @@ public class MultiSelectionSpinner extends AppCompatSpinner implements
     }
 
     public void setSelection(List<String> selection) {
-        for (int i = 0; i < mSelection.length; i++) {
-            mSelection[i] = false;
-        }
+        Arrays.fill(mSelection, false);
         for (String sel : selection) {
             for (int j = 0; j < _items.length; ++j) {
                 if (_items[j].equals(sel)) {
@@ -116,29 +111,23 @@ public class MultiSelectionSpinner extends AppCompatSpinner implements
     }
 
     public void setSelection(int index) {
-        for (int i = 0; i < mSelection.length; i++) {
-            mSelection[i] = false;
-        }
+        Arrays.fill(mSelection, false);
         if (index >= 0 && index < mSelection.length) {
             mSelection[index] = true;
         } else {
-            throw new IllegalArgumentException("Index " + index
-                    + " is out of bounds.");
+            throw new IllegalArgumentException("Index " + index + " is out of bounds.");
         }
         simple_adapter.clear();
         simple_adapter.add(buildSelectedItemString());
     }
 
     public void setSelection(int[] selectedIndicies) {
-        for (int i = 0; i < mSelection.length; i++) {
-            mSelection[i] = false;
-        }
+        Arrays.fill(mSelection, false);
         for (int index : selectedIndicies) {
             if (index >= 0 && index < mSelection.length) {
                 mSelection[index] = true;
             } else {
-                throw new IllegalArgumentException("Index " + index
-                        + " is out of bounds.");
+                throw new IllegalArgumentException("Index " + index + " is out of bounds.");
             }
         }
         simple_adapter.clear();
@@ -146,7 +135,7 @@ public class MultiSelectionSpinner extends AppCompatSpinner implements
     }
 
     public List<String> getSelectedStrings() {
-        List<String> selection = new LinkedList<String>();
+        List<String> selection = new LinkedList<>();
         for (int i = 0; i < _items.length; ++i) {
             if (mSelection[i]) {
                 selection.add(_items[i]);
@@ -156,7 +145,7 @@ public class MultiSelectionSpinner extends AppCompatSpinner implements
     }
 
     public List<Integer> getSelectedIndicies() {
-        List<Integer> selection = new LinkedList<Integer>();
+        List<Integer> selection = new LinkedList<>();
         for (int i = 0; i < _items.length; ++i) {
             if (mSelection[i]) {
                 selection.add(i);

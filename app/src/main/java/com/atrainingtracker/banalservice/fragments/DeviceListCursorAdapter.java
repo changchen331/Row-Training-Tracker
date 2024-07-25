@@ -1,12 +1,11 @@
 package com.atrainingtracker.banalservice.fragments;
 
+import android.annotation.SuppressLint;
 import android.content.Context;
 import android.database.Cursor;
 import android.util.Log;
 import android.view.View;
 import android.widget.CheckBox;
-import android.widget.CompoundButton;
-import android.widget.CompoundButton.OnCheckedChangeListener;
 import android.widget.ImageView;
 import android.widget.SimpleCursorAdapter;
 import android.widget.TextView;
@@ -39,11 +38,11 @@ public class DeviceListCursorAdapter extends SimpleCursorAdapter {
 
         mContext = context;
         mPairingChangedInterface = pairingChangedInterface;
-        mDeviceId2tvMainValue = new HashMap<Long, TextView>();
+        mDeviceId2tvMainValue = new HashMap<>();
     }
 
     public void deleteLookupTable() {
-        mDeviceId2tvMainValue = new HashMap<Long, TextView>();
+        mDeviceId2tvMainValue = new HashMap<>();
     }
 
     @Override
@@ -59,11 +58,11 @@ public class DeviceListCursorAdapter extends SimpleCursorAdapter {
         TextView tvEquipment = row.findViewById(R.id.tvEquipment);
 
         // get the data
-        DeviceType deviceType = DeviceType.valueOf(cursor.getString(cursor.getColumnIndex(DevicesDbHelper.DEVICE_TYPE)));
-        Protocol protocol = Protocol.valueOf(cursor.getString(cursor.getColumnIndex(DevicesDbHelper.PROTOCOL)));
-        String name = cursor.getString(cursor.getColumnIndex(DevicesDbHelper.NAME));
-        int paired = cursor.getInt(cursor.getColumnIndex(DevicesDbHelper.PAIRED));
-        final long deviceId = cursor.getLong(cursor.getColumnIndex(DevicesDbHelper.C_ID));
+        @SuppressLint("Range") DeviceType deviceType = DeviceType.valueOf(cursor.getString(cursor.getColumnIndex(DevicesDbHelper.DEVICE_TYPE)));
+        @SuppressLint("Range") Protocol protocol = Protocol.valueOf(cursor.getString(cursor.getColumnIndex(DevicesDbHelper.PROTOCOL)));
+        @SuppressLint("Range") String name = cursor.getString(cursor.getColumnIndex(DevicesDbHelper.NAME));
+        @SuppressLint("Range") int paired = cursor.getInt(cursor.getColumnIndex(DevicesDbHelper.PAIRED));
+        @SuppressLint("Range") final long deviceId = cursor.getLong(cursor.getColumnIndex(DevicesDbHelper.C_ID));
 
         // bind the data to the views
         ivIcon.setImageResource(UIHelper.getIconId(deviceType, protocol));
@@ -75,13 +74,9 @@ public class DeviceListCursorAdapter extends SimpleCursorAdapter {
         cbPaired.setText(R.string.pairedText);
         cbPaired.setText(""); // make an empty text
         cbPaired.setChecked(paired > 0);
-        cbPaired.setOnCheckedChangeListener(new OnCheckedChangeListener() {
-
-            @Override
-            public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
-                if (DEBUG) Log.d(TAG, "onPairingChanged");
-                mPairingChangedInterface.onPairingChanged(deviceId, isChecked);
-            }
+        cbPaired.setOnCheckedChangeListener((buttonView, isChecked) -> {
+            if (DEBUG) Log.d(TAG, "onPairingChanged");
+            mPairingChangedInterface.onPairingChanged(deviceId, isChecked);
         });
 
         String equipment = new EquipmentDbHelper(mContext).getLinkedEquipmentStringFromDeviceId(deviceId);

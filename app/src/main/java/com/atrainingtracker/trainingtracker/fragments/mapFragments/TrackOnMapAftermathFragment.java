@@ -1,13 +1,18 @@
 package com.atrainingtracker.trainingtracker.fragments.mapFragments;
 
+import android.annotation.SuppressLint;
 import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
 import android.graphics.Bitmap;
 import android.graphics.drawable.BitmapDrawable;
+import android.os.Build;
 import android.os.Bundle;
 import android.util.Log;
+
+import androidx.annotation.NonNull;
+import androidx.annotation.RequiresApi;
 
 import com.atrainingtracker.R;
 import com.atrainingtracker.banalservice.sensor.SensorType;
@@ -21,9 +26,7 @@ import com.google.android.gms.maps.GoogleMap;
 import com.google.android.gms.maps.model.BitmapDescriptorFactory;
 import com.google.android.gms.maps.model.MarkerOptions;
 
-
-public class TrackOnMapAftermathFragment
-        extends TrackOnMapBaseFragment {
+public class TrackOnMapAftermathFragment extends TrackOnMapBaseFragment {
     public static final String TAG = TrackOnMapAftermathFragment.class.getName();
     private static final boolean DEBUG = TrainingApplication.DEBUG & false;
 
@@ -60,13 +63,13 @@ public class TrackOnMapAftermathFragment
         setHasOptionsMenu(true);
     }
 
+    @RequiresApi(api = Build.VERSION_CODES.TIRAMISU)
     @Override
     public void onResume() {
         super.onResume();
 
-        getActivity().registerReceiver(mFinishedCalculatingExtremaValueReceiver, mFinishedCalculatingExtremaValueFilter);
+        requireActivity().registerReceiver(mFinishedCalculatingExtremaValueReceiver, mFinishedCalculatingExtremaValueFilter, Context.RECEIVER_EXPORTED);
     }
-
 
     ////////////////////////////////////////////////////////////////////////////////////////////////
     // map methods
@@ -77,13 +80,15 @@ public class TrackOnMapAftermathFragment
         super.onPause();
 
         try {
-            getActivity().unregisterReceiver(mFinishedCalculatingExtremaValueReceiver);
+            requireActivity().unregisterReceiver(mFinishedCalculatingExtremaValueReceiver);
         } catch (Exception e) {
+            throw new RuntimeException(e);
         }
     }
 
+    @SuppressLint("MissingPermission")
     @Override
-    public void onMapReady(final GoogleMap map) {
+    public void onMapReady(@NonNull final GoogleMap map) {
         if (DEBUG) Log.i(TAG, "onMapReady");
         super.onMapReady(map);
 
@@ -103,7 +108,7 @@ public class TrackOnMapAftermathFragment
 
             MyMapViewHolder myMapViewHolder = new MyMapViewHolder(mMap, null);
 
-            TrackOnMapHelper trackOnMapHelper = ((TrainingApplication) getActivity().getApplication()).trackOnMapHelper;
+            TrackOnMapHelper trackOnMapHelper = ((TrainingApplication) requireActivity().getApplication()).trackOnMapHelper;
 
             trackOnMapHelper.showTrackOnMap(myMapViewHolder, mWorkoutID, Roughness.ALL, TrackOnMapHelper.TrackType.GPS, false, false);
             trackOnMapHelper.showTrackOnMap(myMapViewHolder, mWorkoutID, Roughness.ALL, TrackOnMapHelper.TrackType.NETWORK, false, false);
@@ -112,7 +117,6 @@ public class TrackOnMapAftermathFragment
 
         // we always show the best track
         super.showTrackOnMap(zoomToShowMap);
-
 
         if (DEBUG) Log.i(TAG, "end of showTrackOnMap()");
     }
@@ -140,11 +144,9 @@ public class TrackOnMapAftermathFragment
             case TORQUE:
                 addExtremaMarker(sensorType, ExtremaType.MAX, null);
                 break;
-
             case LINE_DISTANCE_m:
                 addExtremaMarker(sensorType, ExtremaType.MAX, R.drawable.max_line_distance_logo_map);
                 break;
-
         }
     }
 
@@ -159,14 +161,9 @@ public class TrackOnMapAftermathFragment
         WorkoutSamplesDatabaseManager.LatLngValue latLngValue = WorkoutSamplesDatabaseManager.getExtremaPosition(mWorkoutID, sensorType, extremaType);
 
         if (latLngValue != null) {
-            MarkerOptions markerOptions = new MarkerOptions()
-                    .position(latLngValue.latLng)
-                    .title(getString(R.string.location_extrema_format, extremaType.name(),
-                            getString(sensorType.getFullNameId()),
-                            sensorType.getMyFormatter().format(latLngValue.value),
-                            getString(MyHelper.getShortUnitsId(sensorType))));
+            MarkerOptions markerOptions = new MarkerOptions().position(latLngValue.latLng).title(getString(R.string.location_extrema_format, extremaType.name(), getString(sensorType.getFullNameId()), sensorType.getMyFormatter().format(latLngValue.value), getString(MyHelper.getShortUnitsId(sensorType))));
             if (drawableId != null) {
-                Bitmap marker = ((BitmapDrawable) getResources().getDrawable(drawableId)).getBitmap();
+                @SuppressLint("UseCompatLoadingForDrawables") Bitmap marker = ((BitmapDrawable) getResources().getDrawable(drawableId)).getBitmap();
                 markerOptions.icon(BitmapDescriptorFactory.fromBitmap(marker));
             }
             mMap.addMarker(markerOptions);
@@ -175,6 +172,4 @@ public class TrackOnMapAftermathFragment
                 Log.i(TAG, "unfortunately, there seems to be no " + extremaType.name() + " for " + sensorType.name() + " available.");
         }
     }
-
-
 }

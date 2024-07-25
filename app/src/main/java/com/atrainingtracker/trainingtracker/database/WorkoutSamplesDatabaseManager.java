@@ -1,5 +1,6 @@
 package com.atrainingtracker.trainingtracker.database;
 
+import android.annotation.SuppressLint;
 import android.content.Context;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
@@ -19,6 +20,7 @@ public class WorkoutSamplesDatabaseManager {
     private static final String TAG = WorkoutSamplesDatabaseManager.class.getName();
     private static final boolean DEBUG = TrainingApplication.DEBUG && false;
     private static WorkoutSamplesDatabaseManager cInstance;
+    @SuppressLint("StaticFieldLeak")
     private static WorkoutSamplesDbHelper cWorkoutSamplesDbHelper;
     private int mOpenCounter;
     private SQLiteDatabase mDatabase;
@@ -32,8 +34,7 @@ public class WorkoutSamplesDatabaseManager {
 
     public static synchronized WorkoutSamplesDatabaseManager getInstance() {
         if (cInstance == null) {
-            throw new IllegalStateException(WorkoutSamplesDatabaseManager.class.getSimpleName() +
-                    " is not initialized, call initializeInstance(..) method first.");
+            throw new IllegalStateException(WorkoutSamplesDatabaseManager.class.getSimpleName() + " is not initialized, call initializeInstance(..) method first.");
         }
 
         return cInstance;
@@ -42,6 +43,7 @@ public class WorkoutSamplesDatabaseManager {
     ////////////////////////////////////////////////////////////////////////////////////////////////
     // some high level helper methods
     ////////////////////////////////////////////////////////////////////////////////////////////////
+    @SuppressLint("Range")
     public static Double calcExtremaValue(String baseFileName, ExtremaType extremaType, SensorType sensorType) {
         if (DEBUG)
             Log.i(TAG, "calcExtremaValue(" + baseFileName + ", " + extremaType.name() + ", " + sensorType.name() + ")");
@@ -62,8 +64,8 @@ public class WorkoutSamplesDatabaseManager {
         if ((extremaType == ExtremaType.AVG) & (sensorType == SensorType.SPEED_mps)) {
             if (DEBUG) Log.i(TAG, "calculating average speed based on distance and active time");
 
-            Double distance = WorkoutSummariesDatabaseManager.getInstance().getDouble(baseFileName, WorkoutSummaries.DISTANCE_TOTAL_m);
-            Integer time = WorkoutSummariesDatabaseManager.getInstance().getInt(baseFileName, WorkoutSummaries.TIME_ACTIVE_s);
+            Double distance = WorkoutSummariesDatabaseManager.getDouble(baseFileName, WorkoutSummaries.DISTANCE_TOTAL_m);
+            Integer time = WorkoutSummariesDatabaseManager.getInt(baseFileName, WorkoutSummaries.TIME_ACTIVE_s);
 
             if (distance != null & time != null) {
                 if (DEBUG)
@@ -90,8 +92,7 @@ public class WorkoutSamplesDatabaseManager {
                 case MIN:
                     String[] columns = new String[]{extremaType.name() + "(" + sensorType.name() + ")"};
 
-                    cursor = db.query(getTableName(baseFileName),
-                            columns,  // columns,
+                    cursor = db.query(getTableName(baseFileName), columns,  // columns,
                             null, // selection, (here something like MAX(?))
                             null, // new String[] {sensorType.name()}, // selectionArgs,
                             null, null, null); // groupBy, having, orderBy)
@@ -101,13 +102,7 @@ public class WorkoutSamplesDatabaseManager {
                     break;
 
                 case START:
-                    cursor = db.query(getTableName(baseFileName),
-                            null,
-                            null,
-                            null,
-                            null,
-                            null,
-                            null);  // sorting?
+                    cursor = db.query(getTableName(baseFileName), null, null, null, null, null, null);  // sorting?
 
                     while (cursor.moveToNext() && extremaValue == null) {
                         if (dataValid(cursor, sensorType.name())) {
@@ -118,13 +113,7 @@ public class WorkoutSamplesDatabaseManager {
                     break;
 
                 case END:
-                    cursor = db.query(getTableName(baseFileName),
-                            null,
-                            null,
-                            null,
-                            null,
-                            null,
-                            null);  // sorting?
+                    cursor = db.query(getTableName(baseFileName), null, null, null, null, null, null);  // sorting?
 
                     cursor.moveToLast();
                     while (cursor.moveToPrevious() && extremaValue == null) {
@@ -171,10 +160,7 @@ public class WorkoutSamplesDatabaseManager {
         double average = 0.0;
 
         SQLiteDatabase summariesDb = WorkoutSummariesDatabaseManager.getInstance().getOpenDatabase();
-        Cursor summariesCursor = summariesDb.query(WorkoutSummaries.TABLE,
-                new String[]{WorkoutSummaries.FILE_BASE_NAME},
-                null, null,
-                null, null, null);
+        Cursor summariesCursor = summariesDb.query(WorkoutSummaries.TABLE, new String[]{WorkoutSummaries.FILE_BASE_NAME}, null, null, null, null, null);
 
 
         while (summariesCursor.moveToNext()) {
@@ -184,12 +170,8 @@ public class WorkoutSamplesDatabaseManager {
             SQLiteDatabase samplesDb = getInstance().getOpenDatabase();
             Cursor samplesCursor = samplesDb.query(getTableName(name), // Table
                     new String[]{SensorType.LATITUDE.name(), SensorType.LONGITUDE.name(), sensorType.name()}, // columns
-                    SensorType.LATITUDE.name() + " > ? AND " +
-                            SensorType.LATITUDE.name() + " < ? AND " +
-                            SensorType.LONGITUDE.name() + " > ? AND " +
-                            SensorType.LONGITUDE.name() + " < ?", // selection
-                    new String[]{Double.toString(p3.latitude), Double.toString(p1.latitude), Double.toString(p4.longitude), Double.toString(p2.longitude)},
-                    null, null, null);
+                    SensorType.LATITUDE.name() + " > ? AND " + SensorType.LATITUDE.name() + " < ? AND " + SensorType.LONGITUDE.name() + " > ? AND " + SensorType.LONGITUDE.name() + " < ?", // selection
+                    new String[]{Double.toString(p3.latitude), Double.toString(p1.latitude), Double.toString(p4.longitude), Double.toString(p2.longitude)}, null, null, null);
 
             if (DEBUG)
                 Log.i(TAG, "got cursor with " + samplesCursor.getCount() + " entries for " + name);
@@ -200,9 +182,7 @@ public class WorkoutSamplesDatabaseManager {
             int sensorIndex = samplesCursor.getColumnIndex(sensorType.name());
 
             while (samplesCursor.moveToNext()) {
-                if (dataValid(samplesCursor, sensorType.name())
-                        && dataValid(samplesCursor, SensorType.LATITUDE.name())
-                        && dataValid(samplesCursor, SensorType.LONGITUDE.name())) {
+                if (dataValid(samplesCursor, sensorType.name()) && dataValid(samplesCursor, SensorType.LATITUDE.name()) && dataValid(samplesCursor, SensorType.LONGITUDE.name())) {
                     testLocation.setLatitude(samplesCursor.getDouble(latIndex));
                     testLocation.setLongitude(samplesCursor.getDouble(lonIndex));
 
@@ -236,8 +216,7 @@ public class WorkoutSamplesDatabaseManager {
      * @param bearing Bearing in degrees
      * @return End-point from the source given the desired range and bearing.
      */
-    public static LatLng calculateDerivedPosition(LatLng point,
-                                                  double range, double bearing) {
+    public static LatLng calculateDerivedPosition(LatLng point, double range, double bearing) {
         double EarthRadius = 6371000; // m
 
         double latA = Math.toRadians(point.latitude);
@@ -245,15 +224,9 @@ public class WorkoutSamplesDatabaseManager {
         double angularDistance = range / EarthRadius;
         double trueCourse = Math.toRadians(bearing);
 
-        double lat = Math.asin(
-                Math.sin(latA) * Math.cos(angularDistance) +
-                        Math.cos(latA) * Math.sin(angularDistance)
-                                * Math.cos(trueCourse));
+        double lat = Math.asin(Math.sin(latA) * Math.cos(angularDistance) + Math.cos(latA) * Math.sin(angularDistance) * Math.cos(trueCourse));
 
-        double dlon = Math.atan2(
-                Math.sin(trueCourse) * Math.sin(angularDistance)
-                        * Math.cos(latA),
-                Math.cos(angularDistance) - Math.sin(latA) * Math.sin(lat));
+        double dlon = Math.atan2(Math.sin(trueCourse) * Math.sin(angularDistance) * Math.cos(latA), Math.cos(angularDistance) - Math.sin(latA) * Math.sin(lat));
 
         double lon = ((lonA + dlon + Math.PI) % (Math.PI * 2)) - Math.PI;
 
@@ -265,6 +238,7 @@ public class WorkoutSamplesDatabaseManager {
         return newPoint;
     }
 
+    @SuppressLint("Range")
     public static LatLngValue getExtremaPosition(long workoutId, SensorType sensorType, ExtremaType extremaType) {
         if (DEBUG)
             Log.i(TAG, "getExtremaPosition for " + extremaType.name() + " " + sensorType.name());
@@ -285,7 +259,7 @@ public class WorkoutSamplesDatabaseManager {
 
             WorkoutSamplesDatabaseManager databaseManager = WorkoutSamplesDatabaseManager.getInstance();
             SQLiteDatabase samplesDb = databaseManager.getOpenDatabase();
-            Cursor cursor = null;
+            Cursor cursor;
 
             // depending on the extremaType, there are two alternative ways to find the corresponding row
             switch (extremaType) {
@@ -321,14 +295,10 @@ public class WorkoutSamplesDatabaseManager {
                             "1"); // limit  TODO: might be increased in the future?
             } // end of switch
 
-            if (cursor.moveToFirst()
-                    && !cursor.isNull(cursor.getColumnIndex(SensorType.LATITUDE.name()))
-                    && !cursor.isNull(cursor.getColumnIndex(SensorType.LONGITUDE.name()))) {
+            if (cursor.moveToFirst() && !cursor.isNull(cursor.getColumnIndex(SensorType.LATITUDE.name())) && !cursor.isNull(cursor.getColumnIndex(SensorType.LONGITUDE.name()))) {
                 if (DEBUG)
                     Log.i(TAG, "got a valid location for " + extremaType.name() + " of " + sensorType.name());
-                result = new LatLngValue(new LatLng(cursor.getDouble(cursor.getColumnIndex(SensorType.LATITUDE.name())),
-                        cursor.getDouble(cursor.getColumnIndex(SensorType.LONGITUDE.name()))),
-                        cursor.getDouble(cursor.getColumnIndex(sensorType.name())));
+                result = new LatLngValue(new LatLng(cursor.getDouble(cursor.getColumnIndex(SensorType.LATITUDE.name())), cursor.getDouble(cursor.getColumnIndex(SensorType.LONGITUDE.name()))), cursor.getDouble(cursor.getColumnIndex(sensorType.name())));
             } else {
                 if (DEBUG)
                     Log.d(TAG, "did not get a valid location for " + extremaType.name() + " of " + sensorType.name());
@@ -373,11 +343,10 @@ public class WorkoutSamplesDatabaseManager {
     }
 
     // stolen from http://stackoverflow.com/questions/4719594/checking-if-a-column-exists-in-an-application-database-in-android
+    @SuppressLint("LongLogTag")
     private static boolean existsColumnInTable(SQLiteDatabase inDatabase, String inTable, String columnToCheck) {
-        Cursor mCursor = null;
-        try {
+        try (Cursor mCursor = inDatabase.rawQuery("SELECT * FROM " + inTable + " LIMIT 0", null)) {
             // Query 1 row
-            mCursor = inDatabase.rawQuery("SELECT * FROM " + inTable + " LIMIT 0", null);
 
             // getColumnIndex() gives us the index (0 to ...) of the column - otherwise we get a -1
             return mCursor.getColumnIndex(columnToCheck) != -1;
@@ -386,14 +355,13 @@ public class WorkoutSamplesDatabaseManager {
             // Something went wrong. Missing the database? The table?
             Log.d("... - existsColumnInTable", "When checking whether a column exists in the table, an error occurred: " + Exp.getMessage());
             return false;
-        } finally {
-            if (mCursor != null) mCursor.close();
         }
     }
 
     /**
      * stolen from BaseExporter
      */
+    @SuppressLint("Range")
     protected static boolean dataValid(Cursor cursor, String string) {
         if (cursor.getColumnIndex(string) == -1) {
             if (DEBUG) Log.d(TAG, "dataValid: no such columnIndex!: " + string);
@@ -411,25 +379,25 @@ public class WorkoutSamplesDatabaseManager {
     }
 
     protected static String makeColumns(List<SensorType> sensorTypes) {
-        String result = WorkoutSamplesDbHelper.BASE_COLUMNS;
+        StringBuilder result = new StringBuilder(WorkoutSamplesDbHelper.BASE_COLUMNS);
 
         for (SensorType sensorType : sensorTypes) {
             switch (sensorType.getSensorValueType()) {
                 case INTEGER:
-                    result += ", " + sensorType.name() + " int";
+                    result.append(", ").append(sensorType.name()).append(" int");
                     break;
                 case DOUBLE:
-                    result += ", " + sensorType.name() + " real";
+                    result.append(", ").append(sensorType.name()).append(" real");
                     break;
                 case STRING:
-                    result += ", " + sensorType.name() + " text";
+                    result.append(", ").append(sensorType.name()).append(" text");
                     break;
                 default:
                     if (DEBUG) Log.d(TAG, "WTF: this should never ever happen: unknown type");
             }
         }
 
-        return result;
+        return result.toString();
     }
 
 
@@ -473,8 +441,7 @@ public class WorkoutSamplesDatabaseManager {
         public static final String DB_NAME = "WorkoutSamples.db";
         public static final String C_ID = BaseColumns._ID;
         public static final String TIME = "time";
-        protected static final String BASE_COLUMNS = C_ID + " INTEGER PRIMARY KEY AUTOINCREMENT, "
-                + TIME + " DATETIME DEFAULT CURRENT_TIMESTAMP";
+        protected static final String BASE_COLUMNS = C_ID + " INTEGER PRIMARY KEY AUTOINCREMENT, " + TIME + " DATETIME DEFAULT CURRENT_TIMESTAMP";
         static final String TAG = "WorkoutSamplesDbHelper";
         static final boolean DEBUG = TrainingApplication.DEBUG & true;
         protected Context mContext;

@@ -1,5 +1,6 @@
 package com.atrainingtracker.trainingtracker.segments;
 
+import android.annotation.SuppressLint;
 import android.app.Activity;
 import android.content.Context;
 import android.database.Cursor;
@@ -11,6 +12,7 @@ import android.widget.Button;
 import android.widget.LinearLayout;
 import android.widget.TextView;
 
+import androidx.annotation.NonNull;
 import androidx.cursoradapter.widget.CursorAdapter;
 
 import com.atrainingtracker.R;
@@ -30,12 +32,10 @@ import com.google.android.gms.maps.GoogleMap;
 import com.google.android.gms.maps.MapView;
 import com.google.android.gms.maps.MapsInitializer;
 import com.google.android.gms.maps.OnMapReadyCallback;
-import com.google.android.gms.maps.model.LatLng;
 
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.Date;
-
 
 public class StarredSegmentsCursorAdapter extends CursorAdapter {
     protected static final String[] FROM = {Segments.SEGMENT_ID, Segments.C_ID, Segments.SEGMENT_NAME, Segments.DISTANCE, Segments.AVERAGE_GRADE, Segments.CLIMB_CATEGORY, Segments.PR_TIME, Segments.OWN_RANK, Segments.PR_DATE, Segments.LAST_UPDATED};
@@ -44,10 +44,12 @@ public class StarredSegmentsCursorAdapter extends CursorAdapter {
     protected Activity mActivity;
     protected Context mContext;
     // protected static final int[]    TO   = {R.id.tvSegmentName,  R.id.tvSegmentName, R.id.tvSegmentName,    R.id.tvSegmentDistance, R.id.tvSegmentAverageGrade, R.id.tvSegmentClimbCategory, R.id.tvSegmentPRTime, R.id.tvSegmentRank, R.id.tvSegmentPRDate, R.id.tvSegmentLastUpdated};
-    ShowSegmentDetailsInterface mShowSegmentDetailsListener = null;
+    ShowSegmentDetailsInterface mShowSegmentDetailsListener;
     DistanceFormatter distanceFormatter = new DistanceFormatter();
     TimeFormatter timeFormatter = new TimeFormatter();
+    @SuppressLint("SimpleDateFormat")
     SimpleDateFormat dateAndTimeFormat = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss'Z'"); // 2013-03-29T13:49:35Z
+    @SuppressLint("SimpleDateFormat")
     SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd");               // 2013-03-29
     StravaSegmentsHelper mStravaSegmentsHelper;
     private boolean isPlayServiceAvailable = true;
@@ -68,7 +70,7 @@ public class StarredSegmentsCursorAdapter extends CursorAdapter {
     public View newView(Context context, Cursor cursor, ViewGroup parent) {
         if (DEBUG) Log.i(TAG, "newView");
 
-        View row = LayoutInflater.from(context).inflate(R.layout.segment_list_row, null);
+        @SuppressLint("InflateParams") View row = LayoutInflater.from(context).inflate(R.layout.segment_list_row, null);
 
         ViewHolder viewHolder = new ViewHolder(null, null);
 
@@ -92,11 +94,12 @@ public class StarredSegmentsCursorAdapter extends CursorAdapter {
         return row;
     }
 
+    @SuppressLint({"Range", "DefaultLocale", "SetTextI18n"})
     @Override
     public void bindView(View view, Context context, Cursor cursor) {
         final ViewHolder viewHolder = (ViewHolder) view.getTag();
 
-        final long segmentId = cursor.getLong(cursor.getColumnIndex(Segments.SEGMENT_ID));
+        @SuppressLint("Range") final long segmentId = cursor.getLong(cursor.getColumnIndex(Segments.SEGMENT_ID));
         viewHolder.segmentId = segmentId;
 
         viewHolder.tvName.setText(cursor.getString(cursor.getColumnIndex(Segments.SEGMENT_NAME)));
@@ -119,7 +122,7 @@ public class StarredSegmentsCursorAdapter extends CursorAdapter {
                 Date date = dateAndTimeFormat.parse(prDate);
                 prDate = dateFormat.format(date);
             } catch (ParseException e) {
-                e.printStackTrace();
+                throw new RuntimeException(e);
             }
         } else {
             prDate = context.getString(R.string.tomorrow);
@@ -130,12 +133,9 @@ public class StarredSegmentsCursorAdapter extends CursorAdapter {
         } else {
             viewHolder.bUpdate.setText("updated: " + cursor.getString(cursor.getColumnIndex(Segments.LAST_UPDATED)));  // TODO: more detailed???
         }
-        viewHolder.bUpdate.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                viewHolder.bUpdate.setText("updating");
-                mStravaSegmentsHelper.getSegmentLeaderboard(segmentId);
-            }
+        viewHolder.bUpdate.setOnClickListener(view1 -> {
+            viewHolder.bUpdate.setText("updating");
+            mStravaSegmentsHelper.getSegmentLeaderboard(segmentId);
         });
 
         if (isPlayServiceAvailable) {
@@ -147,13 +147,7 @@ public class StarredSegmentsCursorAdapter extends CursorAdapter {
             viewHolder.mapView.setVisibility(View.GONE);
         }
 
-        viewHolder.llSegmentsHeader.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                mShowSegmentDetailsListener.startSegmentDetailsActivity(segmentId, SegmentDetailsActivity.SelectedFragment.LEADERBOARD);
-            }
-        });
-
+        viewHolder.llSegmentsHeader.setOnClickListener(view12 -> mShowSegmentDetailsListener.startSegmentDetailsActivity(segmentId, SegmentDetailsActivity.SelectedFragment.LEADERBOARD));
     }
 
     /**
@@ -166,14 +160,11 @@ public class StarredSegmentsCursorAdapter extends CursorAdapter {
         return (apiAvailability.isGooglePlayServicesAvailable(mContext) == ConnectionResult.SUCCESS);
     }
 
-
     public interface ShowSegmentDetailsInterface {
         void startSegmentDetailsActivity(long segmentId, SegmentDetailsActivity.SelectedFragment selectedFragment);
     }
 
-    public class ViewHolder
-            extends MyMapViewHolder
-            implements OnMapReadyCallback {
+    public class ViewHolder extends MyMapViewHolder implements OnMapReadyCallback {
 
         long segmentId;
         TextView tvName;
@@ -191,7 +182,7 @@ public class StarredSegmentsCursorAdapter extends CursorAdapter {
         }
 
         @Override
-        public void onMapReady(GoogleMap googleMap) {
+        public void onMapReady(@NonNull GoogleMap googleMap) {
             MapsInitializer.initialize(mContext);
             map = googleMap;
             showSegmentOnMap(segmentId);
@@ -219,12 +210,7 @@ public class StarredSegmentsCursorAdapter extends CursorAdapter {
 
                 // first, configure the map
                 map.getUiSettings().setMapToolbarEnabled(false);
-                map.setOnMapClickListener(new GoogleMap.OnMapClickListener() {
-                    @Override
-                    public void onMapClick(LatLng latLng) {
-                        mShowSegmentDetailsListener.startSegmentDetailsActivity(segmentId, SegmentDetailsActivity.SelectedFragment.MAP);
-                    }
-                });
+                map.setOnMapClickListener(latLng -> mShowSegmentDetailsListener.startSegmentDetailsActivity(segmentId, SegmentDetailsActivity.SelectedFragment.MAP));
 
                 ((TrainingApplication) mActivity.getApplication()).segmentOnMapHelper.showSegmentOnMap(mContext, this, segmentId, Roughness.ALL, true, false);
 

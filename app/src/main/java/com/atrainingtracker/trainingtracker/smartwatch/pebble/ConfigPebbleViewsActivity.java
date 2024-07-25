@@ -1,6 +1,5 @@
 package com.atrainingtracker.trainingtracker.smartwatch.pebble;
 
-
 import com.atrainingtracker.banalservice.ActivityType;
 import com.atrainingtracker.trainingtracker.TrainingApplication;
 import com.atrainingtracker.trainingtracker.activities.ConfigViewsActivity;

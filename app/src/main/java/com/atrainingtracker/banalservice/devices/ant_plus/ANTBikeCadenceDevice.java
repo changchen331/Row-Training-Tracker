@@ -9,13 +9,10 @@ import com.atrainingtracker.banalservice.sensor.MySensorManager;
 import com.atrainingtracker.banalservice.sensor.SensorType;
 import com.atrainingtracker.banalservice.sensor.ThresholdSensor;
 import com.dsi.ant.plugins.antplus.pcc.AntPlusBikeCadencePcc;
-import com.dsi.ant.plugins.antplus.pcc.AntPlusBikeCadencePcc.ICalculatedCadenceReceiver;
-import com.dsi.ant.plugins.antplus.pcc.defines.EventFlag;
 import com.dsi.ant.plugins.antplus.pccbase.AntPluginPcc;
 import com.dsi.ant.plugins.antplus.pccbase.PccReleaseHandle;
 
 import java.math.BigDecimal;
-import java.util.EnumSet;
 
 /**
  * A Bike Cadence ManagedSensor
@@ -40,7 +37,7 @@ public class ANTBikeCadenceDevice extends MyANTDevice {
 
     @Override
     protected void addSensors() {
-        mCadenceSensor = new ThresholdSensor<BigDecimal>(this, SensorType.CADENCE, CADENCE_THRESHOLD);
+        mCadenceSensor = new ThresholdSensor<>(this, SensorType.CADENCE, CADENCE_THRESHOLD);
 
         addSensor(mCadenceSensor);
     }
@@ -49,7 +46,7 @@ public class ANTBikeCadenceDevice extends MyANTDevice {
     protected PccReleaseHandle requestAccess() {
         myLog("requestAccess()");
 
-        return AntPlusBikeCadencePcc.requestAccess(mContext, mAntDeviceNumber, 0, false, new MyResultReceiver<AntPlusBikeCadencePcc>(), new MyDeviceStateChangeReceiver());
+        return AntPlusBikeCadencePcc.requestAccess(mContext, mAntDeviceNumber, 0, false, new MyResultReceiver<>(), new MyDeviceStateChangeReceiver());
     }
 
 
@@ -63,12 +60,7 @@ public class ANTBikeCadenceDevice extends MyANTDevice {
     protected void subscribeSpecificEvents() {
         if (cadencePcc != null) {
             myLog("before subscribeCalculatedCadenceEvent");
-            cadencePcc.subscribeCalculatedCadenceEvent(new ICalculatedCadenceReceiver() {
-                @Override
-                public void onNewCalculatedCadence(long estTimestamp, EnumSet<EventFlag> eventFlags, BigDecimal calculatedCadence) {
-                    mCadenceSensor.newValue(calculatedCadence);
-                }
-            });
+            cadencePcc.subscribeCalculatedCadenceEvent((estTimestamp, eventFlags, calculatedCadence) -> mCadenceSensor.newValue(calculatedCadence));
         }
     }
 

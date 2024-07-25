@@ -1,16 +1,17 @@
 package com.atrainingtracker.trainingtracker.segments;
 
+import android.annotation.SuppressLint;
 import android.os.Bundle;
 import android.util.Log;
+
+import androidx.annotation.NonNull;
 
 import com.atrainingtracker.trainingtracker.TrainingApplication;
 import com.atrainingtracker.trainingtracker.fragments.mapFragments.TrackOnMapBaseFragment;
 import com.google.android.gms.maps.GoogleMap;
 import com.google.android.gms.maps.model.Polyline;
 
-
-public class SimpleSegmentOnMapFragment
-        extends TrackOnMapBaseFragment {
+public class SimpleSegmentOnMapFragment extends TrackOnMapBaseFragment {
     public static final String TAG = SimpleSegmentOnMapFragment.class.getName();
     private static final boolean DEBUG = TrainingApplication.DEBUG && false;
 
@@ -42,7 +43,7 @@ public class SimpleSegmentOnMapFragment
 
         setHasOptionsMenu(true);
 
-        if (getArguments().containsKey(SegmentsDatabaseManager.Segments.SEGMENT_ID)) {
+        if (getArguments() != null && getArguments().containsKey(SegmentsDatabaseManager.Segments.SEGMENT_ID)) {
             mSegmentID = getArguments().getLong(SegmentsDatabaseManager.Segments.SEGMENT_ID);
         }
     }
@@ -55,13 +56,13 @@ public class SimpleSegmentOnMapFragment
         mSegmentOnMapLoaded = false;
     }
 
-
     ////////////////////////////////////////////////////////////////////////////////////////////////
     // map methods
     ////////////////////////////////////////////////////////////////////////////////////////////////
 
+    @SuppressLint("MissingPermission")
     @Override
-    public void onMapReady(final GoogleMap map) {
+    public void onMapReady(@NonNull final GoogleMap map) {
         if (DEBUG) Log.i(TAG, "onMapReady");
         super.onMapReady(map);
 
@@ -69,8 +70,5 @@ public class SimpleSegmentOnMapFragment
         if (mSegmentID > 0) {
             showSegmentOnMap(mSegmentID, true);
         }
-
-
     }
-
 }

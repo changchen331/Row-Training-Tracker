@@ -1,6 +1,5 @@
 package com.atrainingtracker.trainingtracker.activities;
 
-import android.content.DialogInterface;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.WindowManager;
@@ -18,10 +17,7 @@ import com.atrainingtracker.trainingtracker.fragments.ConfigViewsFragment;
 
 import java.util.ArrayList;
 
-public abstract class ConfigViewsActivity
-        extends AppCompatActivity
-        implements ConfigViewsFragment.ViewSetChangedListener {
-
+public abstract class ConfigViewsActivity extends AppCompatActivity implements ConfigViewsFragment.ViewSetChangedListener {
     public static final String VIEW_ID = "VIEW_ID";
     public static final String ACTIVITY_TYPE = "ACTIVITY_TYPE";
     public static final String NAME = "NAME";
@@ -106,22 +102,15 @@ public abstract class ConfigViewsActivity
         }
 
         AlertDialog.Builder builder = new AlertDialog.Builder(this);
-        builder.setTitle(R.string.choose_activity_type)
-                .setItems(activityTypes.toArray(new String[activityTypes.size()]), new DialogInterface.OnClickListener() {
-                    public void onClick(DialogInterface dialog, int which) {
-                        // The 'which' argument contains the index position of the selected item
-                        mActivityType = ActivityType.values()[which];
-                        showMainFragment();
-                    }
-                })
-                .setOnCancelListener(new DialogInterface.OnCancelListener() {
-                    @Override
-                    public void onCancel(DialogInterface dialogInterface) {
-                        Log.i(TAG, "choosing the activityType was canceled");
-                        // TODO???
-                        finish();
-                    }
-                });
+        builder.setTitle(R.string.choose_activity_type).setItems(activityTypes.toArray(new String[0]), (dialog, which) -> {
+            // The 'which' argument contains the index position of the selected item
+            mActivityType = ActivityType.values()[which];
+            showMainFragment();
+        }).setOnCancelListener(dialogInterface -> {
+            Log.i(TAG, "choosing the activityType was canceled");
+            // TODO???
+            finish();
+        });
 
         builder.create().show();
     }

@@ -14,9 +14,7 @@ import com.atrainingtracker.trainingtracker.TrainingApplication;
 import com.atrainingtracker.trainingtracker.onlinecommunities.BaseGetAccessTokenActivity;
 import com.atrainingtracker.trainingtracker.onlinecommunities.runkeeper.RunkeeperGetAccessTokenActivity;
 
-
-public class RunkeeperUploadFragment extends androidx.preference.PreferenceFragmentCompat
-        implements SharedPreferences.OnSharedPreferenceChangeListener {
+public class RunkeeperUploadFragment extends androidx.preference.PreferenceFragmentCompat implements SharedPreferences.OnSharedPreferenceChangeListener {
     public static final int GET_RUNKEEPER_ACCESS_TOKEN = 4;
     private static final boolean DEBUG = TrainingApplication.DEBUG && false;
     private static final String TAG = RunkeeperUploadFragment.class.getName();
@@ -24,14 +22,13 @@ public class RunkeeperUploadFragment extends androidx.preference.PreferenceFragm
 
     private SharedPreferences mSharedPreferences;
 
-
     @Override
     public void onCreatePreferences(Bundle savedInstanceState, String rootKey) {
         if (DEBUG) Log.i(TAG, "onCreatePreferences(savedInstanceState, rootKey=" + rootKey + ")");
 
         setPreferencesFromResource(R.xml.prefs, rootKey);
 
-        mRunkeeperUpload = (CheckBoxPreference) this.getPreferenceScreen().findPreference(TrainingApplication.SP_UPLOAD_TO_RUNKEEPER);
+        mRunkeeperUpload = this.getPreferenceScreen().findPreference(TrainingApplication.SP_UPLOAD_TO_RUNKEEPER);
     }
 
     @Override
@@ -39,7 +36,7 @@ public class RunkeeperUploadFragment extends androidx.preference.PreferenceFragm
         super.onResume();
         if (DEBUG) Log.i(TAG, "onResume()");
 
-        mSharedPreferences = PreferenceManager.getDefaultSharedPreferences(getActivity());
+        mSharedPreferences = PreferenceManager.getDefaultSharedPreferences(requireActivity());
         mSharedPreferences.registerOnSharedPreferenceChangeListener(this);
     }
 
@@ -50,7 +47,6 @@ public class RunkeeperUploadFragment extends androidx.preference.PreferenceFragm
         // Unregister the listener whenever a key changes
         mSharedPreferences.unregisterOnSharedPreferenceChangeListener(this);
     }
-
 
     @Override
     public void onSharedPreferenceChanged(SharedPreferences sharedPreferences, String key) {
@@ -85,7 +81,6 @@ public class RunkeeperUploadFragment extends androidx.preference.PreferenceFragm
                     TrainingApplication.deleteRunkeeperToken();
                     mRunkeeperUpload.setChecked(false);
                 }
-
                 break;
         }
     }

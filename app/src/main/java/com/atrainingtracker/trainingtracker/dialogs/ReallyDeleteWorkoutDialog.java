@@ -1,11 +1,12 @@
 package com.atrainingtracker.trainingtracker.dialogs;
 
+import android.annotation.SuppressLint;
 import android.app.Activity;
 import android.app.Dialog;
-import android.content.DialogInterface;
 import android.os.Bundle;
 import android.util.Log;
 
+import androidx.annotation.NonNull;
 import androidx.appcompat.app.AlertDialog;
 import androidx.fragment.app.DialogFragment;
 
@@ -19,6 +20,7 @@ public class ReallyDeleteWorkoutDialog extends DialogFragment {
     ReallyDeleteDialogInterface mReallyDeleteDialogListener;
     private long mWorkoutId;
 
+    @SuppressLint("LongLogTag")
     public static ReallyDeleteWorkoutDialog newInstance(long workoutId) {
         if (DEBUG) Log.i(TAG, "newInstance");
 
@@ -32,7 +34,7 @@ public class ReallyDeleteWorkoutDialog extends DialogFragment {
     }
 
     @Override
-    public void onAttach(Activity activity) {
+    public void onAttach(@NonNull Activity activity) {
         super.onAttach(activity);
         // Verify that the host activity implements the callback interface
         try {
@@ -40,40 +42,31 @@ public class ReallyDeleteWorkoutDialog extends DialogFragment {
             mReallyDeleteDialogListener = (ReallyDeleteDialogInterface) activity;
         } catch (ClassCastException e) {
             // The activity doesn't implement the interface, throw exception
-            throw new ClassCastException(activity.toString() + " must implement ReallyDeleteDialogListener");
+            throw new ClassCastException(activity + " must implement ReallyDeleteDialogListener");
         }
     }
-
 
     /**
      * Called when the activity is first created.
      */
+    @SuppressLint("LongLogTag")
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         if (DEBUG) Log.d(TAG, "onCreate");
 
-        mWorkoutId = getArguments().getLong(WorkoutSummaries.WORKOUT_ID);
+        mWorkoutId = requireArguments().getLong(WorkoutSummaries.WORKOUT_ID);
     }
 
 
+    @NonNull
     @Override
     public Dialog onCreateDialog(Bundle savedInstanceState) {
-        AlertDialog.Builder builder = new AlertDialog.Builder(getActivity());
-        builder.setTitle(R.string.delete_workout)
-                .setMessage(R.string.really_delete_workout)
-                .setIcon(android.R.drawable.ic_menu_delete)
-                .setPositiveButton(R.string.delete_workout, new DialogInterface.OnClickListener() {
-                    public void onClick(DialogInterface dialog, int whichButton) {
-                        mReallyDeleteDialogListener.reallyDeleteWorkout(mWorkoutId);
-                        dialog.dismiss();
-                    }
-                })
-                .setNegativeButton(R.string.Cancel, new DialogInterface.OnClickListener() {
-                    public void onClick(DialogInterface dialog, int which) {
-                        dialog.dismiss();
-                    }
-                });
+        AlertDialog.Builder builder = new AlertDialog.Builder(requireActivity());
+        builder.setTitle(R.string.delete_workout).setMessage(R.string.really_delete_workout).setIcon(android.R.drawable.ic_menu_delete).setPositiveButton(R.string.delete_workout, (dialog, whichButton) -> {
+            mReallyDeleteDialogListener.reallyDeleteWorkout(mWorkoutId);
+            dialog.dismiss();
+        }).setNegativeButton(R.string.Cancel, (dialog, which) -> dialog.dismiss());
         // Create the AlertDialog object and return it
         return builder.create();
     }

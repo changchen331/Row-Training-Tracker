@@ -6,9 +6,9 @@ import com.atrainingtracker.banalservice.BANALService;
 import com.atrainingtracker.banalservice.sensor.SensorType;
 
 import java.util.LinkedList;
+import java.util.Objects;
 
-public class TimedMovingAverageFilter
-        extends MovingAverageFilter {
+public class TimedMovingAverageFilter extends MovingAverageFilter {
     private static final boolean DEBUG = BANALService.DEBUG & false;
     private static final String TAG = TimedMovingAverageFilter.class.getName();
     protected long mSeconds;
@@ -42,7 +42,7 @@ public class TimedMovingAverageFilter
 
     @Override
     public synchronized Number getFilteredValue() {
-        if (mTimestampedValues.size() == 0) {
+        if (mTimestampedValues.isEmpty()) {
             return null;
         }
 
@@ -58,15 +58,14 @@ public class TimedMovingAverageFilter
     protected void trimValues() {
         long threshold = System.currentTimeMillis() - 1000 * mSeconds;
         if (DEBUG) Log.i(TAG, "trimValues: mSeconds=" + mSeconds + ", threshold=" + threshold);
-        while (mTimestampedValues.peek() != null
-                && mTimestampedValues.peek().timestamp < threshold) {
+        while (mTimestampedValues.peek() != null && Objects.requireNonNull(mTimestampedValues.peek()).timestamp < threshold) {
             if (DEBUG)
                 Log.i(TAG, "removing an element with timestamp=" + mTimestampedValues.peek().timestamp);
             mTimestampedValues.poll();
         }
     }
 
-    protected class TimestampedValue {
+    protected static class TimestampedValue {
         public long timestamp;
         public Number value;
 

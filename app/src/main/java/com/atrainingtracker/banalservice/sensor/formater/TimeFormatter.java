@@ -1,8 +1,11 @@
 package com.atrainingtracker.banalservice.sensor.formater;
 
+import android.annotation.SuppressLint;
+
 import java.util.concurrent.TimeUnit;
 
 public class TimeFormatter implements MyFormatter<Number> {
+    @SuppressLint("DefaultLocale")
     @Override
     public String format(Number value) {
         if (value == null) {
@@ -14,6 +17,7 @@ public class TimeFormatter implements MyFormatter<Number> {
         }
     }
 
+    @SuppressLint("DefaultLocale")
     public String format_with_units(Number value) {
         if (value == null) {
             return "--:--:--";

@@ -1,7 +1,6 @@
 package com.atrainingtracker.banalservice.dialogs;
 
 import android.app.Dialog;
-import android.content.DialogInterface;
 import android.content.Intent;
 import android.net.Uri;
 import android.os.Bundle;
@@ -9,10 +8,10 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.widget.Button;
 import android.widget.CheckBox;
-import android.widget.CompoundButton;
 import android.widget.LinearLayout;
 import android.widget.TextView;
 
+import androidx.annotation.NonNull;
 import androidx.appcompat.app.AlertDialog;
 import androidx.fragment.app.DialogFragment;
 
@@ -20,21 +19,21 @@ import com.atrainingtracker.R;
 import com.atrainingtracker.banalservice.BANALService;
 import com.atrainingtracker.trainingtracker.TrainingApplication;
 
-
 public class InstallANTShitDialog extends DialogFragment {
     public static final String TAG = InstallANTShitDialog.class.getName();
     private static final boolean DEBUG = TrainingApplication.DEBUG && false;
 
     private static final String ANT_PLUGIN_PACKAGE_NAME = "com.dsi.ant.plugins.antplus";
 
+    @NonNull
     @Override
     public Dialog onCreateDialog(Bundle savedInstanceState) {
-        AlertDialog.Builder alertDialogBuilder = new AlertDialog.Builder(getContext());
+        AlertDialog.Builder alertDialogBuilder = new AlertDialog.Builder(requireContext());
 
         alertDialogBuilder.setTitle(getString(R.string.ANT_Installation));
 
         // Get the layout inflater
-        LayoutInflater inflater = getActivity().getLayoutInflater();
+        LayoutInflater inflater = requireActivity().getLayoutInflater();
 
         // Inflate and set the layout for the dialog
         final View mainView = inflater.inflate(R.layout.check_ant_installation_dialog, null);
@@ -50,12 +49,7 @@ public class InstallANTShitDialog extends DialogFragment {
             button.setClickable(false);
             button.setEnabled(false);
         } else {
-            button.setOnClickListener(new View.OnClickListener() {
-                @Override
-                public void onClick(View v) {
-                    installService(ANT_PLUGIN_PACKAGE_NAME);
-                }
-            });
+            button.setOnClickListener(v -> installService(ANT_PLUGIN_PACKAGE_NAME));
         }
 
         // check ANT Radio Service
@@ -68,16 +62,11 @@ public class InstallANTShitDialog extends DialogFragment {
             button.setClickable(false);
             button.setEnabled(false);
         } else {
-            button.setOnClickListener(new View.OnClickListener() {
-                @Override
-                public void onClick(View v) {
-                    installService(BANALService.URI_ANT_RADIO_SERVICE);
-                }
-            });
+            button.setOnClickListener(v -> installService(BANALService.URI_ANT_RADIO_SERVICE));
         }
 
         // check ANT USB Service
-        if (!BANALService.hasUsbHostFeature(getContext())) {
+        if (!BANALService.hasUsbHostFeature(requireContext())) {
             LinearLayout ll = mainView.findViewById(R.id.llUSBService);
             ll.setVisibility(View.GONE);
         } else {
@@ -90,30 +79,16 @@ public class InstallANTShitDialog extends DialogFragment {
                 button.setClickable(false);
                 button.setEnabled(false);
             } else {
-                button.setOnClickListener(new View.OnClickListener() {
-                    @Override
-                    public void onClick(View v) {
-                        installService(BANALService.URI_ANT_USB_SERVICE);
-                    }
-                });
+                button.setOnClickListener(v -> installService(BANALService.URI_ANT_USB_SERVICE));
             }
         }
 
         CheckBox cb = mainView.findViewById(R.id.cbDoNotAskAgain);
         cb.setChecked(!TrainingApplication.checkANTInstallation());
-        cb.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
-            @Override
-            public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
-                TrainingApplication.setCheckANTInstallation(!isChecked);
-            }
-        });
+        cb.setOnCheckedChangeListener((buttonView, isChecked) -> TrainingApplication.setCheckANTInstallation(!isChecked));
 
 
-        alertDialogBuilder.setPositiveButton(R.string.OK, new DialogInterface.OnClickListener() {
-            public void onClick(DialogInterface dialog, int id) {
-                dialog.cancel();
-            }
-        });
+        alertDialogBuilder.setPositiveButton(R.string.OK, (dialog, id) -> dialog.cancel());
 
         return alertDialogBuilder.create();
     }

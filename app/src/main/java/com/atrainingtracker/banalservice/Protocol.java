@@ -3,8 +3,7 @@ package com.atrainingtracker.banalservice;
 import com.atrainingtracker.R;
 
 public enum Protocol {
-    ANT_PLUS(R.drawable.ant_logo),
-    BLUETOOTH_LE(R.drawable.logo_protocol_bluetooth),
+    ANT_PLUS(R.drawable.ant_logo), BLUETOOTH_LE(R.drawable.logo_protocol_bluetooth),
 
     ALL(R.drawable.logo),
 

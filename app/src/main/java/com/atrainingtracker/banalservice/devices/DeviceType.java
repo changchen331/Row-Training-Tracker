@@ -11,28 +11,13 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Set;
 
-
 public enum DeviceType {
-    DUMMY(SensorType.TIME_TOTAL, BSportType.UNKNOWN, 1),
-    ALL(SensorType.TIME_TOTAL, BSportType.UNKNOWN, 1),
-
-    HRM(SensorType.HR, BSportType.UNKNOWN, 1),
-    ROWING_SPEED(SensorType.SPEED_mps, BSportType.ROWING, BANALService.DEFAULT_ROWING_CALIBRATION_FACTOR),
-    ROWING_CADENCE(SensorType.CADENCE, BSportType.ROWING, 1),
-    ROWING_SPEED_AND_CADENCE(SensorType.SPEED_mps, BSportType.ROWING, BANALService.DEFAULT_ROWING_CALIBRATION_FACTOR),
-    ROWING_POWER(SensorType.POWER, BSportType.ROWING, BANALService.DEFAULT_ROWING_CALIBRATION_FACTOR),
-    //RUN_SPEED(SensorType.SPEED_mps, BSportType.RUN, 1),
+    DUMMY(SensorType.TIME_TOTAL, BSportType.UNKNOWN, 1), ALL(SensorType.TIME_TOTAL, BSportType.UNKNOWN, 1),
+    HRM(SensorType.HR, BSportType.UNKNOWN, 1), ROWING_SPEED(SensorType.SPEED_mps, BSportType.ROWING, BANALService.DEFAULT_ROWING_CALIBRATION_FACTOR), ROWING_CADENCE(SensorType.CADENCE, BSportType.ROWING, 1), ROWING_SPEED_AND_CADENCE(SensorType.SPEED_mps, BSportType.ROWING, BANALService.DEFAULT_ROWING_CALIBRATION_FACTOR), ROWING_POWER(SensorType.POWER, BSportType.ROWING, BANALService.DEFAULT_ROWING_CALIBRATION_FACTOR), //RUN_SPEED(SensorType.SPEED_mps, BSportType.RUN, 1),
     ENVIRONMENT(SensorType.TEMPERATURE, BSportType.UNKNOWN, 1),
-
-    SPEED_AND_LOCATION_GPS(SensorType.ACCURACY, BSportType.UNKNOWN, 1),
-    SPEED_AND_LOCATION_NETWORK(SensorType.ACCURACY, BSportType.UNKNOWN, 1),
-    SPEED_AND_LOCATION_GOOGLE_FUSED(SensorType.ACCURACY, BSportType.UNKNOWN, 1),
-
+    SPEED_AND_LOCATION_GPS(SensorType.ACCURACY, BSportType.UNKNOWN, 1), SPEED_AND_LOCATION_NETWORK(SensorType.ACCURACY, BSportType.UNKNOWN, 1), SPEED_AND_LOCATION_GOOGLE_FUSED(SensorType.ACCURACY, BSportType.UNKNOWN, 1),
     ALTITUDE_FROM_PRESSURE(SensorType.ALTITUDE, BSportType.UNKNOWN, 1),
-
-
-    SENSOR_MANAGER(SensorType.SENSORS, BSportType.UNKNOWN, 1),
-    CLOCK(SensorType.TIME_TOTAL, BSportType.UNKNOWN, 1);   // only last one has ';' rest has ','!
+    SENSOR_MANAGER(SensorType.SENSORS, BSportType.UNKNOWN, 1), CLOCK(SensorType.TIME_TOTAL, BSportType.UNKNOWN, 1);   // only last one has ';' rest has ','!
 
     private final SensorType mainSensorType;
     private final BSportType sportType;
@@ -44,7 +29,7 @@ public enum DeviceType {
         this.defaultCalibrationFactor = defaultCalibrationFactor;
     }
 
-    public static final DeviceType[] getRemoteDeviceTypes(Protocol protocol) {
+    public static DeviceType[] getRemoteDeviceTypes(Protocol protocol) {
         switch (protocol) {
             case ANT_PLUS:
                 return new DeviceType[]{HRM, ROWING_SPEED, ROWING_CADENCE, ROWING_SPEED_AND_CADENCE, ROWING_POWER, ENVIRONMENT}; // add ALL?
@@ -169,7 +154,7 @@ public enum DeviceType {
         return deviceTypes;
     }
 
-    protected static List<DeviceType> getEnabledLocationDevices() {
+    private static List<DeviceType> getEnabledLocationDevices() {
         LinkedList<DeviceType> enabledLocationDevices = new LinkedList<>();
         if (TrainingApplication.useLocationSourceGPS()) {
             enabledLocationDevices.add(DeviceType.SPEED_AND_LOCATION_GPS);

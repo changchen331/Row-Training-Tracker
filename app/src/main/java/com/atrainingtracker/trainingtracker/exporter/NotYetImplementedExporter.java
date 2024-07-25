@@ -17,5 +17,4 @@ public class NotYetImplementedExporter extends BaseExporter {
     protected Action getAction() {
         return Action.EXPORT;
     }
-
 }

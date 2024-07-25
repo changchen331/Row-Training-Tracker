@@ -14,7 +14,6 @@ public abstract class ConfigViewFragment extends Fragment {
 
     // public static final String TRACKING_VIEW_CHANGED_INTENT = "TRACKING_VIEW_CHANGED_INTENT";
 
-
     protected ActivityType mActivityType;
     protected long mViewId;
 
@@ -26,7 +25,7 @@ public abstract class ConfigViewFragment extends Fragment {
         Intent intent = new Intent(ConfigViewsActivity.NAME_CHANGED_INTENT);
         intent.putExtra(ConfigViewsActivity.VIEW_ID, mViewId);
         intent.putExtra(ConfigViewsActivity.NAME, name);
-        getActivity().sendBroadcast(intent);
+        requireActivity().sendBroadcast(intent);
     }
 
     protected abstract void updateNameOfView(String name);
@@ -34,5 +33,4 @@ public abstract class ConfigViewFragment extends Fragment {
     public long getViewId() {
         return mViewId;
     }
-
 }

@@ -1,17 +1,19 @@
 package com.atrainingtracker.trainingtracker.activities;
 
-
+import android.annotation.SuppressLint;
 import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
+import android.os.Build;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.WindowManager;
-import android.widget.TextView;
 
+import androidx.annotation.NonNull;
+import androidx.annotation.RequiresApi;
 import androidx.appcompat.app.ActionBar;
 import androidx.appcompat.app.ActionBarDrawerToggle;
 import androidx.appcompat.app.AppCompatActivity;
@@ -34,10 +36,9 @@ import com.atrainingtracker.trainingtracker.helpers.DeleteWorkoutTask;
 import com.atrainingtracker.trainingtracker.interfaces.ReallyDeleteDialogInterface;
 import com.google.android.material.navigation.NavigationView;
 
+import java.util.Objects;
 
-public class WorkoutDetailsActivity extends AppCompatActivity
-        implements NavigationView.OnNavigationItemSelectedListener,
-        ReallyDeleteDialogInterface {
+public class WorkoutDetailsActivity extends AppCompatActivity implements NavigationView.OnNavigationItemSelectedListener, ReallyDeleteDialogInterface {
     public static final String SELECTED_FRAGMENT = "SELECTED_FRAGMENT";
     public static final String SELECTED_FRAGMENT_ID = "SELECTED_FRAGMENT_ID";
     private static final String TAG = "WorkoutDetailsActivity";
@@ -69,7 +70,7 @@ public class WorkoutDetailsActivity extends AppCompatActivity
         if (DEBUG) Log.d(TAG, "onCreate");
 
         Bundle bundle = this.getIntent().getExtras();
-        mWorkoutID = bundle.getLong(WorkoutSummaries.WORKOUT_ID);
+        mWorkoutID = Objects.requireNonNull(bundle).getLong(WorkoutSummaries.WORKOUT_ID);
         if (DEBUG) Log.d(TAG, "get workout id: " + mWorkoutID);
 
         setContentView(R.layout.workout_details);
@@ -79,7 +80,7 @@ public class WorkoutDetailsActivity extends AppCompatActivity
 
         final ActionBar supportAB = getSupportActionBar();
         // supportAB.setHomeAsUpIndicator(R.drawable.abc_ic_ab_back_mtrl_am_alpha);
-        supportAB.setDisplayHomeAsUpEnabled(true);
+        Objects.requireNonNull(supportAB).setDisplayHomeAsUpEnabled(true);
 
         mDrawerLayout = findViewById(R.id.drawer_layout);
 
@@ -120,10 +121,11 @@ public class WorkoutDetailsActivity extends AppCompatActivity
             findViewById(R.id.llProgress).setVisibility(View.VISIBLE);
 
             // now, calc the extrema values in the background
-            (new CalcExtremaValuesTask(this, (TextView) findViewById(R.id.tvProgressMessage))).execute(mWorkoutID);
+            (new CalcExtremaValuesTask(this, findViewById(R.id.tvProgressMessage))).execute(mWorkoutID);
         }
     }
 
+    @RequiresApi(api = Build.VERSION_CODES.TIRAMISU)
     @Override
     protected void onResume() {
         if (DEBUG) Log.d(TAG, "onResume");
@@ -133,7 +135,9 @@ public class WorkoutDetailsActivity extends AppCompatActivity
             getWindow().addFlags(WindowManager.LayoutParams.FLAG_SHOW_WHEN_LOCKED);
         }
 
-        registerReceiver(mFinishedCalculatingExtremaValuesReceiver, mFinishedCalculatingExtremaValuesFilter);
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+            registerReceiver(mFinishedCalculatingExtremaValuesReceiver, mFinishedCalculatingExtremaValuesFilter, Context.RECEIVER_NOT_EXPORTED);
+        }
 
         // now, create and show the main fragment
         // onNavigationItemSelected(mNavigationView.getMenu().findItem(R.id.edit_workout_details));
@@ -141,7 +145,7 @@ public class WorkoutDetailsActivity extends AppCompatActivity
     }
 
     @Override
-    public void onSaveInstanceState(Bundle savedInstanceState) {
+    public void onSaveInstanceState(@NonNull Bundle savedInstanceState) {
         if (DEBUG) Log.i(TAG, "onSaveInstanceState");
 
         savedInstanceState.putInt(SELECTED_FRAGMENT_ID, mSelectedFragmentId);
@@ -158,6 +162,7 @@ public class WorkoutDetailsActivity extends AppCompatActivity
         try {
             unregisterReceiver(mFinishedCalculatingExtremaValuesReceiver);
         } catch (IllegalArgumentException e) {
+            throw new RuntimeException(e);
         }
     }
 
@@ -192,7 +197,7 @@ public class WorkoutDetailsActivity extends AppCompatActivity
     }
 
     @Override
-    public boolean onNavigationItemSelected(MenuItem menuItem) {
+    public boolean onNavigationItemSelected(@NonNull MenuItem menuItem) {
         if (DEBUG) Log.i(TAG, "onNavigationItemSelected");
 
         mDrawerLayout.closeDrawers();
@@ -217,6 +222,7 @@ public class WorkoutDetailsActivity extends AppCompatActivity
     }
 
     // TODO: inline
+    @SuppressLint("NonConstantResourceId")
     private void setContentFragment(int menuId) {
         Fragment fragment = null;
         String tag = null;

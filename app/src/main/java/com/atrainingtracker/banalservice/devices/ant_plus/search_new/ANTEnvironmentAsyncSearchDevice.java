@@ -22,7 +22,7 @@ public class ANTEnvironmentAsyncSearchDevice extends MyANTAsyncSearchDevice {
 
     @Override
     protected PccReleaseHandle requestAccess() {
-        return AntPlusEnvironmentPcc.requestAccess(mContext, mDeviceFound.getAntDeviceNumber(), 0, new MyResultReceiver<AntPlusEnvironmentPcc>(), new MyDeviceStateChangeReceiver());
+        return AntPlusEnvironmentPcc.requestAccess(mContext, mDeviceFound.getAntDeviceNumber(), 0, new MyResultReceiver<>(), new MyDeviceStateChangeReceiver());
     }
 
 }

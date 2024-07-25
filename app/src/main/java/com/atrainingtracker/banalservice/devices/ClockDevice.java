@@ -69,7 +69,7 @@ public class ClockDevice extends MyDevice {
         mActiveTimeSensor_s = new MyIntegerAccumulatorSensor(this, SensorType.TIME_ACTIVE);
         mTotalTimeSensor_s = new MyIntegerAccumulatorSensor(this, SensorType.TIME_TOTAL);
         mLapTimeSensor_s = new MyIntegerAccumulatorSensor(this, SensorType.TIME_LAP);
-        mTimeOfDaySensor = new MySensor(this, SensorType.TIME_OF_DAY);
+        mTimeOfDaySensor = new MySensor<>(this, SensorType.TIME_OF_DAY);
 
         addSensor(mLapSensor);
         addSensor(mActiveTimeSensor_s);
@@ -100,7 +100,7 @@ public class ClockDevice extends MyDevice {
         // timer might be already running?
         if (!timerRunning) {
             timer = new Timer();
-            timer.scheduleAtFixedRate(new ClockTimeTask(), 0, 1000);
+            timer.schedule(new ClockTimeTask(), 0, 1000);
             timerRunning = true;
         }
     }

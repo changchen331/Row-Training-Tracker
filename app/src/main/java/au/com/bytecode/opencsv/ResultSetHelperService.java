@@ -15,6 +15,8 @@ package au.com.bytecode.opencsv;
  * limitations under the License.
  */
 
+import android.annotation.SuppressLint;
+
 import java.io.IOException;
 import java.io.Reader;
 import java.math.BigDecimal;
@@ -100,7 +102,7 @@ public class ResultSetHelperService implements ResultSetHelper {
         java.sql.Date date = rs.getDate(columnIndex);
         String value = null;
         if (date != null) {
-            SimpleDateFormat dateFormat = new SimpleDateFormat("dd-MMM-yyyy");
+            @SuppressLint("SimpleDateFormat") SimpleDateFormat dateFormat = new SimpleDateFormat("dd-MMM-yyyy");
             value = dateFormat.format(date);
         }
         return value;
@@ -111,7 +113,7 @@ public class ResultSetHelperService implements ResultSetHelper {
     }
 
     private String handleTimestamp(Timestamp timestamp) {
-        SimpleDateFormat timeFormat = new SimpleDateFormat("dd-MMM-yyyy HH:mm:ss");
+        @SuppressLint("SimpleDateFormat") SimpleDateFormat timeFormat = new SimpleDateFormat("dd-MMM-yyyy HH:mm:ss");
         return timestamp == null ? null : timeFormat.format(timestamp);
     }
 

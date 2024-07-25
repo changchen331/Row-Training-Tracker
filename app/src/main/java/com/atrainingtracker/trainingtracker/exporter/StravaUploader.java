@@ -1,5 +1,6 @@
 package com.atrainingtracker.trainingtracker.exporter;
 
+import android.annotation.SuppressLint;
 import android.content.Context;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
@@ -15,7 +16,6 @@ import com.atrainingtracker.trainingtracker.onlinecommunities.strava.StravaHelpe
 import org.apache.http.HttpResponse;
 import org.apache.http.NameValuePair;
 import org.apache.http.ParseException;
-import org.apache.http.client.ClientProtocolException;
 import org.apache.http.client.HttpClient;
 import org.apache.http.client.entity.UrlEncodedFormEntity;
 import org.apache.http.client.methods.HttpGet;
@@ -31,9 +31,9 @@ import org.json.JSONObject;
 
 import java.io.File;
 import java.io.IOException;
-import java.io.UnsupportedEncodingException;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -83,8 +83,7 @@ public class StravaUploader extends BaseExporter {
     }
 
     @Override
-    protected ExportResult doExport(ExportInfo exportInfo)
-            throws IOException, JSONException, InterruptedException {
+    protected ExportResult doExport(ExportInfo exportInfo) throws IOException, JSONException, InterruptedException {
         if (DEBUG) Log.d(TAG, "doExport: " + exportInfo.getFileBaseName());
 
         if (ExportStatus.FINISHED_SUCCESS == cExportManager.getExportStatus(exportInfo)) {
@@ -118,7 +117,7 @@ public class StravaUploader extends BaseExporter {
         if (DEBUG) Log.d(TAG, "uploadToStrava response: " + response);
 
         // check the response
-        if (response == null || response.equals("")) {  // hm, there is no response
+        if (response == null || response.isEmpty()) {  // hm, there is no response
             if (DEBUG) Log.d(TAG, "no response");
             return new ExportResult(false, "no response");
         }
@@ -178,7 +177,7 @@ public class StravaUploader extends BaseExporter {
             for (int attempt = 1; attempt <= MAX_REQUESTS && exportResult == null; attempt++) {
                 // wait some time before we ask the server
                 Thread.sleep(waiting_time);
-                waiting_time *= 1.4;  // next time, we wait somewhat longer
+                waiting_time *= (long) 1.4;  // next time, we wait somewhat longer
 
                 JSONObject uploadStatusJson = getStravaUploadStatus(uploadId);
 
@@ -186,37 +185,43 @@ public class StravaUploader extends BaseExporter {
                     exportResult = new ExportResult(false, "no correct response from Strava");
                 }
 
-                if (uploadStatusJson.has(ERROR) && uploadStatusJson.getString(ERROR) != null && !"null".equals(uploadStatusJson.getString(ERROR))) {
+                if (Objects.requireNonNull(uploadStatusJson).has(ERROR) && uploadStatusJson.getString(ERROR) != null && !"null".equals(uploadStatusJson.getString(ERROR))) {
                     exportResult = new ExportResult(false, uploadStatusJson.getString(ERROR));
                 } else if (uploadStatusJson.has(STATUS)) {
                     String status = uploadStatusJson.getString(STATUS);
                     if (DEBUG) Log.d(TAG, "strava response status: " + status);
                     stravaUploadDbHelper.updateStatus(exportInfo.getFileBaseName(), status);
 
-                    if (STATUS_PROCESSING.equals(status)) {
-                        // here, we do nothing (wait for the next iteration of the loop)
-                    } else if (STATUS_DELETED.equals(status)) {
-                        exportResult = new ExportResult(false, STATUS_DELETED);
-                    } else if (STATUS_ERROR.equals(status)) {
-                        // should have been already handled???
-                        exportResult = new ExportResult(false, uploadStatusJson.getString(ERROR));
-                    } else if (STATUS_READY.equals(status)) {
-                        // all right
-                        cExportManager.exportingFinished(exportInfo, true, getPositiveAnswer(exportInfo));
-                        // but not everything is uploaded to strava, e.g., the gear data is missing.
-                        // Thus, we update it
-                        String activity_id = uploadStatusJson.getString(ACTIVITY_ID);
-                        if (activity_id != null) {
-                            stravaUploadDbHelper.updateActivityId(exportInfo.getFileBaseName(), activity_id);
-                            exportResult = doUpdate(exportInfo);
-                        } else {
-                            if (DEBUG)
-                                Log.d(TAG, "ERROR while uploading to Strava: could not get activity_id from response");
-                        }
+                    switch (status) {
+                        case STATUS_PROCESSING:
+                            // here, we do nothing (wait for the next iteration of the loop)
+                            break;
+                        case STATUS_DELETED:
+                            exportResult = new ExportResult(false, STATUS_DELETED);
+                            break;
+                        case STATUS_ERROR:
+                            // should have been already handled???
+                            exportResult = new ExportResult(false, uploadStatusJson.getString(ERROR));
+                            break;
+                        case STATUS_READY:
+                            // all right
+                            cExportManager.exportingFinished(exportInfo, true, getPositiveAnswer(exportInfo));
+                            // but not everything is uploaded to strava, e.g., the gear data is missing.
+                            // Thus, we update it
+                            String activity_id = uploadStatusJson.getString(ACTIVITY_ID);
+                            if (activity_id != null) {
+                                stravaUploadDbHelper.updateActivityId(exportInfo.getFileBaseName(), activity_id);
+                                exportResult = doUpdate(exportInfo);
+                            } else {
+                                if (DEBUG)
+                                    Log.d(TAG, "ERROR while uploading to Strava: could not get activity_id from response");
+                            }
 
-                    } else {
-                        if (DEBUG) Log.d(TAG, "unknown response status: " + status);
-                        exportResult = new ExportResult(false, "successfully uploaded but unknown status " + status);
+                            break;
+                        default:
+                            if (DEBUG) Log.d(TAG, "unknown response status: " + status);
+                            exportResult = new ExportResult(false, "successfully uploaded but unknown status " + status);
+                            break;
                     }
                 }
             }
@@ -231,6 +236,7 @@ public class StravaUploader extends BaseExporter {
     }
 
 
+    @SuppressLint("Range")
     protected ExportResult doUpdate(ExportInfo exportInfo) {
         if (DEBUG) Log.d(TAG, "doUpdate");
         // Strava fields:
@@ -253,13 +259,7 @@ public class StravaUploader extends BaseExporter {
 
         WorkoutSummariesDatabaseManager databaseManager = WorkoutSummariesDatabaseManager.getInstance();
         SQLiteDatabase db = databaseManager.getOpenDatabase();
-        Cursor cursor = db.query(WorkoutSummaries.TABLE,
-                null,
-                WorkoutSummaries.FILE_BASE_NAME + "=?",
-                new String[]{fileBaseName},
-                null,
-                null,
-                null);
+        Cursor cursor = db.query(WorkoutSummaries.TABLE, null, WorkoutSummaries.FILE_BASE_NAME + "=?", new String[]{fileBaseName}, null, null, null);
 
         cursor.moveToFirst();
 
@@ -293,7 +293,7 @@ public class StravaUploader extends BaseExporter {
 
 
         // first, make sure that the type is correct
-        List<NameValuePair> nameValuePairs = new ArrayList<NameValuePair>(1);
+        List<NameValuePair> nameValuePairs = new ArrayList<>(1);
         nameValuePairs.add(new BasicNameValuePair(TYPE, sportName));
         updateStravaActivity(activityId, nameValuePairs);             // update
         int counter = 0;
@@ -304,7 +304,7 @@ public class StravaUploader extends BaseExporter {
                     Thread.sleep(WAITING_TIME_UPDATE);                   // wait
                 } catch (InterruptedException e) {
                     // TODO Auto-generated catch block
-                    e.printStackTrace();
+                    throw new RuntimeException(e);
                 }
                 activityJSON = getStravaActivity(activityId);              // ...
                 if (DEBUG) {
@@ -315,12 +315,12 @@ public class StravaUploader extends BaseExporter {
                     && (counter++ < MAX_REQUESTS));                       // or we give up
         } catch (JSONException e) {
             // TODO Auto-generated catch block
-            e.printStackTrace();
+            throw new RuntimeException(e);
         }
 
         // now, that the type is correct, we can update the equipment! (and the other fields)
         boolean update = false;
-        nameValuePairs = new ArrayList<NameValuePair>(3);
+        nameValuePairs = new ArrayList<>(3);
 
         if (name != null) {
             nameValuePairs.add(new BasicNameValuePair(NAME, name));
@@ -358,22 +358,22 @@ public class StravaUploader extends BaseExporter {
                 Log.i(TAG, "json: " + activityJSON);
             }
             // check result
-            String errors = "errors:";
+            StringBuilder errors = new StringBuilder("errors:");
             boolean correctUpdate = true;
 
             for (NameValuePair nameValuePair : nameValuePairs) {
                 String appValue = nameValuePair.getValue();
-                String stravaValue = "";
+                String stravaValue;
                 try {
                     stravaValue = activityJSON.getString(nameValuePair.getName());
                 } catch (JSONException e) {
                     // TODO Auto-generated catch block
-                    e.printStackTrace();
-                    errors += " " + nameValuePair.getName();
-                    correctUpdate = false;
+                    throw new RuntimeException(e);
+//                    errors += " " + nameValuePair.getName();
+//                    correctUpdate = false;
                 }
                 if (!appValue.equals(stravaValue)) {
-                    errors += " " + nameValuePair.getName();
+                    errors.append(" ").append(nameValuePair.getName());
                     correctUpdate = false;
                 }
             }
@@ -381,7 +381,7 @@ public class StravaUploader extends BaseExporter {
             if (correctUpdate) {
                 return new ExportResult(true, "successfully updated");
             } else {
-                return new ExportResult(false, errors);
+                return new ExportResult(false, errors.toString());
             }
         } else {
             return new ExportResult(true, "nothing to update");  // TODO: not correct when only the type was changed
@@ -392,7 +392,7 @@ public class StravaUploader extends BaseExporter {
     protected JSONObject updateStravaActivity(String stravaActivityId, List<NameValuePair> nameValuePairs) {
         if (DEBUG) Log.i(TAG, "updateStravaActivity(...)");
 
-        JSONObject responseJson = null;
+        JSONObject responseJson;
 
         try {
             HttpClient httpClient = new DefaultHttpClient();
@@ -409,25 +409,16 @@ public class StravaUploader extends BaseExporter {
 
             responseJson = new JSONObject(response);
 
-        } catch (UnsupportedEncodingException e) {
+        } catch (JSONException | IOException e) {
             // TODO Auto-generated catch block
-            e.printStackTrace();
-        } catch (ClientProtocolException e) {
-            // TODO Auto-generated catch block
-            e.printStackTrace();
-        } catch (IOException e) {
-            // TODO Auto-generated catch block
-            e.printStackTrace();
-        } catch (JSONException e) {
-            // TODO Auto-generated catch block
-            e.printStackTrace();
+            throw new RuntimeException(e);
         }
 
         return responseJson;
     }
 
     protected JSONObject getStravaActivity(String stravaActivityId) {
-        JSONObject responseJson = null;
+        JSONObject responseJson;
 
         HttpClient httpClient = new DefaultHttpClient();
         HttpGet httpGet = new HttpGet(URL_STRAVA_ACTIVITY + stravaActivityId);
@@ -440,18 +431,9 @@ public class StravaUploader extends BaseExporter {
             if (DEBUG) Log.d(TAG, "getStravaActivity: got response:\n" + response);
             responseJson = new JSONObject(response);
 
-        } catch (ClientProtocolException e) {
+        } catch (JSONException | ParseException | IOException e) {
             // TODO Auto-generated catch block
-            e.printStackTrace();
-        } catch (IOException e) {
-            // TODO Auto-generated catch block
-            e.printStackTrace();
-        } catch (ParseException e) {
-            // TODO Auto-generated catch block
-            e.printStackTrace();
-        } catch (JSONException e) {
-            // TODO Auto-generated catch block
-            e.printStackTrace();
+            throw new RuntimeException(e);
         }
 
         return responseJson;
@@ -459,7 +441,7 @@ public class StravaUploader extends BaseExporter {
 
 
     protected JSONObject getStravaUploadStatus(String stravaUploadId) {
-        JSONObject responseJson = null;
+        JSONObject responseJson;
 
         HttpClient httpClient = new DefaultHttpClient();
         HttpGet httpGet = new HttpGet(URL_STRAVA_UPLOAD + "/" + stravaUploadId);
@@ -472,18 +454,9 @@ public class StravaUploader extends BaseExporter {
             if (DEBUG) Log.d(TAG, "getStravaUploadStatus: got response:\n" + response);
             responseJson = new JSONObject(response);
 
-        } catch (ClientProtocolException e) {
+        } catch (JSONException | ParseException | IOException e) {
             // TODO Auto-generated catch block
-            e.printStackTrace();
-        } catch (IOException e) {
-            // TODO Auto-generated catch block
-            e.printStackTrace();
-        } catch (ParseException e) {
-            // TODO Auto-generated catch block
-            e.printStackTrace();
-        } catch (JSONException e) {
-            // TODO Auto-generated catch block
-            e.printStackTrace();
+            throw new RuntimeException(e);
         }
 
         return responseJson;
@@ -493,5 +466,4 @@ public class StravaUploader extends BaseExporter {
     protected Action getAction() {
         return Action.UPLOAD;
     }
-
 }

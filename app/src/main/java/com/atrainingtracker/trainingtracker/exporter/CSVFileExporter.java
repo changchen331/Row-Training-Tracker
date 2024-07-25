@@ -18,6 +18,7 @@ import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -32,19 +33,12 @@ public class CSVFileExporter extends BaseExporter {
     }
 
     @Override
-    public ExportResult doExport(ExportInfo exportInfo)
-            throws IOException {
+    public ExportResult doExport(ExportInfo exportInfo) throws IOException {
         if (DEBUG) Log.d(TAG, "exportToFile: " + exportInfo.getFileBaseName());
 
         WorkoutSamplesDatabaseManager databaseManager = WorkoutSamplesDatabaseManager.getInstance();
         SQLiteDatabase db = databaseManager.getOpenDatabase();
-        Cursor cursor = db.query(WorkoutSamplesDatabaseManager.getTableName(exportInfo.getFileBaseName()),
-                null,
-                null,
-                null,
-                null,
-                null,
-                null);  // sorting
+        Cursor cursor = db.query(WorkoutSamplesDatabaseManager.getTableName(exportInfo.getFileBaseName()), null, null, null, null, null, null);  // sorting
 
 
         // get column names, and sort them.  But only the ones with the source
@@ -56,10 +50,9 @@ public class CSVFileExporter extends BaseExporter {
         Pattern pattern = Pattern.compile("(.*)( \\(.*\\)|_gps|_network|_google_fused)");
         Map<String, SensorValueType> columnName2Type = new HashMap<>();
 
-        for (int i = 0; i < columnNames.length; i++) {
-            String columnName = columnNames[i];
+        for (String columnName : columnNames) {
             // reconstruct the original SensorType.
-            String sensorTypeName = "";
+            String sensorTypeName;
             Matcher matcher = pattern.matcher(columnName);
             if (matcher.find()) {  // one with the source
                 unsortedNames.add(columnName);
@@ -92,13 +85,13 @@ public class CSVFileExporter extends BaseExporter {
         CSVWriter csvWrite = new CSVWriter(new FileWriter(file));
 
         // first of all: header with column names
-        csvWrite.writeNext(sortedNames.toArray(new String[sortedNames.size()]));
+        csvWrite.writeNext(sortedNames.toArray(new String[0]));
 
         String[] columnString = new String[cursor.getColumnCount()];
 
         int lines = cursor.getCount();
         int count = 0;
-        int csvIndex = 0;
+        int csvIndex;
 
         while (cursor.moveToNext()) {
             csvIndex = 0;
@@ -112,7 +105,7 @@ public class CSVFileExporter extends BaseExporter {
                 if (cursor.isNull(columnIndex)) {
                     columnString[csvIndex] = "";
                 } else {
-                    switch (columnName2Type.get(columnName)) {
+                    switch (Objects.requireNonNull(columnName2Type.get(columnName))) {
                         case DOUBLE:
                             columnString[csvIndex] = Double.toString(cursor.getDouble(columnIndex));
                             break;

@@ -7,6 +7,7 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ListView;
 
+import androidx.annotation.NonNull;
 import androidx.core.view.ViewCompat;
 import androidx.fragment.app.ListFragment;
 import androidx.swiperefreshlayout.widget.SwipeRefreshLayout;
@@ -26,21 +27,12 @@ public class SwipeRefreshListFragment extends ListFragment {
      * needed.
      */
     private static boolean canListViewScrollUp(ListView listView) {
-        if (android.os.Build.VERSION.SDK_INT >= 14) {
-            // For ICS and above we can call canScrollVertically() to determine this
-            return ViewCompat.canScrollVertically(listView, -1);
-        } else {
-            // Pre-ICS we need to manually check the first visible item and the child view's top
-            // value
-            return listView.getChildCount() > 0 &&
-                    (listView.getFirstVisiblePosition() > 0
-                            || listView.getChildAt(0).getTop() < listView.getPaddingTop());
-        }
+        // For ICS and above we can call canScrollVertically() to determine this
+        return ViewCompat.canScrollVertically(listView, -1);
     }
 
     @Override
-    public View onCreateView(LayoutInflater inflater, ViewGroup container,
-                             Bundle savedInstanceState) {
+    public View onCreateView(@NonNull LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
 
         // Create the list fragment's content view by calling the super method
         final View listFragmentView = super.onCreateView(inflater, container, savedInstanceState);
@@ -50,14 +42,10 @@ public class SwipeRefreshListFragment extends ListFragment {
 
         // Add the list fragment's content view to the SwipeRefreshLayout, making sure that it fills
         // the SwipeRefreshLayout
-        mSwipeRefreshLayout.addView(listFragmentView,
-                ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT);
+        mSwipeRefreshLayout.addView(listFragmentView, ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT);
 
         // Make sure that the SwipeRefreshLayout will fill the fragment
-        mSwipeRefreshLayout.setLayoutParams(
-                new ViewGroup.LayoutParams(
-                        ViewGroup.LayoutParams.MATCH_PARENT,
-                        ViewGroup.LayoutParams.MATCH_PARENT));
+        mSwipeRefreshLayout.setLayoutParams(new ViewGroup.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT));
 
         // Now return the SwipeRefreshLayout as this fragment's content view
         return mSwipeRefreshLayout;
@@ -93,18 +81,11 @@ public class SwipeRefreshListFragment extends ListFragment {
         // mSwipeRefreshLayout.setRefreshing(refreshing);
 
         // check http://stackoverflow.com/questions/26858692/swiperefreshlayout-setrefreshing-not-showing-indicator-initially
-        mSwipeRefreshLayout.post(new Runnable() {
-            @Override
-            public void run() {
-                mSwipeRefreshLayout.setRefreshing(refreshing);
-            }
-        });
+        mSwipeRefreshLayout.post(() -> mSwipeRefreshLayout.setRefreshing(refreshing));
     }
 
     /**
      * Set the color scheme for the {@link SwipeRefreshLayout}.
-     *
-     * @see SwipeRefreshLayout#setColorScheme(int, int, int, int)
      */
     public void setColorScheme(int colorRes1, int colorRes2, int colorRes3, int colorRes4) {
         mSwipeRefreshLayout.setColorScheme(colorRes1, colorRes2, colorRes3, colorRes4);
@@ -156,5 +137,4 @@ public class SwipeRefreshListFragment extends ListFragment {
 
     }
     // END_INCLUDE (check_list_can_scroll)
-
 }

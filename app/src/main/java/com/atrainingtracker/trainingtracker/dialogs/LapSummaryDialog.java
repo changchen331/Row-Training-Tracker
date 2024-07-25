@@ -1,7 +1,6 @@
 package com.atrainingtracker.trainingtracker.dialogs;
 
 import android.app.Dialog;
-import android.content.DialogInterface;
 import android.os.Bundle;
 import android.os.Handler;
 import android.util.Log;
@@ -10,6 +9,7 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.widget.TextView;
 
+import androidx.annotation.NonNull;
 import androidx.appcompat.app.AlertDialog;
 import androidx.fragment.app.DialogFragment;
 
@@ -18,11 +18,9 @@ import com.atrainingtracker.banalservice.sensor.SensorType;
 import com.atrainingtracker.trainingtracker.MyHelper;
 import com.atrainingtracker.trainingtracker.TrainingApplication;
 
-
 public class LapSummaryDialog extends DialogFragment {
     public static final String TAG = LapSummaryDialog.class.getName();
     private static final boolean DEBUG = TrainingApplication.DEBUG && false;
-
 
     private static final int SHOW_LAP_SUMMARY_TIME = 3000;
 
@@ -59,16 +57,16 @@ public class LapSummaryDialog extends DialogFragment {
         super.onCreate(savedInstanceState);
         if (DEBUG) Log.d(TAG, "onCreate");
 
-        mLapNr = getArguments().getInt(LAP_NR);
-        mLapTime = getArguments().getString(LAP_TIME);
-        mLapDistance = getArguments().getString(LAP_DISTANCE);
-        mLapSpeed = getArguments().getString(LAP_SPEED);
+        mLapNr = requireArguments().getInt(LAP_NR);
+        mLapTime = requireArguments().getString(LAP_TIME);
+        mLapDistance = requireArguments().getString(LAP_DISTANCE);
+        mLapSpeed = requireArguments().getString(LAP_SPEED);
     }
 
-
+    @NonNull
     @Override
     public Dialog onCreateDialog(Bundle savedInstanceState) {
-        AlertDialog.Builder builder = new AlertDialog.Builder(getActivity());
+        AlertDialog.Builder builder = new AlertDialog.Builder(requireActivity());
 
         TextView title = new TextView(getActivity());
         // You Can Customise your Title here
@@ -83,7 +81,7 @@ public class LapSummaryDialog extends DialogFragment {
         // builder.setTitle(getString(R.string.Lap_NR, lapNr));
 
         // Get the layout inflater
-        LayoutInflater inflater = getActivity().getLayoutInflater();
+        LayoutInflater inflater = requireActivity().getLayoutInflater();
 
         // Inflate and set the layout for the dialog
         final View mainView = inflater.inflate(R.layout.lap_summary_dialog, null);
@@ -103,27 +101,15 @@ public class LapSummaryDialog extends DialogFragment {
 
         // Hide after some seconds
         final Handler handler = new Handler();
-        final Runnable runnable = new Runnable() {
-            @Override
-            public void run() {
-                if (alert.isShowing()) {
-                    alert.dismiss();
-                }
+        final Runnable runnable = () -> {
+            if (alert.isShowing()) {
+                alert.dismiss();
             }
         };
 
-        alert.setOnDismissListener(new DialogInterface.OnDismissListener() {
-            @Override
-            public void onDismiss(DialogInterface dialog) {
-                handler.removeCallbacks(runnable);
-            }
-        });
-
+        alert.setOnDismissListener(dialog -> handler.removeCallbacks(runnable));
         handler.postDelayed(runnable, SHOW_LAP_SUMMARY_TIME);
-
 
         return alert;
     }
-
-
 }

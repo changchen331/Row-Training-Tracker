@@ -3,7 +3,6 @@ package com.atrainingtracker.trainingtracker.segments;
 import com.atrainingtracker.trainingtracker.TrainingApplication;
 import com.google.android.gms.maps.model.LatLng;
 
-
 public class SegmentHelper {
 
     private static final String TAG = SegmentHelper.class.getName();
@@ -18,8 +17,7 @@ public class SegmentHelper {
         double m4 = -0.0023;       // latitude calculation term 4
 
         // Calculate the length of a degree of latitude and longitude in meters
-        return m1 + (m2 * Math.cos(Math.toRadians(2 * latLng.latitude))) + (m3 * Math.cos(Math.toRadians(4 * latLng.latitude))) +
-                (m4 * Math.cos(Math.toRadians(6 * latLng.latitude)));
+        return m1 + (m2 * Math.cos(Math.toRadians(2 * latLng.latitude))) + (m3 * Math.cos(Math.toRadians(4 * latLng.latitude))) + (m4 * Math.cos(Math.toRadians(6 * latLng.latitude)));
     }
 
     public static double LongitudeDegreeInMeters(LatLng latLng) {
@@ -30,10 +28,8 @@ public class SegmentHelper {
         double p3 = 0.118;         // longitude calculation term 3
 
         // Calculate the length of a degree of latitude and longitude in meters
-        return (p1 * Math.cos(Math.toRadians(latLng.latitude))) + (p2 * Math.cos(Math.toRadians(3 * latLng.latitude))) +
-                (p3 * Math.cos(Math.toRadians(5 * latLng.latitude)));
+        return (p1 * Math.cos(Math.toRadians(latLng.latitude))) + (p2 * Math.cos(Math.toRadians(3 * latLng.latitude))) + (p3 * Math.cos(Math.toRadians(5 * latLng.latitude)));
     }
 
     public enum SegmentType {NONE, RUN, ROWING, ALL}
-
 }

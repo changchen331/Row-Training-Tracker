@@ -1,7 +1,7 @@
 package com.atrainingtracker.banalservice.fragments;
 
+import android.annotation.SuppressLint;
 import android.app.Dialog;
-import android.content.DialogInterface;
 import android.os.Bundle;
 import android.text.Editable;
 import android.text.TextWatcher;
@@ -11,6 +11,7 @@ import android.view.View;
 import android.widget.EditText;
 import android.widget.TextView;
 
+import androidx.annotation.NonNull;
 import androidx.appcompat.app.AlertDialog;
 import androidx.fragment.app.DialogFragment;
 
@@ -18,6 +19,7 @@ import com.atrainingtracker.R;
 import com.atrainingtracker.banalservice.BANALService;
 import com.atrainingtracker.trainingtracker.MyHelper;
 
+import java.util.Objects;
 
 public class SetCalibrationFactorDialogFragment extends DialogFragment {
     public static final String TAG = "SetCalibrationFactorDialogFragment";
@@ -35,6 +37,7 @@ public class SetCalibrationFactorDialogFragment extends DialogFragment {
     private NewCalibrationFactorListener mNewCalibrationFactorListener = null;
     private TextWatcher calibrationDistancesChangedWatcher = new TextWatcher() {
 
+        @SuppressLint({"LongLogTag", "SetTextI18n"})
         @Override
         public void afterTextChanged(Editable s) {
             if (DEBUG) Log.d(TAG, "afterTextChanged");
@@ -44,11 +47,13 @@ public class SetCalibrationFactorDialogFragment extends DialogFragment {
             etCalibrationFactor.setText(mOldCalibrationFactor / measuredDistance * correctDistance + "");
         }
 
+        @SuppressLint("LongLogTag")
         @Override
         public void beforeTextChanged(CharSequence s, int start, int count, int after) {
             if (DEBUG) Log.d(TAG, "beforeTextChanged");
         }
 
+        @SuppressLint("LongLogTag")
         @Override
         public void onTextChanged(CharSequence s, int start, int before, int count) {
             if (DEBUG) Log.d(TAG, "onTextChanged");
@@ -71,25 +76,28 @@ public class SetCalibrationFactorDialogFragment extends DialogFragment {
         mNewCalibrationFactorListener = listener;
     }
 
+    @SuppressLint("LongLogTag")
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         if (DEBUG) Log.i(TAG, "onCreate()");
 
-        mCalibrationFactor = getArguments().getString(CALIBRATION_FACTOR);
-        mTitleName = getArguments().getString(TITLE_NAME);
-        mFieldName = getArguments().getString(FIELD_NAME);
+        mCalibrationFactor = requireArguments().getString(CALIBRATION_FACTOR);
+        mTitleName = requireArguments().getString(TITLE_NAME);
+        mFieldName = requireArguments().getString(FIELD_NAME);
         mOldCalibrationFactor = MyHelper.string2Double(mCalibrationFactor);
     }
 
+    @SuppressLint("SetTextI18n")
+    @NonNull
     @Override
     public Dialog onCreateDialog(Bundle savedInstanceState) {
-        AlertDialog.Builder builder = new AlertDialog.Builder(getActivity());
+        AlertDialog.Builder builder = new AlertDialog.Builder(requireActivity());
 
         builder.setTitle(getString(R.string.Set_foo, mTitleName));
 
         // Get the layout inflater
-        LayoutInflater inflater = getActivity().getLayoutInflater();
+        LayoutInflater inflater = requireActivity().getLayoutInflater();
 
         // Inflate and set the layout for the dialog
         // Pass null as the parent view because its going in the dialog layout
@@ -110,17 +118,8 @@ public class SetCalibrationFactorDialogFragment extends DialogFragment {
         builder.setView(mainDialog);
 
         // Add action buttons
-        builder.setPositiveButton(getString(R.string.OK), new DialogInterface.OnClickListener() {
-            @Override
-            public void onClick(DialogInterface dialog, int id) {
-                mNewCalibrationFactorListener.newCalibrationFactor(etCalibrationFactor.getText().toString());
-            }
-        });
-        builder.setNegativeButton(R.string.Cancel, new DialogInterface.OnClickListener() {
-            public void onClick(DialogInterface dialog, int id) {
-                SetCalibrationFactorDialogFragment.this.getDialog().cancel();
-            }
-        });
+        builder.setPositiveButton(getString(R.string.OK), (dialog, id) -> mNewCalibrationFactorListener.newCalibrationFactor(etCalibrationFactor.getText().toString()));
+        builder.setNegativeButton(R.string.Cancel, (dialog, id) -> Objects.requireNonNull(SetCalibrationFactorDialogFragment.this.getDialog()).cancel());
         return builder.create();
     }
 

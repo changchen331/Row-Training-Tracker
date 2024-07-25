@@ -6,7 +6,6 @@ import android.util.Log;
 import com.atrainingtracker.R;
 import com.atrainingtracker.trainingtracker.TrainingApplication;
 
-
 public class LocationSourcesFragment extends androidx.preference.PreferenceFragmentCompat {
     private static final boolean DEBUG = TrainingApplication.DEBUG;
     private static final String TAG = LocationSourcesFragment.class.getName();

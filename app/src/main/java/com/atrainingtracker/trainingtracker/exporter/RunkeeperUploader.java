@@ -3,6 +3,8 @@ package com.atrainingtracker.trainingtracker.exporter;
 import android.content.Context;
 import android.util.Log;
 
+import androidx.annotation.NonNull;
+
 import com.atrainingtracker.trainingtracker.TrainingApplication;
 
 import org.apache.http.HttpResponse;
@@ -30,22 +32,13 @@ public class RunkeeperUploader extends BaseExporter {
     }
 
     @Override
-    protected ExportResult doExport(ExportInfo exportInfo)
-            throws IOException, JSONException {
+    protected ExportResult doExport(ExportInfo exportInfo) throws IOException, JSONException {
         if (DEBUG) Log.d(TAG, "doExport: " + exportInfo.getFileBaseName());
 
         File file = new File(getDir(mContext, FileFormat.RUNKEEPER.getDirName()), exportInfo.getFileBaseName() + FileFormat.RUNKEEPER.getFileEnding());
 
         HttpClient httpClient = new DefaultHttpClient();
-        HttpPost httpPost = new HttpPost(MY_UPLOAD_URL);
-        // httpPost.addHeader(AUTHORIZATION, "Bearer " + TrainingApplication.getRunkeeperToken());
-        httpPost.addHeader(AUTHORIZATION, BEARER + " " + TrainingApplication.getRunkeeperToken());
-        httpPost.addHeader(CONTENT_TYPE, MY_CONTENT_TYPE);
-
-        FileEntity fileEntity = new FileEntity(file, CONTENT_TYPE);
-        fileEntity.setContentType(CONTENT_TYPE);
-        // fileEntity.setChunked(true); 
-        httpPost.setEntity(fileEntity);
+        HttpPost httpPost = getHttpPost(file);
 
         // TODO: do this in background!
         if (DEBUG) Log.d(TAG, "starting to upload to runkeeper");
@@ -54,11 +47,24 @@ public class RunkeeperUploader extends BaseExporter {
         if (DEBUG) Log.d(TAG, "uploadToRunkeeper response: " + response);
         if (response == null) {
             return new ExportResult(false, "no response");
-        } else if (response.equals("")) {
+        } else if (response.isEmpty()) {
             return new ExportResult(true, "successfully uploaded " + exportInfo.getFileBaseName() + " to RunKeeper");
         }
 
         return new ExportResult(true, response);
+    }
+
+    private static @NonNull HttpPost getHttpPost(File file) {
+        HttpPost httpPost = new HttpPost(MY_UPLOAD_URL);
+        // httpPost.addHeader(AUTHORIZATION, "Bearer " + TrainingApplication.getRunkeeperToken());
+        httpPost.addHeader(AUTHORIZATION, BEARER + " " + TrainingApplication.getRunkeeperToken());
+        httpPost.addHeader(CONTENT_TYPE, MY_CONTENT_TYPE);
+
+        FileEntity fileEntity = new FileEntity(file, CONTENT_TYPE);
+        fileEntity.setContentType(CONTENT_TYPE);
+        // fileEntity.setChunked(true);
+        httpPost.setEntity(fileEntity);
+        return httpPost;
     }
 
     @Override

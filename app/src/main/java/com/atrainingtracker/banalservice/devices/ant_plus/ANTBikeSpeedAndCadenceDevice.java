@@ -10,7 +10,6 @@ import com.atrainingtracker.banalservice.sensor.MySensorManager;
 import com.atrainingtracker.banalservice.sensor.SensorType;
 import com.atrainingtracker.banalservice.sensor.ThresholdSensor;
 import com.dsi.ant.plugins.antplus.pcc.AntPlusBikeCadencePcc;
-import com.dsi.ant.plugins.antplus.pcc.AntPlusBikeCadencePcc.ICalculatedCadenceReceiver;
 import com.dsi.ant.plugins.antplus.pcc.AntPlusBikeSpeedDistancePcc;
 import com.dsi.ant.plugins.antplus.pcc.AntPlusBikeSpeedDistancePcc.CalculatedAccumulatedDistanceReceiver;
 import com.dsi.ant.plugins.antplus.pcc.AntPlusBikeSpeedDistancePcc.CalculatedSpeedReceiver;
@@ -48,11 +47,11 @@ public class ANTBikeSpeedAndCadenceDevice extends MyANTDevice {
 
     @Override
     protected void addSensors() {
-        mSpeedSensor = new ThresholdSensor<BigDecimal>(this, SensorType.SPEED_mps, SPEED_THRESHOLD);
-        mPaceSensor = new ThresholdSensor<Double>(this, SensorType.PACE_spm, SPEED_THRESHOLD);
+        mSpeedSensor = new ThresholdSensor<>(this, SensorType.SPEED_mps, SPEED_THRESHOLD);
+        mPaceSensor = new ThresholdSensor<>(this, SensorType.PACE_spm, SPEED_THRESHOLD);
         mDistanceSensor = new MyDoubleAccumulatorSensor(this, SensorType.DISTANCE_m);
         mLapDistanceSensor = new MyDoubleAccumulatorSensor(this, SensorType.DISTANCE_m_LAP);
-        mCadenceSensor = new ThresholdSensor<BigDecimal>(this, SensorType.CADENCE, CADENCE_THRESHOLD);
+        mCadenceSensor = new ThresholdSensor<>(this, SensorType.CADENCE, CADENCE_THRESHOLD);
 
         addSensor(mSpeedSensor);
         addSensor(mPaceSensor);
@@ -74,7 +73,7 @@ public class ANTBikeSpeedAndCadenceDevice extends MyANTDevice {
         myLog("requestAccess()");
 
         // we start with searching for the speed part.  Searching for the cadence part will be started when the device is found.
-        return AntPlusBikeSpeedDistancePcc.requestAccess(mContext, getANTDeviceNumber(), 0, true, new MyResultReceiver<AntPlusBikeSpeedDistancePcc>(), new MyDeviceStateChangeReceiver());
+        return AntPlusBikeSpeedDistancePcc.requestAccess(mContext, getANTDeviceNumber(), 0, true, new MyResultReceiver<>(), new MyDeviceStateChangeReceiver());
     }
 
     @Override
@@ -95,7 +94,7 @@ public class ANTBikeSpeedAndCadenceDevice extends MyANTDevice {
             // also search for the cadence part
             // TODO is this the right place???
             myLog("before AntPlusBikeCadencePcc.requestAccess()");
-            pccReleaseHandle2 = AntPlusBikeCadencePcc.requestAccess(mContext, getANTDeviceNumber(), 0, true, new MyResultReceiver<AntPlusBikeCadencePcc>(), new MyDeviceStateChangeReceiver());
+            pccReleaseHandle2 = AntPlusBikeCadencePcc.requestAccess(mContext, getANTDeviceNumber(), 0, true, new MyResultReceiver<>(), new MyDeviceStateChangeReceiver());
         } else if (antPluginPcc.getClass() == AntPlusBikeCadencePcc.class) {
             cadencePcc = (AntPlusBikeCadencePcc) antPluginPcc;
         }
@@ -134,12 +133,7 @@ public class ANTBikeSpeedAndCadenceDevice extends MyANTDevice {
 
         if (cadencePcc != null) {
             myLog("before subscribeCalculatedCadenceEvent");
-            cadencePcc.subscribeCalculatedCadenceEvent(new ICalculatedCadenceReceiver() {
-                @Override
-                public void onNewCalculatedCadence(long estTimestamp, EnumSet<EventFlag> eventFlags, BigDecimal calculatedCadence) {
-                    mCadenceSensor.newValue(calculatedCadence);
-                }
-            });
+            cadencePcc.subscribeCalculatedCadenceEvent((estTimestamp, eventFlags, calculatedCadence) -> mCadenceSensor.newValue(calculatedCadence));
         }
     }
 

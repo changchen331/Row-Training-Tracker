@@ -1,10 +1,11 @@
 package com.atrainingtracker.trainingtracker;
 
+import androidx.annotation.NonNull;
+
 import com.atrainingtracker.R;
 
 public enum MyUnits {
-    METRIC(R.string.units_type_metric),
-    IMPERIAL(R.string.units_type_imperial);
+    METRIC(R.string.units_type_metric), IMPERIAL(R.string.units_type_imperial);
 
     private int nameId;
 
@@ -16,6 +17,7 @@ public enum MyUnits {
         return nameId;
     }
 
+    @NonNull
     @Override
     public String toString() {
         return TrainingApplication.getAppContext().getString(nameId);

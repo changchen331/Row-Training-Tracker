@@ -1,8 +1,8 @@
 package com.atrainingtracker.trainingtracker.dialogs;
 
+import android.annotation.SuppressLint;
 import android.app.Dialog;
 import android.content.ContentValues;
-import android.content.DialogInterface;
 import android.content.Intent;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
@@ -13,10 +13,10 @@ import android.view.View;
 import android.widget.ArrayAdapter;
 import android.widget.Button;
 import android.widget.CheckBox;
-import android.widget.CompoundButton;
 import android.widget.EditText;
 import android.widget.Spinner;
 
+import androidx.annotation.NonNull;
 import androidx.appcompat.app.AlertDialog;
 import androidx.fragment.app.DialogFragment;
 
@@ -28,7 +28,6 @@ import com.atrainingtracker.trainingtracker.database.WorkoutSummariesDatabaseMan
 import com.atrainingtracker.trainingtracker.database.WorkoutSummariesDatabaseManager.WorkoutSummaries;
 
 import java.util.List;
-
 
 public class EditFancyWorkoutNameDialog extends DialogFragment {
     public static final String TAG = EditFancyWorkoutNameDialog.class.getName();
@@ -58,10 +57,12 @@ public class EditFancyWorkoutNameDialog extends DialogFragment {
         super.onCreate(savedInstanceState);
         if (DEBUG) Log.d(TAG, "onCreate");
 
-        mFancyNameId = getArguments().getLong(FANCY_NAME_ID);
+        mFancyNameId = requireArguments().getLong(FANCY_NAME_ID);
     }
 
 
+    @NonNull
+    @SuppressLint({"Range", "SetTextI18n"})
     @Override
     public Dialog onCreateDialog(Bundle savedInstanceState) {
         long sportTypeId;
@@ -99,7 +100,7 @@ public class EditFancyWorkoutNameDialog extends DialogFragment {
 
 
         // create the main view
-        LayoutInflater inflater = getActivity().getLayoutInflater();
+        LayoutInflater inflater = requireActivity().getLayoutInflater();
         final View view = inflater.inflate(R.layout.edit_fancy_commute_name, null);
 
         final Spinner spinnerSport = view.findViewById(R.id.spinnerSport);
@@ -113,62 +114,55 @@ public class EditFancyWorkoutNameDialog extends DialogFragment {
         final CheckBox cbAddVia = view.findViewById(R.id.checkBoxAddVia);
 
         // configure the main view
-        spinnerSport.setAdapter(new ArrayAdapter(getContext(), android.R.layout.simple_list_item_1, sportTypesList));
+        spinnerSport.setAdapter(new ArrayAdapter<>(requireContext(), android.R.layout.simple_list_item_1, sportTypesList));
         if (sportTypeName != null) {
             spinnerSport.setSelection(sportTypesList.indexOf(sportTypeName));
         }
 
-        spinnerStartName.setAdapter(new ArrayAdapter(getContext(), android.R.layout.simple_list_item_1, myLocationNameList));
+        spinnerStartName.setAdapter(new ArrayAdapter<>(requireContext(), android.R.layout.simple_list_item_1, myLocationNameList));
         if (startLocationName != null) {
             spinnerStartName.setSelection(myLocationNameList.indexOf(startLocationName));
         }
 
-        spinnerEndName.setAdapter(new ArrayAdapter(getContext(), android.R.layout.simple_list_item_1, myLocationNameList));
+        spinnerEndName.setAdapter(new ArrayAdapter<>(requireContext(), android.R.layout.simple_list_item_1, myLocationNameList));
         if (endLocationName != null) {
             spinnerEndName.setSelection(myLocationNameList.indexOf(endLocationName));
         }
 
         etName.setText(fancyName);
 
-        cbAddCounter.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
-            @Override
-            public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
-                if (isChecked) {
-                    etCounter.setVisibility(View.VISIBLE);
-                    bDecrementCounter.setVisibility(View.VISIBLE);
-                    bIncrementCounter.setVisibility(View.VISIBLE);
-                } else {
-                    etCounter.setVisibility(View.INVISIBLE);
-                    bDecrementCounter.setVisibility(View.INVISIBLE);
-                    bIncrementCounter.setVisibility(View.INVISIBLE);
-                }
+        cbAddCounter.setOnCheckedChangeListener((buttonView, isChecked) -> {
+            if (isChecked) {
+                etCounter.setVisibility(View.VISIBLE);
+                bDecrementCounter.setVisibility(View.VISIBLE);
+                bIncrementCounter.setVisibility(View.VISIBLE);
+            } else {
+                etCounter.setVisibility(View.INVISIBLE);
+                bDecrementCounter.setVisibility(View.INVISIBLE);
+                bIncrementCounter.setVisibility(View.INVISIBLE);
             }
         });
         cbAddCounter.setChecked(addCounter);
 
         etCounter.setText(counter + "");
 
-        bDecrementCounter.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                try {
-                    int counter = Integer.parseInt(etCounter.getText().toString());
-                    if (counter >= 0) {
-                        etCounter.setText(counter - 1 + "");
-                    }
-                } catch (Exception e) {
+        bDecrementCounter.setOnClickListener(v -> {
+            try {
+                int counter1 = Integer.parseInt(etCounter.getText().toString());
+                if (counter1 >= 0) {
+                    etCounter.setText(counter1 - 1 + "");
                 }
+            } catch (Exception e) {
+                throw new RuntimeException(e);
             }
         });
 
-        bIncrementCounter.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                try {
-                    int counter = Integer.parseInt(etCounter.getText().toString());
-                    etCounter.setText(counter + 1 + "");
-                } catch (Exception e) {
-                }
+        bIncrementCounter.setOnClickListener(v -> {
+            try {
+                int counter12 = Integer.parseInt(etCounter.getText().toString());
+                etCounter.setText(counter12 + 1 + "");
+            } catch (Exception e) {
+                throw new RuntimeException(e);
             }
         });
 
@@ -176,54 +170,46 @@ public class EditFancyWorkoutNameDialog extends DialogFragment {
 
 
         // finally, create the dialog
-        AlertDialog.Builder builder = new AlertDialog.Builder(getContext());
+        AlertDialog.Builder builder = new AlertDialog.Builder(requireContext());
         builder.setTitle(R.string.workout_name_scheme);
         builder.setView(view);
-        builder.setPositiveButton(R.string.OK,
-                new DialogInterface.OnClickListener() {
-                    public void onClick(DialogInterface dialog, int whichButton) {
-                        Log.i(TAG, "OK clicked");
+        builder.setPositiveButton(R.string.OK, (dialog, whichButton) -> {
+            Log.i(TAG, "OK clicked");
 
-                        // save everything
-                        ContentValues contentValues = new ContentValues();
-                        contentValues.put(WorkoutSummaries.SPORT_ID, SportTypeDatabaseManager.getSportTypesIdList().get(spinnerSport.getSelectedItemPosition()));
-                        contentValues.put(WorkoutSummaries.START_LOCATION_NAME, (String) spinnerStartName.getSelectedItem());
-                        contentValues.put(WorkoutSummaries.END_LOCATION_NAME, (String) spinnerEndName.getSelectedItem());
-                        contentValues.put(WorkoutSummaries.FANCY_NAME, etName.getText().toString());
-                        contentValues.put(WorkoutSummaries.ADD_COUNTER, (cbAddCounter.isChecked()) ? 1 : 0);
-                        try {
-                            contentValues.put(WorkoutSummaries.COUNTER, Integer.parseInt(etCounter.getText().toString()));
-                        } catch (Exception e) {
-                        }
-                        contentValues.put(WorkoutSummaries.ADD_VIA, (cbAddVia.isChecked()) ? 1 : 0);
+            // save everything
+            ContentValues contentValues = new ContentValues();
+            contentValues.put(WorkoutSummaries.SPORT_ID, SportTypeDatabaseManager.getSportTypesIdList().get(spinnerSport.getSelectedItemPosition()));
+            contentValues.put(WorkoutSummaries.START_LOCATION_NAME, (String) spinnerStartName.getSelectedItem());
+            contentValues.put(WorkoutSummaries.END_LOCATION_NAME, (String) spinnerEndName.getSelectedItem());
+            contentValues.put(WorkoutSummaries.FANCY_NAME, etName.getText().toString());
+            contentValues.put(WorkoutSummaries.ADD_COUNTER, (cbAddCounter.isChecked()) ? 1 : 0);
+            try {
+                contentValues.put(WorkoutSummaries.COUNTER, Integer.parseInt(etCounter.getText().toString()));
+            } catch (Exception e) {
+                throw new RuntimeException(e);
+            }
+            contentValues.put(WorkoutSummaries.ADD_VIA, (cbAddVia.isChecked()) ? 1 : 0);
 
-                        if (mFancyNameId < 0) {  // create an entry
-                            db.insert(WorkoutSummaries.TABLE_WORKOUT_NAME_PATTERNS, null, contentValues);
-                        } else {
-                            db.update(WorkoutSummaries.TABLE_WORKOUT_NAME_PATTERNS, contentValues,
-                                    WorkoutSummaries.C_ID + "=?", new String[]{Long.toString(mFancyNameId)});
-                        }
+            if (mFancyNameId < 0) {  // create an entry
+                db.insert(WorkoutSummaries.TABLE_WORKOUT_NAME_PATTERNS, null, contentValues);
+            } else {
+                db.update(WorkoutSummaries.TABLE_WORKOUT_NAME_PATTERNS, contentValues, WorkoutSummaries.C_ID + "=?", new String[]{Long.toString(mFancyNameId)});
+            }
 
-                        getContext().sendBroadcast(new Intent(FANCY_WORKOUT_NAME_CHANGED_INTENT));
+            requireContext().sendBroadcast(new Intent(FANCY_WORKOUT_NAME_CHANGED_INTENT));
 
-                        WorkoutSummariesDatabaseManager.getInstance().closeDatabase();
+            WorkoutSummariesDatabaseManager.getInstance().closeDatabase();
 
-                        dialog.dismiss();
-                    }
-                });
-        builder.setNegativeButton(R.string.Cancel,
-                new DialogInterface.OnClickListener() {
-                    public void onClick(DialogInterface dialog, int whichButton) {
-                        Log.i(TAG, "Cancel clicked");
+            dialog.dismiss();
+        });
+        builder.setNegativeButton(R.string.Cancel, (dialog, whichButton) -> {
+            Log.i(TAG, "Cancel clicked");
 
-                        WorkoutSummariesDatabaseManager.getInstance().closeDatabase();
+            WorkoutSummariesDatabaseManager.getInstance().closeDatabase();
 
-                        dialog.dismiss();
-                    }
-                });
+            dialog.dismiss();
+        });
 
         return builder.create();
     }
-
-
 }

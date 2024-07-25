@@ -3,7 +3,6 @@ package com.atrainingtracker.banalservice.filters;
 import com.atrainingtracker.banalservice.sensor.SensorType;
 
 public class FilterData {
-
     public String deviceName;
     public SensorType sensorType;
     public FilterType filterType;

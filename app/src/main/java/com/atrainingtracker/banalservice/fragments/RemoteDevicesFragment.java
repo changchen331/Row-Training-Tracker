@@ -1,5 +1,6 @@
 package com.atrainingtracker.banalservice.fragments;
 
+import android.annotation.SuppressLint;
 import android.app.ProgressDialog;
 import android.content.BroadcastReceiver;
 import android.content.ContentValues;
@@ -8,6 +9,7 @@ import android.content.Intent;
 import android.content.IntentFilter;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
+import android.os.Build;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.ContextMenu;
@@ -17,11 +19,10 @@ import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.AdapterView;
 import android.widget.AdapterView.AdapterContextMenuInfo;
-import android.widget.AdapterView.OnItemClickListener;
 import android.widget.ListView;
 
+import androidx.annotation.NonNull;
 import androidx.fragment.app.Fragment;
 
 import com.atrainingtracker.R;
@@ -35,6 +36,7 @@ import com.atrainingtracker.trainingtracker.database.TrackingViewsDatabaseManage
 
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Timer;
 import java.util.TimerTask;
 
@@ -44,7 +46,6 @@ public abstract class RemoteDevicesFragment extends Fragment {
     protected DeviceType mDeviceType;
     protected Protocol mProtocol;
     protected ListView lvDevices;
-
 
     // protected BANALServiceComm mBanalServiceComm;
     protected SQLiteDatabase mRemoteDevicesDb;
@@ -75,7 +76,7 @@ public abstract class RemoteDevicesFragment extends Fragment {
     ////////////////////////////////////////////////////////////////////////////////////////////////
 
     @Override
-    public void onAttach(Context context) {
+    public void onAttach(@NonNull Context context) {
         if (DEBUG) Log.i(TAG, "onAttach");
         super.onAttach(context);
 
@@ -84,18 +85,18 @@ public abstract class RemoteDevicesFragment extends Fragment {
         try {
             mOnRemoteDeviceSelectedListener = (OnRemoteDeviceSelectedListener) context;
         } catch (ClassCastException e) {
-            throw new ClassCastException(context.toString()
+            throw new ClassCastException(context
                     + " must implement OnRemoteDeviceSelectedListener");
         }
 
         try {
             mGetBanalServiceInterface = (BANALService.GetBanalServiceInterface) context;
         } catch (ClassCastException e) {
-            throw new ClassCastException(context.toString() + " must implement GetBanalServiceInterface");
+            throw new ClassCastException(context + " must implement GetBanalServiceInterface");
         }
 
 
-        mDeviceId2Units = new HashMap<Long, String>();
+        mDeviceId2Units = new HashMap<>();
     }
 
     /**
@@ -109,12 +110,12 @@ public abstract class RemoteDevicesFragment extends Fragment {
         // mDeviceType = DeviceType.valueOf(savedInstanceState.getString(BANALService.DEVICE_TYPE));
         // mProtocol   = Protocol.valueOf(savedInstanceState.getString(BANALService.PROTOCOL));
 
-        mDeviceType = DeviceType.valueOf(getArguments().getString(BANALService.DEVICE_TYPE));
-        mProtocol = Protocol.valueOf(getArguments().getString(BANALService.PROTOCOL));
+        mDeviceType = DeviceType.valueOf(requireArguments().getString(BANALService.DEVICE_TYPE));
+        mProtocol = Protocol.valueOf(requireArguments().getString(BANALService.PROTOCOL));
     }
 
     @Override
-    public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
+    public View onCreateView(@NonNull LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
         if (DEBUG) Log.i(TAG, "onCreateView");
 
         // Inflate the layout for this fragment
@@ -123,36 +124,31 @@ public abstract class RemoteDevicesFragment extends Fragment {
         // get the view
         lvDevices = view.findViewById(R.id.lvDevices);
 
-        lvDevices.setOnItemClickListener(new OnItemClickListener() {
-            public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
-                if (DEBUG) Log.d(TAG, "onItemClick");
+        lvDevices.setOnItemClickListener((parent, view1, position, id) -> {
+            if (DEBUG) Log.d(TAG, "onItemClick");
 
-                mOnRemoteDeviceSelectedListener.onRemoteDeviceSelected(id);
-            }
+            mOnRemoteDeviceSelectedListener.onRemoteDeviceSelected(id);
         });
 
         lvDevices.setFocusable(true);
         lvDevices.setClickable(true);
         registerForContextMenu(lvDevices);
 
-        mRemoteDevicesAdapter = new DeviceListCursorAdapter(getActivity(), mRemoteDevicesCursor, new DeviceListCursorAdapter.PairingChangedInterface() {
-            @Override
-            public void onPairingChanged(long deviceId, boolean paired) {
-                if (DEBUG) Log.i(TAG, "onPairingChanged: " + deviceId + " paired: " + paired);
-                // first, update the database
-                ContentValues contentValues = new ContentValues();
-                contentValues.put(DevicesDbHelper.PAIRED, paired);
-                if (mRemoteDevicesDb != null) {
-                    mRemoteDevicesDb.update(DevicesDbHelper.DEVICES,
-                            contentValues,
-                            DevicesDbHelper.C_ID + "=?",
-                            new String[]{Long.toString(deviceId)});
+        mRemoteDevicesAdapter = new DeviceListCursorAdapter(getActivity(), mRemoteDevicesCursor, (deviceId, paired) -> {
+            if (DEBUG) Log.i(TAG, "onPairingChanged: " + deviceId + " paired: " + paired);
+            // first, update the database
+            ContentValues contentValues = new ContentValues();
+            contentValues.put(DevicesDbHelper.PAIRED, paired);
+            if (mRemoteDevicesDb != null) {
+                mRemoteDevicesDb.update(DevicesDbHelper.DEVICES,
+                        contentValues,
+                        DevicesDbHelper.C_ID + "=?",
+                        new String[]{Long.toString(deviceId)});
 
-                    // then inform all others
-                    sendPairingChangedIntent(deviceId, paired);
-                } else {
-                    Log.i(TAG, "WTF, mRemoteDevicesDb == null");
-                }
+                // then inform all others
+                sendPairingChangedIntent(deviceId, paired);
+            } else {
+                Log.i(TAG, "WTF, mRemoteDevicesDb == null");
             }
         });
         lvDevices.setAdapter(mRemoteDevicesAdapter);
@@ -176,11 +172,14 @@ public abstract class RemoteDevicesFragment extends Fragment {
         mRemoteDevicesAdapter.changeCursor(mRemoteDevicesCursor);
         mRemoteDevicesAdapter.notifyDataSetChanged();
 
-        getActivity().registerReceiver(mPairingChangedReceiver, mPairingChangedFilter);
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+                requireActivity().registerReceiver(mPairingChangedReceiver, mPairingChangedFilter, Context.RECEIVER_NOT_EXPORTED);
+            }
+        }
 
         startTimer();
     }
-
 
     @Override
     public void onPause() {
@@ -198,12 +197,11 @@ public abstract class RemoteDevicesFragment extends Fragment {
         mRemoteDevicesCursor = null;
 
         try {
-            getActivity().unregisterReceiver(mPairingChangedReceiver);
+            requireActivity().unregisterReceiver(mPairingChangedReceiver);
         } catch (Exception e) {
+            throw new RuntimeException(e);
         }
-
     }
-
 
     // @Override
     // public void onSaveInstanceState(Bundle outState) {
@@ -220,17 +218,18 @@ public abstract class RemoteDevicesFragment extends Fragment {
 
 
     @Override
-    public void onCreateContextMenu(ContextMenu menu, View v, ContextMenuInfo menuInfo) {
+    public void onCreateContextMenu(@NonNull ContextMenu menu, @NonNull View v, ContextMenuInfo menuInfo) {
         if (DEBUG) Log.d(TAG, "onCreateContextMenu");
         super.onCreateContextMenu(menu, v, menuInfo);
-        MenuInflater inflater = getActivity().getMenuInflater();
+        MenuInflater inflater = requireActivity().getMenuInflater();
         inflater.inflate(R.menu.device_list_context_menu, menu);
     }
 
+    @SuppressLint("NonConstantResourceId")
     @Override
-    public boolean onContextItemSelected(MenuItem item) {
+    public boolean onContextItemSelected(@NonNull MenuItem item) {
         if (DEBUG) Log.d(TAG, "onContextItemSelected");
-        long id = ((AdapterContextMenuInfo) item.getMenuInfo()).id;
+        long id = ((AdapterContextMenuInfo) Objects.requireNonNull(item.getMenuInfo())).id;
         switch (item.getItemId()) {
             case R.id.editDevice:
                 mOnRemoteDeviceSelectedListener.onRemoteDeviceSelected(id);
@@ -250,15 +249,12 @@ public abstract class RemoteDevicesFragment extends Fragment {
             return;
         }
 
-        getActivity().runOnUiThread(new Runnable() {
-            @Override
-            public void run() {
-                mRemoteDevicesCursor = getCursor();
-                if (mRemoteDevicesCursor != null) {
-                    mRemoteDevicesAdapter.deleteLookupTable();  // might lead to race condition?
-                    mRemoteDevicesAdapter.changeCursor(mRemoteDevicesCursor);
-                    mRemoteDevicesAdapter.notifyDataSetChanged();
-                }
+        getActivity().runOnUiThread(() -> {
+            mRemoteDevicesCursor = getCursor();
+            if (mRemoteDevicesCursor != null) {
+                mRemoteDevicesAdapter.deleteLookupTable();  // might lead to race condition?
+                mRemoteDevicesAdapter.changeCursor(mRemoteDevicesCursor);
+                mRemoteDevicesAdapter.notifyDataSetChanged();
             }
         });
     }
@@ -287,7 +283,7 @@ public abstract class RemoteDevicesFragment extends Fragment {
     private synchronized void startTimer() {
         if (timer == null) {
             timer = new Timer();
-            timer.scheduleAtFixedRate(new ClockTimeTask(), 0, 1000);
+            timer.schedule(new ClockTimeTask(), 0, 1000);
         }
     }
 
@@ -331,7 +327,7 @@ public abstract class RemoteDevicesFragment extends Fragment {
         Intent intent = new Intent(BANALService.PAIRING_CHANGED);
         intent.putExtra(BANALService.PAIRED, paired);
         intent.putExtra(BANALService.DEVICE_ID, deviceId);
-        getActivity().sendBroadcast(intent);
+        requireActivity().sendBroadcast(intent);
     }
 
     // The container Activity must implement this interface so the frag can deliver messages
@@ -348,24 +344,21 @@ public abstract class RemoteDevicesFragment extends Fragment {
             if (DEBUG) Log.d(TAG, "update main fields");
 
             if (getActivity() != null && isAdded()) {  // TODO: just hiding a bug?
-                getActivity().runOnUiThread(new Runnable() {
-                    @Override
-                    public void run() {
-                        if (isAdded()) {               // still added?
-                            for (Long deviceId : mRemoteDevicesAdapter.getDeviceIds()) {
-                                if (DEBUG) Log.d(TAG, "updating " + deviceId);
+                getActivity().runOnUiThread(() -> {
+                    if (isAdded()) {               // still added?
+                        for (Long deviceId : mRemoteDevicesAdapter.getDeviceIds()) {
+                            if (DEBUG) Log.d(TAG, "updating " + deviceId);
 
-                                if (mGetBanalServiceInterface != null
-                                        && mGetBanalServiceInterface.getBanalServiceComm() != null) {
-                                    if (!mDeviceId2Units.containsKey(deviceId)) {
-                                        mDeviceId2Units.put(deviceId, getString(MyHelper.getUnitsId(DevicesDatabaseManager.getDeviceType(deviceId).getMainSensorType())));
-                                    }
-                                    mRemoteDevicesAdapter.updateMainField(deviceId, getString(R.string.ValueAndUnitFormat,
-                                            mGetBanalServiceInterface.getBanalServiceComm().getMainSensorStringValue(deviceId),
-                                            mDeviceId2Units.get(deviceId)));
-                                } else {
-                                    mRemoteDevicesAdapter.updateMainField(deviceId, getString(R.string.NoData));
+                            if (mGetBanalServiceInterface != null
+                                    && mGetBanalServiceInterface.getBanalServiceComm() != null) {
+                                if (!mDeviceId2Units.containsKey(deviceId)) {
+                                    mDeviceId2Units.put(deviceId, getString(MyHelper.getUnitsId(DevicesDatabaseManager.getDeviceType(deviceId).getMainSensorType())));
                                 }
+                                mRemoteDevicesAdapter.updateMainField(deviceId, getString(R.string.ValueAndUnitFormat,
+                                        mGetBanalServiceInterface.getBanalServiceComm().getMainSensorStringValue(deviceId),
+                                        mDeviceId2Units.get(deviceId)));
+                            } else {
+                                mRemoteDevicesAdapter.updateMainField(deviceId, getString(R.string.NoData));
                             }
                         }
                     }

@@ -1,5 +1,6 @@
 package com.atrainingtracker.banalservice.devices.ant_plus.search_new;
 
+import android.annotation.SuppressLint;
 import android.content.Context;
 import android.util.Log;
 
@@ -16,8 +17,7 @@ import java.util.LinkedList;
 import java.util.List;
 
 
-public class ANTSearchForNewDevicesEngineMultiDeviceSearch
-        implements SearchForNewDevicesInterface {
+public class ANTSearchForNewDevicesEngineMultiDeviceSearch implements SearchForNewDevicesInterface {
     private static final String TAG = "ANTSearchForNewDevicesEngineMultiDeviceSearch";
     private static final boolean DEBUG = BANALService.DEBUG & true;
 
@@ -25,7 +25,7 @@ public class ANTSearchForNewDevicesEngineMultiDeviceSearch
     protected DeviceType mDeviceType;
     protected MultiDeviceSearch mMultiDeviceSearch;
 
-    protected List<MyANTAsyncSearchDevice> mFoundDevices = new LinkedList<MyANTAsyncSearchDevice>();
+    protected List<MyANTAsyncSearchDevice> mFoundDevices = new LinkedList<>();
     private IANTAsyncSearchEngineInterface mCallbackInterface;
 
     public ANTSearchForNewDevicesEngineMultiDeviceSearch(Context context, DeviceType deviceType, IANTAsyncSearchEngineInterface callbackInterface) {
@@ -34,6 +34,7 @@ public class ANTSearchForNewDevicesEngineMultiDeviceSearch
         mCallbackInterface = callbackInterface;
     }
 
+    @SuppressLint("LongLogTag")
     @Override
     public void startAsyncSearch() {
         com.dsi.ant.plugins.antplus.pcc.defines.DeviceType antDeviceType = DeviceType.getAntPluginDeviceType(mDeviceType);
@@ -59,6 +60,7 @@ public class ANTSearchForNewDevicesEngineMultiDeviceSearch
         }
     }
 
+    @SuppressLint("LongLogTag")
     protected void myOnDeviceFound(MultiDeviceSearchResult deviceFound) {
         if (DEBUG) Log.i(TAG, "onDeviceFound(): " + deviceFound.getDeviceDisplayName());
 
@@ -113,6 +115,7 @@ public class ANTSearchForNewDevicesEngineMultiDeviceSearch
 
     protected class MyMultiDeviceSearchCallback implements MultiDeviceSearch.SearchCallbacks {
 
+        @SuppressLint("LongLogTag")
         @Override
         public void onDeviceFound(MultiDeviceSearchResult device) {
             if (DEBUG) Log.i(TAG, "onDeviceFound: " + device.getDeviceDisplayName());

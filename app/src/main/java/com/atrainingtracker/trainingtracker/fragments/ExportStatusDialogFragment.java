@@ -11,6 +11,7 @@ import android.widget.TableLayout;
 import android.widget.TableRow;
 import android.widget.TextView;
 
+import androidx.annotation.NonNull;
 import androidx.appcompat.app.AlertDialog;
 import androidx.fragment.app.DialogFragment;
 
@@ -24,6 +25,7 @@ import com.atrainingtracker.trainingtracker.exporter.ExportType;
 import com.atrainingtracker.trainingtracker.exporter.FileFormat;
 
 import java.util.EnumMap;
+import java.util.Objects;
 
 // public class ExportStatusDialogFragment extends AppCompatDialogFragment
 public class ExportStatusDialogFragment extends DialogFragment {
@@ -46,7 +48,6 @@ public class ExportStatusDialogFragment extends DialogFragment {
         return exportDetailsFragment;
     }
 
-
     /**
      * Called when the activity is first created.
      */
@@ -55,11 +56,13 @@ public class ExportStatusDialogFragment extends DialogFragment {
         super.onCreate(savedInstanceState);
         if (DEBUG) Log.d(TAG, "onCreate");
 
-        mWorkoutId = getArguments().getLong(WorkoutSummaries.WORKOUT_ID);
+        if (getArguments() != null) {
+            mWorkoutId = getArguments().getLong(WorkoutSummaries.WORKOUT_ID);
+        }
     }
 
     @Override
-    public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
+    public View onCreateView(@NonNull LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
         if (DEBUG) Log.d(TAG, "onCreateView");
 
         if (!getShowsDialog()) {
@@ -69,12 +72,13 @@ public class ExportStatusDialogFragment extends DialogFragment {
         }
     }
 
+    @NonNull
     @Override
     public Dialog onCreateDialog(Bundle savedInstanceState) {
         // super.onCreateDialog(savedInstanceState);
         if (DEBUG) Log.i(TAG, "onCreateDialog");
 
-        AlertDialog.Builder builder = new AlertDialog.Builder(getActivity());
+        AlertDialog.Builder builder = new AlertDialog.Builder(requireActivity());
 
         builder.setView(createView());
         // TextView title = new TextView(getActivity());
@@ -131,8 +135,8 @@ public class ExportStatusDialogFragment extends DialogFragment {
                 ImageView iv = new ImageView(getContext());
                 tv.setPadding(padding_scaled, padding_scaled, padding_scaled, padding_scaled);
 
-                ExportStatus exportStatus = exportStatusTable.get(exportType).get(fileFormat);
-                switch (exportStatus) {
+                ExportStatus exportStatus = Objects.requireNonNull(exportStatusTable.get(exportType)).get(fileFormat);
+                switch (Objects.requireNonNull(exportStatus)) {
                     case UNWANTED:
                         iv.setImageResource(R.drawable.ic_not_interested_black_24dp);
                         break;
@@ -163,5 +167,4 @@ public class ExportStatusDialogFragment extends DialogFragment {
         if (DEBUG) Log.i(TAG, "returning tableView");
         return tableLayout;
     }
-
 }

@@ -4,6 +4,7 @@ import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
+import android.os.Build;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.LayoutInflater;
@@ -12,6 +13,7 @@ import android.view.ViewGroup;
 import android.widget.ImageButton;
 import android.widget.TextView;
 
+import androidx.annotation.NonNull;
 import androidx.core.content.ContextCompat;
 import androidx.fragment.app.Fragment;
 
@@ -42,7 +44,7 @@ public class ControlSportTypeFragment extends Fragment {
     // onCreate()
 
     @Override
-    public void onAttach(final Context context) {
+    public void onAttach(@NonNull final Context context) {
         super.onAttach(context);
         if (DEBUG) Log.i(TAG, "onAttach");
 
@@ -60,13 +62,13 @@ public class ControlSportTypeFragment extends Fragment {
                 }
             });
         } catch (ClassCastException e) {
-            throw new ClassCastException(context.toString() + " must implement GetBanalServiceInterface");
+            throw new ClassCastException(context + " must implement GetBanalServiceInterface");
         }
 
     }
 
     @Override
-    public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
+    public View onCreateView(@NonNull LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
         super.onCreateView(inflater, container, savedInstanceState);
         if (DEBUG) Log.d(TAG, "onCreateView");
 
@@ -95,34 +97,22 @@ public class ControlSportTypeFragment extends Fragment {
 //            }
 //        });
 
-        mIbBike.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                if (DEBUG) Log.i(TAG, "ROWING selected by user");
-                setUserSelectedSportType(BSportType.ROWING);
-            }
+        mIbBike.setOnClickListener(v -> {
+            if (DEBUG) Log.i(TAG, "ROWING selected by user");
+            setUserSelectedSportType(BSportType.ROWING);
         });
-        mIbBike.setOnLongClickListener(new View.OnLongClickListener() {
-            @Override
-            public boolean onLongClick(View v) {
-                showSelectSportTypeDialog(BSportType.ROWING);
-                return true;
-            }
+        mIbBike.setOnLongClickListener(v -> {
+            showSelectSportTypeDialog(BSportType.ROWING);
+            return true;
         });
 
-        mIbOther.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                if (DEBUG) Log.i(TAG, "OTHER (UNKNOWN) selected by user");
-                setUserSelectedSportType(BSportType.UNKNOWN);
-            }
+        mIbOther.setOnClickListener(v -> {
+            if (DEBUG) Log.i(TAG, "OTHER (UNKNOWN) selected by user");
+            setUserSelectedSportType(BSportType.UNKNOWN);
         });
-        mIbOther.setOnLongClickListener(new View.OnLongClickListener() {
-            @Override
-            public boolean onLongClick(View v) {
-                showSelectSportTypeDialog(BSportType.UNKNOWN);
-                return true;
-            }
+        mIbOther.setOnLongClickListener(v -> {
+            showSelectSportTypeDialog(BSportType.UNKNOWN);
+            return true;
         });
 
         mViewCreated = true;
@@ -145,7 +135,9 @@ public class ControlSportTypeFragment extends Fragment {
 
         updateView();
 
-        getActivity().registerReceiver(mUpdateViewReceiver, mUpdateViewFilter);
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+            requireActivity().registerReceiver(mUpdateViewReceiver, mUpdateViewFilter, Context.RECEIVER_NOT_EXPORTED);
+        }
     }
 
     @Override
@@ -153,14 +145,13 @@ public class ControlSportTypeFragment extends Fragment {
         super.onPause();
         if (DEBUG) Log.i(TAG, "onPause");
 
-        getActivity().unregisterReceiver(mUpdateViewReceiver);
+        requireActivity().unregisterReceiver(mUpdateViewReceiver);
     }
 
     private void showSelectSportTypeDialog(BSportType bsportType) {
         SelectSportTypeDialog selectSportTypeDialog = SelectSportTypeDialog.newInstance(bsportType);
-        selectSportTypeDialog.show(getFragmentManager(), SelectSportTypeDialog.TAG);
+        selectSportTypeDialog.show(requireFragmentManager(), SelectSportTypeDialog.TAG);
     }
-
 
     public void updateView() {
         if (DEBUG) Log.d(TAG, "updateView");
@@ -185,46 +176,45 @@ public class ControlSportTypeFragment extends Fragment {
 
                 case ROWING:
                     //mTvRun.setTextColor(ContextCompat.getColor(getActivity(), R.color.bright_grey));
-                    mTvBike.setTextColor(ContextCompat.getColor(getActivity(), R.color.color_on_background));
-                    mTvOther.setTextColor(ContextCompat.getColor(getActivity(), R.color.bright_grey));
+                    mTvBike.setTextColor(ContextCompat.getColor(requireActivity(), R.color.color_on_background));
+                    mTvOther.setTextColor(ContextCompat.getColor(requireActivity(), R.color.bright_grey));
 
-                    //mIbRun.setImageDrawable(ContextCompat.getDrawable(getActivity(), R.drawable.bsport_run_gray));
-                    mIbBike.setImageDrawable(ContextCompat.getDrawable(getActivity(), R.drawable.bsport_row));
-                    mIbOther.setImageDrawable(ContextCompat.getDrawable(getActivity(), R.drawable.bsport_other_gray));
+                    //mIbRun.setImageDrawable(ContextCompat.getDrawable(requireActivity(), R.drawable.bsport_run_gray));
+                    mIbBike.setImageDrawable(ContextCompat.getDrawable(requireActivity(), R.drawable.bsport_row));
+                    mIbOther.setImageDrawable(ContextCompat.getDrawable(requireActivity(), R.drawable.bsport_other_gray));
 
                     break;
 
                 case UNKNOWN:
-                    //mTvRun.setTextColor(ContextCompat.getColor(getActivity(), R.color.bright_grey));
-                    mTvBike.setTextColor(ContextCompat.getColor(getActivity(), R.color.bright_grey));
-                    mTvOther.setTextColor(ContextCompat.getColor(getActivity(), R.color.color_on_background));
+                    //mTvRun.setTextColor(ContextCompat.getColor(requireActivity(), R.color.bright_grey));
+                    mTvBike.setTextColor(ContextCompat.getColor(requireActivity(), R.color.bright_grey));
+                    mTvOther.setTextColor(ContextCompat.getColor(requireActivity(), R.color.color_on_background));
 
-                    //mIbRun.setImageDrawable(ContextCompat.getDrawable(getActivity(), R.drawable.bsport_run_gray));
-                    mIbBike.setImageDrawable(ContextCompat.getDrawable(getActivity(), R.drawable.bsport_row_gray));
-                    mIbOther.setImageDrawable(ContextCompat.getDrawable(getActivity(), R.drawable.bsport_other));
+                    //mIbRun.setImageDrawable(ContextCompat.getDrawable(requireActivity(), R.drawable.bsport_run_gray));
+                    mIbBike.setImageDrawable(ContextCompat.getDrawable(requireActivity(), R.drawable.bsport_row_gray));
+                    mIbOther.setImageDrawable(ContextCompat.getDrawable(requireActivity(), R.drawable.bsport_other));
 
                     break;
 
                 default:
-                    //mTvRun.setTextColor(ContextCompat.getColor(getActivity(), R.color.bright_grey));
-                    mTvBike.setTextColor(ContextCompat.getColor(getActivity(), R.color.bright_grey));
-                    mTvOther.setTextColor(ContextCompat.getColor(getActivity(), R.color.bright_grey));
+                    //mTvRun.setTextColor(ContextCompat.getColor(requireActivity(), R.color.bright_grey));
+                    mTvBike.setTextColor(ContextCompat.getColor(requireActivity(), R.color.bright_grey));
+                    mTvOther.setTextColor(ContextCompat.getColor(requireActivity(), R.color.bright_grey));
 
-                    //mIbRun.setImageDrawable(ContextCompat.getDrawable(getActivity(), R.drawable.bsport_run_gray));
-                    mIbBike.setImageDrawable(ContextCompat.getDrawable(getActivity(), R.drawable.bsport_row_gray));
-                    mIbOther.setImageDrawable(ContextCompat.getDrawable(getActivity(), R.drawable.bsport_other_gray));
+                    //mIbRun.setImageDrawable(ContextCompat.getDrawable(requireActivity(), R.drawable.bsport_run_gray));
+                    mIbBike.setImageDrawable(ContextCompat.getDrawable(requireActivity(), R.drawable.bsport_row_gray));
+                    mIbOther.setImageDrawable(ContextCompat.getDrawable(requireActivity(), R.drawable.bsport_other_gray));
 
                     break;
             }
         } else {
-            //mTvRun.setTextColor(ContextCompat.getColor(getActivity(), R.color.bright_grey));
-            mTvBike.setTextColor(ContextCompat.getColor(getActivity(), R.color.bright_grey));
-            mTvOther.setTextColor(ContextCompat.getColor(getActivity(), R.color.bright_grey));
+            //mTvRun.setTextColor(ContextCompat.getColor(requireActivity(), R.color.bright_grey));
+            mTvBike.setTextColor(ContextCompat.getColor(requireActivity(), R.color.bright_grey));
+            mTvOther.setTextColor(ContextCompat.getColor(requireActivity(), R.color.bright_grey));
 
-            //mIbRun.setImageDrawable(ContextCompat.getDrawable(getActivity(), R.drawable.bsport_run_gray));
-            mIbBike.setImageDrawable(ContextCompat.getDrawable(getActivity(), R.drawable.bsport_row_gray));
-            mIbOther.setImageDrawable(ContextCompat.getDrawable(getActivity(), R.drawable.bsport_other_gray));
+            //mIbRun.setImageDrawable(ContextCompat.getDrawable(requireActivity(), R.drawable.bsport_run_gray));
+            mIbBike.setImageDrawable(ContextCompat.getDrawable(requireActivity(), R.drawable.bsport_row_gray));
+            mIbOther.setImageDrawable(ContextCompat.getDrawable(requireActivity(), R.drawable.bsport_other_gray));
         }
     }
-
 }

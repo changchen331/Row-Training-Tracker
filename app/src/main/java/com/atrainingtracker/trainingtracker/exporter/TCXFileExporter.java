@@ -1,5 +1,6 @@
 package com.atrainingtracker.trainingtracker.exporter;
 
+import android.annotation.SuppressLint;
 import android.content.Context;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
@@ -19,13 +20,14 @@ import java.io.IOException;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 
-
 public class TCXFileExporter extends BaseFileExporter {
     protected static final boolean WRITE_ONLY_ON_NEW_GEO_DATA = true;
     private static final String TAG = "TCXFileExporter";
     private static final boolean DEBUG = false;
     // DateFormats to convert from Db style dates to XML style dates
+    @SuppressLint("SimpleDateFormat")
     protected static SimpleDateFormat msdfFromDb = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+    @SuppressLint("SimpleDateFormat")
     protected static SimpleDateFormat msdfToXML = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss");
 
     public TCXFileExporter(Context context) {
@@ -38,8 +40,7 @@ public class TCXFileExporter extends BaseFileExporter {
     }
 
     @Override
-    protected ExportResult doExport(ExportInfo exportInfo)
-            throws IOException, ParseException {
+    protected ExportResult doExport(ExportInfo exportInfo) throws IOException, ParseException {
         if (DEBUG) Log.d(TAG, "exportToFile");
 
         getHeaderData(exportInfo);
@@ -55,13 +56,7 @@ public class TCXFileExporter extends BaseFileExporter {
 
         WorkoutSamplesDatabaseManager databaseManager = WorkoutSamplesDatabaseManager.getInstance();
         SQLiteDatabase db = databaseManager.getOpenDatabase();
-        Cursor cursor = db.query(WorkoutSamplesDatabaseManager.getTableName(exportInfo.getFileBaseName()),
-                null,
-                null,
-                null,
-                null,
-                null,
-                null);
+        Cursor cursor = db.query(WorkoutSamplesDatabaseManager.getTableName(exportInfo.getFileBaseName()), null, null, null, null, null, null);
 
         int hr;
         double distance, speed, power, cadence, altitude;
@@ -90,16 +85,9 @@ public class TCXFileExporter extends BaseFileExporter {
                 // get the lap data
                 SQLiteDatabase lapDb = LapsDatabaseManager.getInstance().getOpenDatabase();
 
-                Cursor lapCursor = lapDb.query(LapsDatabaseManager.Laps.TABLE,
-                        null,
-                        LapsDatabaseManager.Laps.WORKOUT_ID + "=? AND " + LapsDatabaseManager.Laps.LAP_NR + "=?",
-                        new String[]{workoutID + "", lap + ""},
-                        null,
-                        null,
-                        null);
+                Cursor lapCursor = lapDb.query(LapsDatabaseManager.Laps.TABLE, null, LapsDatabaseManager.Laps.WORKOUT_ID + "=? AND " + LapsDatabaseManager.Laps.LAP_NR + "=?", new String[]{workoutID + "", lap + ""}, null, null, null);
                 if (DEBUG)
-                    Log.d(TAG, "getting lap data: workoutID: " + workoutID + ", lapNr: " + lap + " found: "
-                            + lapCursor.getCount() + ", " + lapCursor.getColumnCount());
+                    Log.d(TAG, "getting lap data: workoutID: " + workoutID + ", lapNr: " + lap + " found: " + lapCursor.getCount() + ", " + lapCursor.getColumnCount());
 
                 lapCursor.moveToFirst();
 
@@ -123,9 +111,7 @@ public class TCXFileExporter extends BaseFileExporter {
             prevLineLap = lap;
 
             bufferedWriter.write("          <Trackpoint>\n");
-            bufferedWriter.write("            <Time>"
-                    + dbTime2XMLTime(cursor.getString(cursor.getColumnIndexOrThrow(WorkoutSamplesDbHelper.TIME)))
-                    + "</Time>\n");
+            bufferedWriter.write("            <Time>" + dbTime2XMLTime(cursor.getString(cursor.getColumnIndexOrThrow(WorkoutSamplesDbHelper.TIME))) + "</Time>\n");
 
             // we do not write location data when it was a (indoor) trainer session
             if (!indoorTrainerSession && haveGeo && dataValid(cursor, SensorType.LATITUDE.name()) && dataValid(cursor, SensorType.LONGITUDE.name())) {
@@ -138,62 +124,50 @@ public class TCXFileExporter extends BaseFileExporter {
                     // do nothing
                 } else {
                     bufferedWriter.write("            <Position>\n");
-                    bufferedWriter.write("              <LatitudeDegrees>" +
-                            latitude + "</LatitudeDegrees>\n");
-                    bufferedWriter.write("              <LongitudeDegrees>" +
-                            longitude + "</LongitudeDegrees>\n");
+                    bufferedWriter.write("              <LatitudeDegrees>" + latitude + "</LatitudeDegrees>\n");
+                    bufferedWriter.write("              <LongitudeDegrees>" + longitude + "</LongitudeDegrees>\n");
                     bufferedWriter.write("            </Position>\n");
                 }
             }
 
             if (haveAltitude && dataValid(cursor, SensorType.ALTITUDE.name())) {
                 altitude = cursor.getDouble(cursor.getColumnIndexOrThrow(SensorType.ALTITUDE.name()));
-                bufferedWriter.write("            <AltitudeMeters>" +
-                        altitude + "</AltitudeMeters>\n");
+                bufferedWriter.write("            <AltitudeMeters>" + altitude + "</AltitudeMeters>\n");
             }
 
             if (haveDistance && dataValid(cursor, SensorType.DISTANCE_m.name())) {
                 distance = cursor.getDouble(cursor.getColumnIndexOrThrow(SensorType.DISTANCE_m.name()));
-                bufferedWriter.write("            <DistanceMeters>" +
-                        distance + "</DistanceMeters>\n");
+                bufferedWriter.write("            <DistanceMeters>" + distance + "</DistanceMeters>\n");
             }
 
             if (haveHR && dataValid(cursor, SensorType.HR.name())) {
                 bufferedWriter.write("            <HeartRateBpm xsi:type=\"HeartRateInBeatsPerMinute_t\">\n");
                 hr = cursor.getInt(cursor.getColumnIndexOrThrow(SensorType.HR.name()));
-                bufferedWriter.write("              <Value>" +
-                        hr + "</Value>\n");
+                bufferedWriter.write("              <Value>" + hr + "</Value>\n");
                 bufferedWriter.write("            </HeartRateBpm>\n");
             }
 
             if (haveBikeCadence && dataValid(cursor, SensorType.CADENCE.name())) {
                 cadence = cursor.getDouble(cursor.getColumnIndexOrThrow(SensorType.CADENCE.name()));
-                bufferedWriter.write("            <Cadence>" +
-                        cadence + "</Cadence>\n");
+                bufferedWriter.write("            <Cadence>" + cadence + "</Cadence>\n");
             }
 
-            if ((haveSpeed | havePower | haveRunCadence)
-                    && (dataValid(cursor, SensorType.SPEED_mps.name())
-                    || dataValid(cursor, SensorType.POWER.name())
-                    || dataValid(cursor, SensorType.CADENCE.name()))) {
+            if ((haveSpeed | havePower | haveRunCadence) && (dataValid(cursor, SensorType.SPEED_mps.name()) || dataValid(cursor, SensorType.POWER.name()) || dataValid(cursor, SensorType.CADENCE.name()))) {
                 bufferedWriter.write("            <Extensions>\n");
                 bufferedWriter.write("              <TPX xmlns=\"http://www.garmin.com/xmlschemas/ActivityExtension/v2\">\n");
                 if (haveSpeed && dataValid(cursor, SensorType.SPEED_mps.name())) {
                     speed = cursor.getDouble(cursor.getColumnIndexOrThrow(SensorType.SPEED_mps.name()));
-                    bufferedWriter.write("            <Speed>" +
-                            speed + "</Speed>\n");
+                    bufferedWriter.write("            <Speed>" + speed + "</Speed>\n");
                 }
 
                 if (havePower && dataValid(cursor, SensorType.POWER.name())) {
                     power = cursor.getDouble(cursor.getColumnIndexOrThrow(SensorType.POWER.name()));
-                    bufferedWriter.write("            <Watts>" +
-                            power + "</Watts>\n");
+                    bufferedWriter.write("            <Watts>" + power + "</Watts>\n");
                 }
 
                 if (haveRunCadence && dataValid(cursor, SensorType.CADENCE.name())) {
                     cadence = cursor.getDouble(cursor.getColumnIndexOrThrow(SensorType.CADENCE.name()));
-                    bufferedWriter.write("            <RunCadence>" +
-                            cadence + "</RunCadence>\n");
+                    bufferedWriter.write("            <RunCadence>" + cadence + "</RunCadence>\n");
                 }
 
 
@@ -254,5 +228,4 @@ public class TCXFileExporter extends BaseFileExporter {
     protected Action getAction() {
         return Action.EXPORT;
     }
-
 }

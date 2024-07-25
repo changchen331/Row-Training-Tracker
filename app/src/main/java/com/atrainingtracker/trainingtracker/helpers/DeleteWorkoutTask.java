@@ -1,5 +1,6 @@
 package com.atrainingtracker.trainingtracker.helpers;
 
+import android.annotation.SuppressLint;
 import android.app.ProgressDialog;
 import android.content.Context;
 import android.content.Intent;
@@ -15,12 +16,12 @@ import com.atrainingtracker.trainingtracker.database.WorkoutSummariesDatabaseMan
 import com.atrainingtracker.trainingtracker.database.WorkoutSummariesDatabaseManager.WorkoutSummaries;
 import com.atrainingtracker.trainingtracker.exporter.ExportManager;
 
-
 public class DeleteWorkoutTask extends AsyncTask<Long, String, Boolean> {
     public static final String FINISHED_DELETING = "de.rainerblind.trainingtracker.helpers.DeleteWorkoutTask.FINISHED_DELETING";
     private static final String TAG = "DeleteWorkoutTask";
     private static final boolean DEBUG = false;
     private ProgressDialog progressDialog;
+    @SuppressLint("StaticFieldLeak")
     private Context context;
 
     public DeleteWorkoutTask(Context context) {
@@ -67,18 +68,15 @@ public class DeleteWorkoutTask extends AsyncTask<Long, String, Boolean> {
 
         Cursor cursor;
 
-        for (int i = 0; i < args.length; i++) {
-
-            long workoutId = args[i];
-
+        for (long workoutId : args) {
             if (DEBUG) Log.d(TAG, "delete workout " + workoutId);
 
             cursor = dbSummaries.query(WorkoutSummaries.TABLE, null, WorkoutSummaries.C_ID + "=?", new String[]{workoutId + ""}, null, null, null);
             if (!cursor.moveToFirst()) {
                 return false;
             }
-            String name = cursor.getString(cursor.getColumnIndex(WorkoutSummaries.WORKOUT_NAME));
-            String baseFileName = cursor.getString(cursor.getColumnIndex(WorkoutSummaries.FILE_BASE_NAME));
+            @SuppressLint("Range") String name = cursor.getString(cursor.getColumnIndex(WorkoutSummaries.WORKOUT_NAME));
+            @SuppressLint("Range") String baseFileName = cursor.getString(cursor.getColumnIndex(WorkoutSummaries.FILE_BASE_NAME));
             cursor.close();
 
             publishProgress(String.format("deleting %s...\nplease wait", name));
@@ -91,7 +89,7 @@ public class DeleteWorkoutTask extends AsyncTask<Long, String, Boolean> {
 
             // delete from WorkoutSamples
             if (DEBUG) Log.d(TAG, "deleting from WorkoutSamples");
-            WorkoutSamplesDatabaseManager.getInstance().deleteWorkout(baseFileName);
+            WorkoutSamplesDatabaseManager.deleteWorkout(baseFileName);
 
             // delete from ExportManager
             if (DEBUG) Log.d(TAG, "deleting from ExportManager");
@@ -100,7 +98,6 @@ public class DeleteWorkoutTask extends AsyncTask<Long, String, Boolean> {
             // delete from Laps
             if (DEBUG) Log.d(TAG, "deleting from Laps");
             dbLaps.delete(LapsDatabaseManager.Laps.TABLE, LapsDatabaseManager.Laps.WORKOUT_ID + "=?", new String[]{workoutId + ""});
-
         }
 
         WorkoutSummariesDatabaseManager.getInstance().closeDatabase();  // dbSummaries.close();
@@ -108,5 +105,4 @@ public class DeleteWorkoutTask extends AsyncTask<Long, String, Boolean> {
 
         return true;
     }
-
 }

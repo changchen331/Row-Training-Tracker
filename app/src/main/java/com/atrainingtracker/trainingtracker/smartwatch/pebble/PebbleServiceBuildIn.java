@@ -7,8 +7,11 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
 import android.content.ServiceConnection;
+import android.os.Build;
 import android.os.IBinder;
 import android.util.Log;
+
+import androidx.annotation.RequiresApi;
 
 import com.atrainingtracker.banalservice.BANALService;
 import com.atrainingtracker.banalservice.BANALService.BANALServiceComm;
@@ -22,7 +25,6 @@ import com.getpebble.android.kit.PebbleKit;
 import com.getpebble.android.kit.util.PebbleDictionary;
 
 // import com.getpebble.android.kit.Constants;
-
 
 // TODO create super class for similar services???
 public class PebbleServiceBuildIn extends Service {
@@ -77,6 +79,7 @@ public class PebbleServiceBuildIn extends Service {
         mShowPace = (banalService.getBSportType() == BSportType.RUN);
     }
 
+    @RequiresApi(api = Build.VERSION_CODES.TIRAMISU)
     @Override
     public void onCreate() {
         super.onCreate();
@@ -89,9 +92,9 @@ public class PebbleServiceBuildIn extends Service {
         // request bind to the BANAL Service
         bindService(new Intent(this, BANALService.class), mBanalConnection, Context.BIND_AUTO_CREATE);
 
-        registerReceiver(mUpdatePebbleReceiver, mUpdatePebbleFilter);
-        registerReceiver(mPebbleConnectedReceiver, mPebbleConnectedFilter);
-        registerReceiver(mSearchingFinishedReceiver, mSearchingFinishedFilter);
+        registerReceiver(mUpdatePebbleReceiver, mUpdatePebbleFilter, Context.RECEIVER_EXPORTED);
+        registerReceiver(mPebbleConnectedReceiver, mPebbleConnectedFilter, Context.RECEIVER_EXPORTED);
+        registerReceiver(mSearchingFinishedReceiver, mSearchingFinishedFilter, Context.RECEIVER_EXPORTED);
     }
 
     @Override

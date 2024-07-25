@@ -1,9 +1,9 @@
 package com.atrainingtracker.banalservice.fragments;
 
+import android.annotation.SuppressLint;
 import android.app.Dialog;
 import android.content.ContentValues;
 import android.content.Context;
-import android.content.DialogInterface;
 import android.content.Intent;
 import android.database.SQLException;
 import android.database.sqlite.SQLiteDatabase;
@@ -22,6 +22,7 @@ import android.widget.LinearLayout;
 import android.widget.Spinner;
 import android.widget.TextView;
 
+import androidx.annotation.NonNull;
 import androidx.appcompat.app.AlertDialog;
 import androidx.fragment.app.DialogFragment;
 
@@ -31,8 +32,9 @@ import com.atrainingtracker.banalservice.filters.FilterType;
 import com.atrainingtracker.trainingtracker.database.TrackingViewsDatabaseManager;
 import com.atrainingtracker.trainingtracker.database.TrackingViewsDatabaseManager.TrackingViewsDbHelper;
 
-public class ConfigureFilterDialogFragment
-        extends DialogFragment {
+import java.util.Objects;
+
+public class ConfigureFilterDialogFragment extends DialogFragment {
     public static final String TAG = ConfigureFilterDialogFragment.class.getName();
     public static final String FILTERS_CHANGED_INTENT = "FILTERS_CHANGED_INTENT";
     private static final boolean DEBUG = BANALService.DEBUG & false;
@@ -94,16 +96,17 @@ public class ConfigureFilterDialogFragment
         super.onCreate(savedInstanceState);
         if (DEBUG) Log.i(TAG, "onCreate()");
 
-        mRowId = getArguments().getLong(TrackingViewsDbHelper.ROW_ID);
-        mFilterType = FilterType.valueOf(getArguments().getString(TrackingViewsDbHelper.FILTER_TYPE));
-        mFilterConstant = getArguments().getDouble(TrackingViewsDbHelper.FILTER_CONSTANT);
+        mRowId = requireArguments().getLong(TrackingViewsDbHelper.ROW_ID);
+        mFilterType = FilterType.valueOf(requireArguments().getString(TrackingViewsDbHelper.FILTER_TYPE));
+        mFilterConstant = requireArguments().getDouble(TrackingViewsDbHelper.FILTER_CONSTANT);
     }
 
+    @NonNull
     @Override
     public Dialog onCreateDialog(Bundle savedInstanceState) {
         if (DEBUG) Log.i(TAG, "onCreateDialog");
 
-        AlertDialog.Builder builder = new AlertDialog.Builder(getActivity());
+        AlertDialog.Builder builder = new AlertDialog.Builder(requireActivity());
 
         TextView title = new TextView(getActivity());
         // You Can Customise your Title here
@@ -121,7 +124,7 @@ public class ConfigureFilterDialogFragment
         // builder.setIcon(UIHelper.getIconId(mDeviceType, protocol));
 
         // create the view
-        final View mainDialog = getActivity().getLayoutInflater().inflate(R.layout.config_filter, null);
+        final View mainDialog = requireActivity().getLayoutInflater().inflate(R.layout.config_filter, null);
         builder.setView(mainDialog);
 
         // find views
@@ -138,21 +141,15 @@ public class ConfigureFilterDialogFragment
         configureViews();
 
         // finally, add the action buttons
-        builder.setPositiveButton(getString(R.string.OK), new DialogInterface.OnClickListener() {
-            @Override
-            public void onClick(DialogInterface dialog, int id) {
-                getActivity().sendBroadcast(new Intent(FILTERS_CHANGED_INTENT));
-                saveEverything();
-            }
+        builder.setPositiveButton(getString(R.string.OK), (dialog, id) -> {
+            requireActivity().sendBroadcast(new Intent(FILTERS_CHANGED_INTENT));
+            saveEverything();
         });
-        builder.setNegativeButton(getString(R.string.Cancel), new DialogInterface.OnClickListener() {
-            public void onClick(DialogInterface dialog, int id) {
-                ConfigureFilterDialogFragment.this.getDialog().cancel();
-            }
-        });
+        builder.setNegativeButton(getString(R.string.Cancel), (dialog, id) -> Objects.requireNonNull(ConfigureFilterDialogFragment.this.getDialog()).cancel());
         return builder.create();
     }
 
+    @SuppressLint("SetTextI18n")
     protected void configureViews() {
         if (DEBUG) Log.i(TAG, "configureViews()");
         boolean selectMinutes = false;
@@ -186,7 +183,7 @@ public class ConfigureFilterDialogFragment
         });
 
         // configure the Filter Type spinner
-        ArrayAdapter<CharSequence> adapterFilterType = ArrayAdapter.createFromResource(getContext(), R.array.Filter_Types_UI, android.R.layout.simple_list_item_1);
+        ArrayAdapter<CharSequence> adapterFilterType = ArrayAdapter.createFromResource(requireContext(), R.array.Filter_Types_UI, android.R.layout.simple_list_item_1);
         mSpinnerFilterType.setAdapter(adapterFilterType);
 
         int selected_index = 0;
@@ -225,7 +222,7 @@ public class ConfigureFilterDialogFragment
         });
 
         // fill the units spinner
-        ArrayAdapter<CharSequence> adapterTimeUnit = ArrayAdapter.createFromResource(getContext(), R.array.Time_Units_UI, android.R.layout.simple_list_item_1);
+        ArrayAdapter<CharSequence> adapterTimeUnit = ArrayAdapter.createFromResource(requireContext(), R.array.Time_Units_UI, android.R.layout.simple_list_item_1);
         mSpinnerUnit.setAdapter(adapterTimeUnit);
         if (selectMinutes) {
             mSpinnerUnit.setSelection(1);
@@ -335,9 +332,7 @@ public class ConfigureFilterDialogFragment
             // TODO: do something useful here...
         }
 
-        if (mFilterType == FilterType.MAX_VALUE
-                || mFilterType == FilterType.AVERAGE
-                || mFilterType == FilterType.INSTANTANEOUS) {
+        if (mFilterType == FilterType.MAX_VALUE || mFilterType == FilterType.AVERAGE || mFilterType == FilterType.INSTANTANEOUS) {
             mFilterConstant = 1;
         } else if (mFilterType == FilterType.EXPONENTIAL_SMOOTHING) {
             // guarantee that 0 <= mFilterConstant <= 1...
@@ -352,8 +347,7 @@ public class ConfigureFilterDialogFragment
                 mFilterConstant = 1;
             }
 
-            if (mFilterType == FilterType.MOVING_AVERAGE_TIME
-                    && mSpinnerUnit.getSelectedItemPosition() == 1) { // minutes selected
+            if (mFilterType == FilterType.MOVING_AVERAGE_TIME && mSpinnerUnit.getSelectedItemPosition() == 1) { // minutes selected
                 mFilterConstant *= 60;                           // minutes -> seconds
                 if (DEBUG) Log.i(TAG, "multiplied by 60...");
             }
@@ -372,17 +366,13 @@ public class ConfigureFilterDialogFragment
         TrackingViewsDatabaseManager databaseManager = TrackingViewsDatabaseManager.getInstance();
         SQLiteDatabase db = databaseManager.getOpenDatabase();
         try {
-            db.update(TrackingViewsDbHelper.ROWS_TABLE,
-                    values,
-                    TrackingViewsDbHelper.ROW_ID + "=" + mRowId,
-                    null);
+            db.update(TrackingViewsDbHelper.ROWS_TABLE, values, TrackingViewsDbHelper.ROW_ID + "=" + mRowId, null);
         } catch (SQLException e) {
             // TODO: use Toast?
-            Log.e(TAG, "Error while writing" + e.toString());
+            Log.e(TAG, "Error while writing" + e);
         }
         databaseManager.closeDatabase(); // db.close();
 
         // TODO: inform everyone that the Filters have changed???
     }
-
 }

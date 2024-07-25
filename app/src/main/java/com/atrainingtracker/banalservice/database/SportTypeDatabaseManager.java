@@ -1,5 +1,6 @@
 package com.atrainingtracker.banalservice.database;
 
+import android.annotation.SuppressLint;
 import android.content.ContentValues;
 import android.content.Context;
 import android.database.Cursor;
@@ -10,6 +11,8 @@ import android.graphics.drawable.BitmapDrawable;
 import android.graphics.drawable.Drawable;
 import android.provider.BaseColumns;
 import android.util.Log;
+
+import androidx.annotation.NonNull;
 
 import com.atrainingtracker.R;
 import com.atrainingtracker.banalservice.BANALService;
@@ -23,6 +26,7 @@ public class SportTypeDatabaseManager {
     private static final String TAG = SportTypeDatabaseManager.class.getName();
     private static final boolean DEBUG = BANALService.DEBUG && false;
     private static SportTypeDatabaseManager cInstance;
+    @SuppressLint("StaticFieldLeak")
     private static SportTypeDbHelper cSportTypeDbHelper;
     private int mOpenCounter;
     private SQLiteDatabase mDatabase;
@@ -42,10 +46,11 @@ public class SportTypeDatabaseManager {
         return cInstance;
     }
 
-    public static final long getDefaultSportTypeId() {
+    public static long getDefaultSportTypeId() {
         return 1;
     }
 
+    @SuppressLint("Range")
     public static List<Long> getSportTypesIdList() {
         if (DEBUG) Log.i(TAG, "getSportTypesIdList");
 
@@ -88,12 +93,13 @@ public class SportTypeDatabaseManager {
 
         int drawableId = getBSportTypeIconId(id);
 
-        Bitmap icon = ((BitmapDrawable) context.getResources().getDrawable(drawableId)).getBitmap();
+        @SuppressLint("UseCompatLoadingForDrawables") Bitmap icon = ((BitmapDrawable) context.getResources().getDrawable(drawableId)).getBitmap();
         Bitmap iconScaled = Bitmap.createScaledBitmap(icon, (int) (icon.getWidth() * scale), (int) (icon.getHeight() * scale), false);
 
         return new BitmapDrawable(context.getResources(), iconScaled);
     }
 
+    @SuppressLint("Range")
     public static List<String> getSportTypesUiNameList() {
         if (DEBUG) Log.i(TAG, "getSportTypesUiNameList");
 
@@ -110,6 +116,7 @@ public class SportTypeDatabaseManager {
         return result;
     }
 
+    @SuppressLint("Range")
     public static List<Long> getSportTypesIdList(BSportType bSportType, double avgSpd) {
         if (DEBUG)
             Log.i(TAG, "getSportTypesIdList, bSportType=" + bSportType.name() + ", avgSpd=" + avgSpd);
@@ -140,6 +147,7 @@ public class SportTypeDatabaseManager {
         return result;
     }
 
+    @SuppressLint("Range")
     public static List<String> getSportTypesUiNameList(BSportType bSportType, double avgSpd) {
         if (DEBUG)
             Log.i(TAG, "getSportTypesUiNameList, bSportType=" + bSportType.name() + ", avgSpd=" + avgSpd);
@@ -167,6 +175,7 @@ public class SportTypeDatabaseManager {
         return result;
     }
 
+    @SuppressLint("Range")
     public static List<Long> getSportTypesIdList(BSportType bSportType) {
         if (DEBUG) Log.i(TAG, "getSportTypesIdList, bSportType=" + bSportType.name());
 
@@ -191,6 +200,7 @@ public class SportTypeDatabaseManager {
         return result;
     }
 
+    @SuppressLint("Range")
     public static List<String> getSportTypesUiNameList(BSportType bSportType) {
         if (DEBUG) Log.i(TAG, "getSportTypesUiNameList, bSportType=" + bSportType.name());
 
@@ -216,11 +226,12 @@ public class SportTypeDatabaseManager {
     public static BSportType getBSportType(long id) {
         if (DEBUG) Log.i(TAG, "getBsportType: id=" + id);
 
-        BSportType result = BSportType.UNKNOWN;
+        BSportType result;
         String bSportType = getString(id, SportType.BASE_SPORT_TYPE);
         try {
             result = BSportType.valueOf(bSportType);
         } catch (Exception e) {
+            throw new RuntimeException(e);
         }
 
         return result;
@@ -261,10 +272,11 @@ public class SportTypeDatabaseManager {
         return getDouble(id, SportType.MAX_AVG_SPEED);
     }
 
+    @SuppressLint("Range")
     public static long getSportTypeIdFromUIName(String UIName) {
         long result = -1;
         SQLiteDatabase db = getInstance().getOpenDatabase();
-        Cursor cursor = db.query(SportType.TABLE, null, SportType.UI_NAME + "=?", new String[]{UIName}, null, null, null);
+        @SuppressLint("Recycle") Cursor cursor = db.query(SportType.TABLE, null, SportType.UI_NAME + "=?", new String[]{UIName}, null, null, null);
         if (cursor.moveToNext()) {
             result = cursor.getLong(cursor.getColumnIndex(SportType.C_ID));
         }
@@ -274,10 +286,11 @@ public class SportTypeDatabaseManager {
         return result;
     }
 
+    @SuppressLint({"Range", "Recycle"})
     private static String getString(long id, String col) {
         String result = null;
         SQLiteDatabase db = getInstance().getOpenDatabase();
-        Cursor cursor = db.query(SportType.TABLE, null, SportType.C_ID + "=?", new String[]{Long.toString(id)}, null, null, null);
+        @SuppressLint("Recycle") Cursor cursor = db.query(SportType.TABLE, null, SportType.C_ID + "=?", new String[]{Long.toString(id)}, null, null, null);
         if (cursor.moveToNext()) {
             result = cursor.getString(cursor.getColumnIndex(col));
         } else {  // try to find the corresponding row of the 'other' sport type
@@ -291,10 +304,11 @@ public class SportTypeDatabaseManager {
         return result;
     }
 
+    @SuppressLint({"Range", "Recycle"})
     private static double getDouble(long id, String col) {
         double result = 0.0;
         SQLiteDatabase db = getInstance().getOpenDatabase();
-        Cursor cursor = db.query(SportType.TABLE, null, SportType.C_ID + "=?", new String[]{Long.toString(id)}, null, null, null);
+        @SuppressLint("Recycle") Cursor cursor = db.query(SportType.TABLE, null, SportType.C_ID + "=?", new String[]{Long.toString(id)}, null, null, null);
         if (cursor.moveToNext()) {
             result = cursor.getDouble(cursor.getColumnIndex(col));
         } else {  // try to find the corresponding row of the 'other' sport type
@@ -308,11 +322,12 @@ public class SportTypeDatabaseManager {
         return result;
     }
 
+    @SuppressLint("Range")
     public static List<String> getSportTypesList() {
         List<String> result = new LinkedList<>();
 
         SQLiteDatabase db = getInstance().getOpenDatabase();
-        Cursor cursor = db.query(SportType.TABLE, null, null, null, null, null, null);
+        @SuppressLint("Recycle") Cursor cursor = db.query(SportType.TABLE, null, null, null, null, null, null);
         while (cursor.moveToNext()) {
             result.add(cursor.getString(cursor.getColumnIndex(SportType.UI_NAME)));
         }
@@ -415,6 +430,7 @@ public class SportTypeDatabaseManager {
             this.trainingPeaksName = trainingPeaksName;
         }
 
+        @NonNull
         @Override
         public String toString() {
             return TrainingApplication.getAppContext().getString(UIId);
@@ -471,7 +487,7 @@ public class SportTypeDatabaseManager {
         public static final double DEFAULT_MIN_AVG_SPEED = 0.0;
         public static final double DEFAULT_MAX_AVG_SPEED = 0.5;
 
-        public static final String getDefaultUiName(Context context) {
+        public static String getDefaultUiName(Context context) {
             return context.getString(R.string.sport_type_other);
         }
     }

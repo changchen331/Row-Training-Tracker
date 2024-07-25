@@ -1,5 +1,6 @@
 package com.atrainingtracker.trainingtracker.exporter;
 
+import android.annotation.SuppressLint;
 import android.content.Context;
 import android.database.Cursor;
 import android.database.CursorIndexOutOfBoundsException;
@@ -29,17 +30,12 @@ public abstract class BaseFileExporter extends BaseExporter {
         super(context);
     }
 
+    @SuppressLint("Range")
     protected void getHeaderData(ExportInfo exportInfo) {
         WorkoutSummariesDatabaseManager databaseManager = WorkoutSummariesDatabaseManager.getInstance();
         SQLiteDatabase db = databaseManager.getOpenDatabase();
 
-        Cursor cursor = db.query(WorkoutSummaries.TABLE,
-                null,
-                WorkoutSummaries.FILE_BASE_NAME + "=?",
-                new String[]{exportInfo.getFileBaseName()},
-                null,
-                null,
-                null);
+        Cursor cursor = db.query(WorkoutSummaries.TABLE, null, WorkoutSummaries.FILE_BASE_NAME + "=?", new String[]{exportInfo.getFileBaseName()}, null, null, null);
         cursor.moveToFirst();
 
         // get the data for the header
@@ -113,7 +109,7 @@ public abstract class BaseFileExporter extends BaseExporter {
         } catch (CursorIndexOutOfBoundsException e) {
             Log.e(TAG, e.toString());
         }
-        if (foo == null || foo.equals("")) {
+        if (foo == null || foo.isEmpty()) {
             foo = defaultValue;
         }
         return foo;

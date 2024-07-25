@@ -3,7 +3,6 @@ package com.atrainingtracker.banalservice.sensor.formater;
 import com.atrainingtracker.banalservice.BANALService;
 import com.atrainingtracker.trainingtracker.TrainingApplication;
 
-
 public class PaceFormatter implements MyFormatter<Number> {
 
     @Override

@@ -1,11 +1,13 @@
 package com.atrainingtracker.banalservice.fragments;
 
+import android.annotation.SuppressLint;
 import android.content.Context;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.View;
 import android.widget.ListView;
 
+import androidx.annotation.NonNull;
 import androidx.fragment.app.ListFragment;
 
 import com.atrainingtracker.R;
@@ -35,8 +37,9 @@ public class DeviceTypeChoiceFragment extends ListFragment {
         return deviceTypeChoiceFragment;
     }
 
+    @SuppressLint("LongLogTag")
     @Override
-    public void onAttach(Context context) {
+    public void onAttach(@NonNull Context context) {
         super.onAttach(context);
         if (DEBUG) Log.i(TAG, "onAttach()");
 
@@ -45,19 +48,21 @@ public class DeviceTypeChoiceFragment extends ListFragment {
         try {
             mCallback = (OnDeviceTypeSelectedListener) context;
         } catch (ClassCastException e) {
-            throw new ClassCastException(context.toString() + " must implement OnDeviceTypeSelectedListener");
+            throw new ClassCastException(context + " must implement OnDeviceTypeSelectedListener");
         }
     }
 
+    @SuppressLint("LongLogTag")
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         if (DEBUG) Log.i(TAG, "onCreate()");
 
-        mProtocol = Protocol.valueOf(getArguments().getString(BANALService.PROTOCOL));
+        mProtocol = Protocol.valueOf(requireArguments().getString(BANALService.PROTOCOL));
         mDeviceTypes = new ArrayList<>(Arrays.asList(DeviceType.getRemoteDeviceTypes(mProtocol)));
     }
 
+    @SuppressLint("LongLogTag")
     @Override
     public void onResume() {
         super.onResume();
@@ -72,7 +77,7 @@ public class DeviceTypeChoiceFragment extends ListFragment {
     // onStart
 
     @Override
-    public void onListItemClick(ListView listView, View view, int position, long id) {
+    public void onListItemClick(@NonNull ListView listView, @NonNull View view, int position, long id) {
         // Notify the hosting activity of selected item
         mCallback.onDeviceTypeSelected(mDeviceTypes.get(position), mProtocol);
 

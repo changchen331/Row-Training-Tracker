@@ -3,8 +3,7 @@ package com.atrainingtracker.banalservice.filters;
 import com.atrainingtracker.banalservice.sensor.MySensor;
 import com.atrainingtracker.banalservice.sensor.SensorType;
 
-public abstract class MyFilter<T>
-        implements MySensor.SensorListener<T> {
+public abstract class MyFilter<T> implements MySensor.SensorListener<T> {
     private static final String TAG = MyFilter.class.getCanonicalName();
     protected String mDeviceName;
     protected SensorType mSensorType;

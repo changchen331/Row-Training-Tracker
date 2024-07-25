@@ -169,7 +169,6 @@ public class CSVParser {
      * Parses an incoming String and returns an array of elements.
      *
      * @param nextLine the string to parse
-     * @param multi
      * @return the comma-tokenized list of elements, or null if nextLine is null
      * @throws IOException if bad things happen during the read
      */
@@ -189,7 +188,7 @@ public class CSVParser {
             }
         }
 
-        List<String> tokensOnThisLine = new ArrayList<String>();
+        List<String> tokensOnThisLine = new ArrayList<>();
         StringBuilder sb = new StringBuilder(INITIAL_READ_SIZE);
         boolean inQuotes = false;
         if (pending != null) {
@@ -257,7 +256,7 @@ public class CSVParser {
         if (sb != null) {
             tokensOnThisLine.add(sb.toString());
         }
-        return tokensOnThisLine.toArray(new String[tokensOnThisLine.size()]);
+        return tokensOnThisLine.toArray(new String[0]);
     }
 
     /**

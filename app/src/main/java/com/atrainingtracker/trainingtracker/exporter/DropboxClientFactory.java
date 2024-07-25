@@ -12,8 +12,7 @@ public class DropboxClientFactory {
 
     public static void init(String accessToken) {
         if (sDbxClient == null) {
-            DbxRequestConfig requestConfig = DbxRequestConfig.newBuilder("a Training Tracker")
-                    .build();
+            DbxRequestConfig requestConfig = DbxRequestConfig.newBuilder("a Training Tracker").build();
 
             sDbxClient = new DbxClientV2(requestConfig, accessToken);
         }

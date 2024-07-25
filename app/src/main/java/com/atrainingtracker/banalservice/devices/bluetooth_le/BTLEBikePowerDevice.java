@@ -1,10 +1,8 @@
 package com.atrainingtracker.banalservice.devices.bluetooth_le;
 
-import android.annotation.TargetApi;
 import android.bluetooth.BluetoothGatt;
 import android.bluetooth.BluetoothGattCharacteristic;
 import android.content.Context;
-import android.os.Build;
 import android.util.Log;
 
 import com.atrainingtracker.banalservice.BANALService;
@@ -16,7 +14,6 @@ import com.atrainingtracker.banalservice.sensor.MySensor;
 import com.atrainingtracker.banalservice.sensor.MySensorManager;
 import com.atrainingtracker.banalservice.sensor.SensorType;
 
-@TargetApi(Build.VERSION_CODES.JELLY_BEAN_MR2)
 public class BTLEBikePowerDevice extends MyBTLEDevice {
     protected static final int MAX_IDENTICAL = 4;
     private static final boolean DEBUG = BANALService.DEBUG & false;
@@ -381,7 +378,7 @@ public class BTLEBikePowerDevice extends MyBTLEDevice {
                         long timeDiff = crankEventTime - mLastCrankEventTime;
                         if (DEBUG) Log.i(TAG, "revDiff=" + revDiff + ", timeDiff=" + timeDiff);
 
-                        double cadence = 60 * revDiff * 1024 / timeDiff;         // Furthermore, note that this time multiplier is different from the one for the speed
+                        double cadence = (double) (60 * revDiff * 1024) / timeDiff;         // Furthermore, note that this time multiplier is different from the one for the speed
                         if (DEBUG) Log.i(TAG, "got new cadence: " + cadence);
                         mCadenceSensor.newValue(cadence);
                     } else {
@@ -401,7 +398,6 @@ public class BTLEBikePowerDevice extends MyBTLEDevice {
             }
 
             offset += CRANK_REVOLUTION_DATA__CUMULATIVE_CRANK_REVOLUTIONS_WIDTH + CRANK_REVOLUTION_DATA__LAST_CRANK_EVENT_TIME_WIDTH;
-
         }
     }
 }

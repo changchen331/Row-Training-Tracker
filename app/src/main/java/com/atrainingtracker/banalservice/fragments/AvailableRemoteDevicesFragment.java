@@ -13,6 +13,8 @@ import android.view.ViewGroup;
 import android.widget.LinearLayout;
 import android.widget.TextView;
 
+import androidx.annotation.NonNull;
+
 import com.atrainingtracker.R;
 import com.atrainingtracker.banalservice.BANALService;
 import com.atrainingtracker.banalservice.Protocol;
@@ -64,7 +66,7 @@ public class AvailableRemoteDevicesFragment extends RemoteDevicesFragment {
 //        }
 //	}
     @Override
-    public void onAttach(Context context) {
+    public void onAttach(@NonNull Context context) {
         if (DEBUG) Log.i(TAG, "onAttach");
         super.onAttach(context);
 
@@ -82,7 +84,7 @@ public class AvailableRemoteDevicesFragment extends RemoteDevicesFragment {
     }
 
     @Override
-    public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
+    public View onCreateView(@NonNull LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
         if (DEBUG) Log.i(TAG, "onCreateView");
 
         View view = super.onCreateView(inflater, container, savedInstanceState);

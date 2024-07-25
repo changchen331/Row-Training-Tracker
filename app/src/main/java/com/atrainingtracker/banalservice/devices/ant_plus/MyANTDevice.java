@@ -1,8 +1,6 @@
 package com.atrainingtracker.banalservice.devices.ant_plus;
 
 import android.content.Context;
-import android.content.DialogInterface;
-import android.content.DialogInterface.OnClickListener;
 import android.content.Intent;
 import android.net.Uri;
 import android.util.Log;
@@ -16,23 +14,15 @@ import com.atrainingtracker.banalservice.devices.Manufacturer;
 import com.atrainingtracker.banalservice.devices.MyRemoteDevice;
 import com.atrainingtracker.banalservice.helpers.BatteryStatusHelper;
 import com.atrainingtracker.banalservice.sensor.MySensorManager;
-import com.dsi.ant.plugins.antplus.pcc.defines.BatteryStatus;
 import com.dsi.ant.plugins.antplus.pcc.defines.DeviceState;
-import com.dsi.ant.plugins.antplus.pcc.defines.EventFlag;
 import com.dsi.ant.plugins.antplus.pcc.defines.RequestAccessResult;
 import com.dsi.ant.plugins.antplus.pccbase.AntPluginPcc;
 import com.dsi.ant.plugins.antplus.pccbase.AntPluginPcc.IDeviceStateChangeReceiver;
 import com.dsi.ant.plugins.antplus.pccbase.AntPluginPcc.IPluginAccessResultReceiver;
 import com.dsi.ant.plugins.antplus.pccbase.AntPlusBikeSpdCadCommonPcc;
 import com.dsi.ant.plugins.antplus.pccbase.AntPlusCommonPcc;
-import com.dsi.ant.plugins.antplus.pccbase.AntPlusCommonPcc.IBatteryStatusReceiver;
-import com.dsi.ant.plugins.antplus.pccbase.AntPlusCommonPcc.IManufacturerIdentificationReceiver;
 import com.dsi.ant.plugins.antplus.pccbase.AntPlusLegacyCommonPcc;
-import com.dsi.ant.plugins.antplus.pccbase.AntPlusLegacyCommonPcc.IManufacturerAndSerialReceiver;
 import com.dsi.ant.plugins.antplus.pccbase.PccReleaseHandle;
-
-import java.math.BigDecimal;
-import java.util.EnumSet;
 
 //import de.rainerblind.MyAntPlusApp;
 
@@ -202,21 +192,13 @@ public abstract class MyANTDevice extends MyRemoteDevice {
         alertDialogBuilder.setTitle("Missing Dependency");
         alertDialogBuilder.setMessage("The required application\n\"" + AntPluginPcc.getMissingDependencyName() + "\"\n is not installed. Do you want to launch the Play Store to search for it?");
         alertDialogBuilder.setCancelable(true);
-        alertDialogBuilder.setPositiveButton("Go to Store", new OnClickListener() {
-            @Override
-            public void onClick(DialogInterface dialog, int which) {
-                Intent startStore = new Intent(Intent.ACTION_VIEW, Uri.parse("market://details?id=" + AntPluginPcc.getMissingDependencyPackageName()));
-                startStore.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+        alertDialogBuilder.setPositiveButton("Go to Store", (dialog, which) -> {
+            Intent startStore = new Intent(Intent.ACTION_VIEW, Uri.parse("market://details?id=" + AntPluginPcc.getMissingDependencyPackageName()));
+            startStore.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
 
-                mContext.startActivity(startStore);
-            }
+            mContext.startActivity(startStore);
         });
-        alertDialogBuilder.setNegativeButton("Cancel", new OnClickListener() {
-            @Override
-            public void onClick(DialogInterface dialog, int which) {
-                dialog.dismiss();
-            }
-        });
+        alertDialogBuilder.setNegativeButton("Cancel", (dialog, which) -> dialog.dismiss());
 
         final AlertDialog waitDialog = alertDialogBuilder.create();
         waitDialog.show();
@@ -239,18 +221,14 @@ public abstract class MyANTDevice extends MyRemoteDevice {
 
         myLog("before subscribeManufacturerAndSerialEvent");
         if (getManufacturerName() == null) {
-            legacyCommonPcc.subscribeManufacturerAndSerialEvent(new IManufacturerAndSerialReceiver() {
+            legacyCommonPcc.subscribeManufacturerAndSerialEvent((estTimestamp, eventFlags, manufacturerID, serialNumber) -> {
+                String manufacturerName = Manufacturer.getName(manufacturerID);
+                setManufacturerName(manufacturerName);
+                // 		mSerialNumber = serialNumber;
 
-                @Override
-                public void onNewManufacturerAndSerial(long estTimestamp, java.util.EnumSet<EventFlag> eventFlags, int manufacturerID, int serialNumber) {
-                    String manufacturerName = Manufacturer.getName(manufacturerID);
-                    setManufacturerName(manufacturerName);
-                    // 		mSerialNumber = serialNumber;
-
-                    // now, that we have the manufacturer name, we can unsubscribe
-                    myLog("got manufacturer name, now unsubscribe");
-                    legacyCommonPcc.subscribeManufacturerAndSerialEvent(null);
-                }
+                // now, that we have the manufacturer name, we can unsubscribe
+                myLog("got manufacturer name, now unsubscribe");
+                legacyCommonPcc.subscribeManufacturerAndSerialEvent(null);
             });
 
         }
@@ -275,13 +253,9 @@ public abstract class MyANTDevice extends MyRemoteDevice {
         // first of all, handle super class
         onNewLegacyCommonPccFound(rowSpdCadCommonPcc);
 
-        rowSpdCadCommonPcc.subscribeBatteryStatusEvent(new AntPlusBikeSpdCadCommonPcc.IBatteryStatusReceiver() {
-
-            @Override
-            public void onNewBatteryStatus(long estTimestamp, EnumSet<EventFlag> eventFlags, BigDecimal batteryVoltage, BatteryStatus batteryStatus) {
-                myLog("got new battery status: " + batteryStatus);
-                setBatteryPercentage(BatteryStatusHelper.getBatterPercentage(batteryStatus));
-            }
+        rowSpdCadCommonPcc.subscribeBatteryStatusEvent((estTimestamp, eventFlags, batteryVoltage, batteryStatus) -> {
+            myLog("got new battery status: " + batteryStatus);
+            setBatteryPercentage(BatteryStatusHelper.getBatterPercentage(batteryStatus));
         });
 
     }
@@ -292,34 +266,21 @@ public abstract class MyANTDevice extends MyRemoteDevice {
         mCommonPcc = commonPcc;
 
         if (getManufacturerName() == null) {
-            commonPcc.subscribeManufacturerIdentificationEvent(new IManufacturerIdentificationReceiver() {
-                @Override
-                public void onNewManufacturerIdentification(long estTimestamp, java.util.EnumSet<EventFlag> eventFlags, int hardwareRevision, int manufacturerID, int modelNumber) {
-                    // mHardwareRevision = hardwareRevision;
-                    // mModelNumber      = modelNumber;
-                    String manufacturer = Manufacturer.getName(manufacturerID);
-                    setManufacturerName(manufacturer);
-                    // now, that we have the manufacturer, we unsubscribe
-                    commonPcc.subscribeManufacturerIdentificationEvent(null);
-                }
+            commonPcc.subscribeManufacturerIdentificationEvent((estTimestamp, eventFlags, hardwareRevision, manufacturerID, modelNumber) -> {
+                // mHardwareRevision = hardwareRevision;
+                // mModelNumber      = modelNumber;
+                String manufacturer = Manufacturer.getName(manufacturerID);
+                setManufacturerName(manufacturer);
+                // now, that we have the manufacturer, we unsubscribe
+                commonPcc.subscribeManufacturerIdentificationEvent(null);
             });
         }
 
         myLog("before subscribeBatteryStatusEvent");
-        commonPcc.subscribeBatteryStatusEvent(new IBatteryStatusReceiver() {
-            @Override
-            public void onNewBatteryStatus(long estTimestamp,
-                                           java.util.EnumSet<EventFlag> eventFlags,
-                                           long cumulativeOperatingTime,
-                                           java.math.BigDecimal batteryVoltage,
-                                           BatteryStatus batteryStatus,
-                                           int cumulativeOperatingTimeResolution,
-                                           int numberOfBatteries,
-                                           int batteryIdentifier) {
-                myLog("got new battery status: " + batteryStatus);
-                setBatteryPercentage(BatteryStatusHelper.getBatterPercentage(batteryStatus));
-                // mCumulativeOperatingTime = cumulativeOperatingTime;
-            }
+        commonPcc.subscribeBatteryStatusEvent((estTimestamp, eventFlags, cumulativeOperatingTime, batteryVoltage, batteryStatus, cumulativeOperatingTimeResolution, numberOfBatteries, batteryIdentifier) -> {
+            myLog("got new battery status: " + batteryStatus);
+            setBatteryPercentage(BatteryStatusHelper.getBatterPercentage(batteryStatus));
+            // mCumulativeOperatingTime = cumulativeOperatingTime;
         });
 
 //    	myLog("before subscribeProductInformationEvent");

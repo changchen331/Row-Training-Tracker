@@ -5,8 +5,7 @@ import com.atrainingtracker.banalservice.sensor.SensorType;
 
 import java.util.ArrayList;
 
-public class NumberedMovingAverageFilter
-        extends MovingAverageFilter {
+public class NumberedMovingAverageFilter extends MovingAverageFilter {
     private static final boolean DEBUG = BANALService.DEBUG & false;
     private static final String TAG = NumberedMovingAverageFilter.class.getName();
 
@@ -38,7 +37,7 @@ public class NumberedMovingAverageFilter
 
     @Override
     public synchronized Number getFilteredValue() {
-        if (mValues.size() == 0) {
+        if (mValues.isEmpty()) {
             return null;
         }
 

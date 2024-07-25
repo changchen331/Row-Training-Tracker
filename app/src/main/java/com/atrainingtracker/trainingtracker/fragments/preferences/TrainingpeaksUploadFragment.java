@@ -14,9 +14,7 @@ import com.atrainingtracker.trainingtracker.TrainingApplication;
 import com.atrainingtracker.trainingtracker.onlinecommunities.BaseGetAccessTokenActivity;
 import com.atrainingtracker.trainingtracker.onlinecommunities.trainingpeaks.TrainingpeaksGetAccessTokenActivity;
 
-
-public class TrainingpeaksUploadFragment extends androidx.preference.PreferenceFragmentCompat
-        implements SharedPreferences.OnSharedPreferenceChangeListener {
+public class TrainingpeaksUploadFragment extends androidx.preference.PreferenceFragmentCompat implements SharedPreferences.OnSharedPreferenceChangeListener {
     public static final int GET_TRAINING_PEAKS_ACCESS_TOKEN = 4;
     private static final boolean DEBUG = TrainingApplication.DEBUG && false;
     private static final String TAG = TrainingpeaksUploadFragment.class.getName();
@@ -24,14 +22,13 @@ public class TrainingpeaksUploadFragment extends androidx.preference.PreferenceF
 
     private SharedPreferences mSharedPreferences;
 
-
     @Override
     public void onCreatePreferences(Bundle savedInstanceState, String rootKey) {
         if (DEBUG) Log.i(TAG, "onCreatePreferences(savedInstanceState, rootKey=" + rootKey + ")");
 
         setPreferencesFromResource(R.xml.prefs, rootKey);
 
-        mTrainingPeaksUpload = (CheckBoxPreference) this.getPreferenceScreen().findPreference(TrainingApplication.SP_UPLOAD_TO_TRAINING_PEAKS);
+        mTrainingPeaksUpload = this.getPreferenceScreen().findPreference(TrainingApplication.SP_UPLOAD_TO_TRAINING_PEAKS);
     }
 
     @Override
@@ -39,7 +36,7 @@ public class TrainingpeaksUploadFragment extends androidx.preference.PreferenceF
         super.onResume();
         if (DEBUG) Log.i(TAG, "onResume()");
 
-        mSharedPreferences = PreferenceManager.getDefaultSharedPreferences(getActivity());
+        mSharedPreferences = PreferenceManager.getDefaultSharedPreferences(requireActivity());
         mSharedPreferences.registerOnSharedPreferenceChangeListener(this);
     }
 
@@ -50,7 +47,6 @@ public class TrainingpeaksUploadFragment extends androidx.preference.PreferenceF
         // Unregister the listener whenever a key changes
         mSharedPreferences.unregisterOnSharedPreferenceChangeListener(this);
     }
-
 
     @Override
     public void onSharedPreferenceChanged(SharedPreferences sharedPreferences, String key) {
@@ -64,7 +60,6 @@ public class TrainingpeaksUploadFragment extends androidx.preference.PreferenceF
                 startActivityForResult(new Intent(getActivity(), TrainingpeaksGetAccessTokenActivity.class), GET_TRAINING_PEAKS_ACCESS_TOKEN);
             }
         }
-
     }
 
     @Override

@@ -1,5 +1,6 @@
 package com.atrainingtracker.trainingtracker.onlinecommunities.strava;
 
+import android.annotation.SuppressLint;
 import android.content.Context;
 import android.net.Uri;
 import android.os.AsyncTask;
@@ -12,7 +13,6 @@ import com.atrainingtracker.trainingtracker.onlinecommunities.BaseGetAccessToken
 import com.atrainingtracker.trainingtracker.segments.SegmentsDatabaseManager;
 
 import org.apache.http.HttpResponse;
-import org.apache.http.client.ClientProtocolException;
 import org.apache.http.client.HttpClient;
 import org.apache.http.client.methods.HttpGet;
 import org.apache.http.client.methods.HttpPost;
@@ -22,7 +22,6 @@ import org.json.JSONException;
 import org.json.JSONObject;
 
 import java.io.IOException;
-
 
 public class StravaHelper {
     public static final String AUTHORIZATION = "Authorization";
@@ -67,20 +66,13 @@ public class StravaHelper {
             TrainingApplication.setStravaRefreshToken(jsonObject.getString(BaseGetAccessTokenActivity.REFRESH_TOKEN));
             TrainingApplication.setStravaTokenExpiresAt(jsonObject.getInt(BaseGetAccessTokenActivity.EXPIRES_AT));
         } catch (JSONException e) {
-            e.printStackTrace();
+            throw new RuntimeException(e);
         }
     }
 
     protected static String getRefreshUrl() {
         Uri.Builder builder = new Uri.Builder();
-        builder.scheme(BaseGetAccessTokenActivity.HTTPS)
-                .authority(StravaGetAccessTokenActivity.STRAVA_AUTHORITY)
-                .appendPath(BaseGetAccessTokenActivity.OAUTH)
-                .appendPath(BaseGetAccessTokenActivity.TOKEN)
-                .appendQueryParameter(BaseGetAccessTokenActivity.CLIENT_ID, StravaGetAccessTokenActivity.MY_CLIENT_ID)
-                .appendQueryParameter(BaseGetAccessTokenActivity.CLIENT_SECRET, StravaGetAccessTokenActivity.MY_CLIENT_SECRET)
-                .appendQueryParameter(BaseGetAccessTokenActivity.GRANT_TYPE, BaseGetAccessTokenActivity.REFRESH_TOKEN)
-                .appendQueryParameter(BaseGetAccessTokenActivity.REFRESH_TOKEN, TrainingApplication.getStravaRefreshToken());
+        builder.scheme(BaseGetAccessTokenActivity.HTTPS).authority(StravaGetAccessTokenActivity.STRAVA_AUTHORITY).appendPath(BaseGetAccessTokenActivity.OAUTH).appendPath(BaseGetAccessTokenActivity.TOKEN).appendQueryParameter(BaseGetAccessTokenActivity.CLIENT_ID, StravaGetAccessTokenActivity.MY_CLIENT_ID).appendQueryParameter(BaseGetAccessTokenActivity.CLIENT_SECRET, StravaGetAccessTokenActivity.MY_CLIENT_SECRET).appendQueryParameter(BaseGetAccessTokenActivity.GRANT_TYPE, BaseGetAccessTokenActivity.REFRESH_TOKEN).appendQueryParameter(BaseGetAccessTokenActivity.REFRESH_TOKEN, TrainingApplication.getStravaRefreshToken());
         return builder.build().toString();
     }
 
@@ -113,20 +105,11 @@ public class StravaHelper {
                 // String tokenType   = responseJson.getString(TOKEN_TYPE);
                 return responseJson.getString(BaseGetAccessTokenActivity.ACCESS_TOKEN);
             }
-        } catch (ClientProtocolException e) {
+        } catch (IOException | JSONException e) {
             // TODO Auto-generated catch block
             Log.e(TAG, e.toString());
-            e.printStackTrace();
-        } catch (IOException e) {
-            // TODO Auto-generated catch block
-            Log.e(TAG, e.toString());
-            e.printStackTrace();
-        } catch (JSONException e) {
-            // TODO Auto-generated catch block
-            Log.e(TAG, e.toString());
-            e.printStackTrace();
+            throw new RuntimeException(e);
         }
-
         return null;
     }
 
@@ -142,6 +125,7 @@ public class StravaHelper {
         return athleteId;
     }
 
+    @SuppressLint("StaticFieldLeak")
     class GetAthleteIdFromStravaAsyncTask extends AsyncTask<Void, Void, Void> {
         Context mContext;
 
@@ -175,16 +159,11 @@ public class StravaHelper {
                     }
                 }
 
-            } catch (IOException e) {
-                e.printStackTrace();
-            } catch (JSONException e) {
-                e.printStackTrace();
             } catch (Exception e) {
-                e.printStackTrace();
+                throw new RuntimeException(e);
             }
 
             return null;
         }
     }
-
 }

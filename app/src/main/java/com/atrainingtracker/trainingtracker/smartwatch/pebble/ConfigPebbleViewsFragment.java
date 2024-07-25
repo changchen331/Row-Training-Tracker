@@ -11,7 +11,6 @@ import com.atrainingtracker.trainingtracker.fragments.ConfigViewsFragment;
 
 import java.util.LinkedList;
 
-
 public class ConfigPebbleViewsFragment extends ConfigViewsFragment {
 
     public static final String TAG = ConfigPebbleViewsFragment.class.getSimpleName();

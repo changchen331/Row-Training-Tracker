@@ -8,6 +8,7 @@ import android.hardware.Sensor;
 import android.hardware.SensorEvent;
 import android.hardware.SensorEventListener;
 import android.hardware.SensorManager;
+import android.os.Build;
 import android.util.Log;
 
 import com.atrainingtracker.R;
@@ -20,8 +21,7 @@ import com.google.android.gms.maps.model.LatLng;
 
 // TODO: use database or preferences to store whether or not the pressure sensor is available.  really necessary??
 
-public class AltitudeFromPressureDevice extends MyDevice
-        implements SensorEventListener {
+public class AltitudeFromPressureDevice extends MyDevice implements SensorEventListener {
     public static final String ALTITUDE_CORRECTION_VALUE = "com.atrainingtracker.banalservice.Devices.AltitudeFromPressureDevice.ALTITUDE_CORRECTION_VALUE";
     public static final String ALTITUDE_CORRECTION_INTENT = "com.atrainingtracker.banalservice.Devices.AltitudeFromPressureDevice.ALTITUDE_CORRECTION_INTENT";
     protected static final double MY_PRESSURE_STANDARD_ATMOSPHERE = 1013.25;
@@ -50,7 +50,9 @@ public class AltitudeFromPressureDevice extends MyDevice
             sensorManager.registerListener(this, mPressureSensor, SensorManager.SENSOR_DELAY_NORMAL);
         }
 
-        context.registerReceiver(mGPSProviderEnabledReceiver, mGPSProviderEnabledFilter);
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+            context.registerReceiver(mGPSProviderEnabledReceiver, mGPSProviderEnabledFilter, Context.RECEIVER_NOT_EXPORTED);
+        }
     }
 
     @Override
@@ -62,7 +64,7 @@ public class AltitudeFromPressureDevice extends MyDevice
     protected void addSensors() {
         if (DEBUG) Log.d(TAG, "addSensors");
 
-        mAltitudeSensor = new MySensor<Number>(this, SensorType.ALTITUDE);
+        mAltitudeSensor = new MySensor<>(this, SensorType.ALTITUDE);
     }
 
     @Override
@@ -80,12 +82,7 @@ public class AltitudeFromPressureDevice extends MyDevice
     private void initPressureSensor() {
         if (DEBUG) Log.d(TAG, "initPressureSensor");
 
-        if (mMySensorManager.getSensor(SensorType.LATITUDE) != null
-                && mMySensorManager.getSensor(SensorType.LONGITUDE) != null
-                && mMySensorManager.getSensor(SensorType.LATITUDE).getValue() != null
-                && mMySensorManager.getSensor(SensorType.LONGITUDE).getValue() != null
-                && mAltitudeSensor != null
-                && mAltitudeSensor.getValue() != null) {
+        if (mMySensorManager.getSensor(SensorType.LATITUDE) != null && mMySensorManager.getSensor(SensorType.LONGITUDE) != null && mMySensorManager.getSensor(SensorType.LATITUDE).getValue() != null && mMySensorManager.getSensor(SensorType.LONGITUDE).getValue() != null && mAltitudeSensor != null && mAltitudeSensor.getValue() != null) {
 
             mPressureSensorInitialized = true;
 

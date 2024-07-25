@@ -1,5 +1,6 @@
 package com.atrainingtracker.trainingtracker.helpers;
 
+import android.annotation.SuppressLint;
 import android.content.ContentValues;
 import android.content.Context;
 import android.content.Intent;
@@ -22,9 +23,9 @@ import com.atrainingtracker.trainingtracker.database.WorkoutSummariesDatabaseMan
 import com.google.android.gms.maps.model.LatLng;
 
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
 import java.util.Set;
-
 
 public class CalcExtremaValuesTask extends AsyncTask<Long, String, Boolean> {
     public static final String FINISHED_CALCULATING_EXTREMA_VALUES = "com.atrainingtracker.helpers.CalcExtremaValuesTask.FINISHED_CALCULATING_EXTREMA_VALUES";
@@ -37,7 +38,9 @@ public class CalcExtremaValuesTask extends AsyncTask<Long, String, Boolean> {
     private static final boolean DEBUG = TrainingApplication.DEBUG && false;
     private static final List<SensorType> IMPORTANT_SENSOR_TYPES = Arrays.asList(SensorType.ALTITUDE, SensorType.CADENCE, SensorType.HR, SensorType.PACE_spm, SensorType.PEDAL_POWER_BALANCE, SensorType.PEDAL_SMOOTHNESS_L, SensorType.PEDAL_SMOOTHNESS_R, SensorType.POWER, SensorType.SPEED_mps, SensorType.TEMPERATURE, SensorType.TORQUE, SensorType.TORQUE_EFFECTIVENESS_L, SensorType.TORQUE_EFFECTIVENESS_R);
 
+    @SuppressLint("StaticFieldLeak")
     private Context mContext;
+    @SuppressLint("StaticFieldLeak")
     private TextView mMessageTextView;
 
     public CalcExtremaValuesTask(Context context, TextView messageTextView) {
@@ -47,6 +50,7 @@ public class CalcExtremaValuesTask extends AsyncTask<Long, String, Boolean> {
         if (DEBUG) Log.i(TAG, "CalcExtremaValuesTask()");
     }
 
+    @SuppressLint("Recycle")
     public static void calcAndSaveMaxLineDistancePosition(long workoutId) {
         if (DEBUG) Log.i(TAG, "calcAndSaveMaxLineDistancePosition: workoutId=" + workoutId);
 
@@ -68,11 +72,8 @@ public class CalcExtremaValuesTask extends AsyncTask<Long, String, Boolean> {
         String whereClause = WorkoutSummaries.WORKOUT_ID + "=? AND " + WorkoutSummaries.EXTREMA_TYPE + "=? AND " + WorkoutSummaries.SENSOR_TYPE + "=?"; // selection,
         String[] whereArgs = new String[]{Long.toString(workoutId), ExtremaType.MAX_LINE_DISTANCE.name(), SensorType.LATITUDE.name()}; // selectionArgs,
 
-        Cursor cursor = summariesDb.query(WorkoutSummaries.TABLE_EXTREMA_VALUES,
-                null, // columns
-                whereClause,
-                whereArgs,
-                null, null, null); // groupBy, having, orderBy)
+        @SuppressLint("Recycle") Cursor cursor = summariesDb.query(WorkoutSummaries.TABLE_EXTREMA_VALUES, null, // columns
+                whereClause, whereArgs, null, null, null); // groupBy, having, orderBy)
         if (cursor.getCount() == 0) { // no value yet
             summariesDb.insert(WorkoutSummaries.TABLE_EXTREMA_VALUES, null, values);
         } else {
@@ -88,11 +89,8 @@ public class CalcExtremaValuesTask extends AsyncTask<Long, String, Boolean> {
         // whereClause = WorkoutSummaries.WORKOUT_ID + "=? AND " + WorkoutSummaries.EXTREMA_TYPE + "=? AND " + WorkoutSummaries.SENSOR_TYPE + "=?"; // selection,
         whereArgs = new String[]{Long.toString(workoutId), ExtremaType.MAX_LINE_DISTANCE.name(), SensorType.LONGITUDE.name()}; // selectionArgs,
 
-        cursor = summariesDb.query(WorkoutSummaries.TABLE_EXTREMA_VALUES,
-                null, // columns
-                whereClause,
-                whereArgs,
-                null, null, null); // groupBy, having, orderBy)
+        cursor = summariesDb.query(WorkoutSummaries.TABLE_EXTREMA_VALUES, null, // columns
+                whereClause, whereArgs, null, null, null); // groupBy, having, orderBy)
         if (cursor.getCount() == 0) { // no value yet
             summariesDb.insert(WorkoutSummaries.TABLE_EXTREMA_VALUES, null, values);
         } else {
@@ -122,19 +120,13 @@ public class CalcExtremaValuesTask extends AsyncTask<Long, String, Boolean> {
 
         if (DEBUG) Log.d(TAG, "calculating extrema values for workout " + workoutId);
 
-        String baseFileName = WorkoutSummariesDatabaseManager.getInstance().getBaseFileName(workoutId);
+        String baseFileName = WorkoutSummariesDatabaseManager.getBaseFileName(workoutId);
 
         // find max line distance
-        calcAndSaveExtremaValues(workoutId,
-                baseFileName,
-                Arrays.asList(SensorType.LINE_DISTANCE_m),
-                Arrays.asList(ExtremaType.MAX, ExtremaType.END));
+        calcAndSaveExtremaValues(workoutId, baseFileName, Collections.singletonList(SensorType.LINE_DISTANCE_m), Arrays.asList(ExtremaType.MAX, ExtremaType.END));
 
         // start and end location
-        calcAndSaveExtremaValues(workoutId,
-                baseFileName,
-                Arrays.asList(SensorType.LATITUDE, SensorType.LONGITUDE),
-                Arrays.asList(ExtremaType.START, ExtremaType.END));
+        calcAndSaveExtremaValues(workoutId, baseFileName, Arrays.asList(SensorType.LATITUDE, SensorType.LONGITUDE), Arrays.asList(ExtremaType.START, ExtremaType.END));
 
         calcAndSaveMaxLineDistancePosition(workoutId);
 
@@ -147,7 +139,7 @@ public class CalcExtremaValuesTask extends AsyncTask<Long, String, Boolean> {
         ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
         // first, we need the accumulated sensors of this workout
-        Set<SensorType> accumulatedSensorTypes = WorkoutSummariesDatabaseManager.getInstance().getAccumulatedSensorTypes(workoutId);
+        Set<SensorType> accumulatedSensorTypes = WorkoutSummariesDatabaseManager.getAccumulatedSensorTypes(workoutId);
 
         // if there are no sensors stored (due to upgrading from DB version 3 to 4, we use all important sensors
         if (accumulatedSensorTypes.isEmpty()) {
@@ -158,9 +150,7 @@ public class CalcExtremaValuesTask extends AsyncTask<Long, String, Boolean> {
         }
 
         // all interesting available sensors
-        calcAndSaveExtremaValues(workoutId,
-                baseFileName,
-                accumulatedSensorTypes,  // the intersection of the available sensors and the ones we want to have the values
+        calcAndSaveExtremaValues(workoutId, baseFileName, accumulatedSensorTypes,  // the intersection of the available sensors and the ones we want to have the values
                 Arrays.asList(ExtremaType.MIN, ExtremaType.AVG, ExtremaType.MAX));
 
 
@@ -170,10 +160,7 @@ public class CalcExtremaValuesTask extends AsyncTask<Long, String, Boolean> {
 
         if (DEBUG) Log.i(TAG, "updating WorkoutSummaries for workoutId=" + workoutId);
         SQLiteDatabase db = WorkoutSummariesDatabaseManager.getInstance().getOpenDatabase();
-        db.update(WorkoutSummaries.TABLE,
-                values,
-                WorkoutSummaries.C_ID + "=?",
-                new String[]{Long.toString(workoutId)});
+        db.update(WorkoutSummaries.TABLE, values, WorkoutSummaries.C_ID + "=?", new String[]{Long.toString(workoutId)});
         WorkoutSummariesDatabaseManager.getInstance().closeDatabase(); // db.close();
 
         return true;
@@ -182,7 +169,6 @@ public class CalcExtremaValuesTask extends AsyncTask<Long, String, Boolean> {
     protected void calcFancyName(long workoutId) {
         if (DEBUG) Log.i(TAG, "calcFancyName");
         publishProgress(mContext.getString(R.string.calc_workout_name));
-
 
         MyLocation startLocation = null;
         Double startLat = WorkoutSummariesDatabaseManager.getExtremaValue(workoutId, SensorType.LATITUDE, ExtremaType.START);
@@ -230,9 +216,9 @@ public class CalcExtremaValuesTask extends AsyncTask<Long, String, Boolean> {
 
         // get max away points and guess commute and trainer
         boolean commute = false, trainer = false;
-        Double distance = WorkoutSummariesDatabaseManager.getInstance().getDouble(workoutId, WorkoutSummaries.DISTANCE_TOTAL_m);
-        Double maxLineDistance = WorkoutSummariesDatabaseManager.getInstance().getExtremaValue(workoutId, SensorType.LINE_DISTANCE_m, ExtremaType.MAX);
-        Double endLineDistance = WorkoutSummariesDatabaseManager.getInstance().getExtremaValue(workoutId, SensorType.LINE_DISTANCE_m, ExtremaType.END);
+        Double distance = WorkoutSummariesDatabaseManager.getDouble(workoutId, WorkoutSummaries.DISTANCE_TOTAL_m);
+        Double maxLineDistance = WorkoutSummariesDatabaseManager.getExtremaValue(workoutId, SensorType.LINE_DISTANCE_m, ExtremaType.MAX);
+        Double endLineDistance = WorkoutSummariesDatabaseManager.getExtremaValue(workoutId, SensorType.LINE_DISTANCE_m, ExtremaType.END);
         if (DEBUG)
             Log.i(TAG, "distance=" + distance + ", max line distance=" + maxLineDistance + ", end line distance=" + endLineDistance);
 
@@ -247,7 +233,6 @@ public class CalcExtremaValuesTask extends AsyncTask<Long, String, Boolean> {
             if (DEBUG)
                 Log.i(TAG, "This seems to be " + (trainer ? "" : "NOT ") + "a trainer session");
 
-
             // guess commute
             if (endLineDistance != null) {
                 if (maxLineDistance < endLineDistance * TrainingApplication.DISTANCE_TO_MAX_RATIO_FOR_COMMUTE) {
@@ -259,7 +244,6 @@ public class CalcExtremaValuesTask extends AsyncTask<Long, String, Boolean> {
         }
         if (DEBUG) Log.i(TAG, "trainer=" + trainer + ", commute=" + commute);
 
-
         // when commute and trainer are not contradicting, add them to the database
         if (commute ^ trainer) { // xor
             ContentValues values = new ContentValues();
@@ -268,10 +252,7 @@ public class CalcExtremaValuesTask extends AsyncTask<Long, String, Boolean> {
 
             if (DEBUG) Log.i(TAG, "updating WorkoutSummaries for workoutId=" + workoutId);
             SQLiteDatabase db = WorkoutSummariesDatabaseManager.getInstance().getOpenDatabase();
-            db.update(WorkoutSummaries.TABLE,
-                    values,
-                    WorkoutSummaries.C_ID + "=?",
-                    new String[]{Long.toString(workoutId)});
+            db.update(WorkoutSummaries.TABLE, values, WorkoutSummaries.C_ID + "=?", new String[]{Long.toString(workoutId)});
             WorkoutSummariesDatabaseManager.getInstance().closeDatabase(); // db.close();
         }
 
@@ -290,7 +271,7 @@ public class CalcExtremaValuesTask extends AsyncTask<Long, String, Boolean> {
             for (ExtremaType extremaType : extremaTypeList) {
                 publishProgress(mContext.getString(R.string.calculating_extrema_value_for, extremaType.name(), mContext.getString(sensorType.getShortNameId())));
 
-                Double value = WorkoutSamplesDatabaseManager.getInstance().calcExtremaValue(baseFileName, extremaType, sensorType);
+                Double value = WorkoutSamplesDatabaseManager.calcExtremaValue(baseFileName, extremaType, sensorType);
                 if (value != null) {
                     if (DEBUG)
                         Log.i(TAG, "saving " + extremaType.name() + " of " + sensorType.name() + ": " + value);
@@ -303,11 +284,8 @@ public class CalcExtremaValuesTask extends AsyncTask<Long, String, Boolean> {
                     String whereClause = WorkoutSummaries.WORKOUT_ID + "=? AND " + WorkoutSummaries.EXTREMA_TYPE + "=? AND " + WorkoutSummaries.SENSOR_TYPE + "=?"; // selection,
                     String[] whereArgs = new String[]{Long.toString(workoutId), extremaType.name(), sensorType.name()}; // selectionArgs,
 
-                    Cursor cursor = summariesDb.query(WorkoutSummaries.TABLE_EXTREMA_VALUES,
-                            null, // columns
-                            whereClause,
-                            whereArgs,
-                            null, null, null); // groupBy, having, orderBy)
+                    @SuppressLint("Recycle") Cursor cursor = summariesDb.query(WorkoutSummaries.TABLE_EXTREMA_VALUES, null, // columns
+                            whereClause, whereArgs, null, null, null); // groupBy, having, orderBy)
                     if (cursor.getCount() == 0) { // no value yet
                         summariesDb.insert(WorkoutSummaries.TABLE_EXTREMA_VALUES, null, values);
                     } else {
@@ -320,7 +298,6 @@ public class CalcExtremaValuesTask extends AsyncTask<Long, String, Boolean> {
                 } else {
                     if (DEBUG)
                         Log.i(TAG, "did not save " + extremaType.name() + " of " + sensorType.name() + " because its value is null");
-
                 }
             }
 

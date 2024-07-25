@@ -7,13 +7,9 @@ import com.atrainingtracker.trainingtracker.database.TrackingViewsDatabaseManage
 import com.atrainingtracker.trainingtracker.fragments.ConfigTrackingViewsFragment;
 import com.atrainingtracker.trainingtracker.fragments.ConfigViewsFragment;
 
-public class ConfigTrackingViewsActivity
-        extends ConfigViewsActivity
-        implements BANALService.GetBanalServiceInterface {
-
+public class ConfigTrackingViewsActivity extends ConfigViewsActivity implements BANALService.GetBanalServiceInterface {
     private static final String TAG = ConfigTrackingViewsActivity.class.getName();
     private static final boolean DEBUG = TrainingApplication.DEBUG & true;
-
 
     @Override
     public ActivityType getActivityType(long viewId) {
@@ -35,5 +31,4 @@ public class ConfigTrackingViewsActivity
     @Override
     public void registerConnectionStatusListener(ConnectionStatusListener connectionStatusListener) {
     }
-
 }

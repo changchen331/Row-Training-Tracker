@@ -234,12 +234,9 @@ public class CSVWriter implements Closeable {
     /**
      * Flush underlying stream to writer.
      *
-     * @throws IOException if bad things happen
      */
-    public void flush() throws IOException {
-
+    public void flush() {
         pw.flush();
-
     }
 
     /**

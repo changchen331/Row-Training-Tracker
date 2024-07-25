@@ -1,5 +1,6 @@
 package com.atrainingtracker.trainingtracker.segments;
 
+import android.annotation.SuppressLint;
 import android.content.Context;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
@@ -22,13 +23,13 @@ import com.google.android.gms.maps.model.PolylineOptions;
 
 import java.util.EnumMap;
 import java.util.HashMap;
-
+import java.util.Objects;
 
 public class SegmentOnMapHelper {
     private static final String TAG = SegmentOnMapHelper.class.getName();
     private static final boolean DEBUG = TrainingApplication.DEBUG && false;
     //                                 segmentId
-    private EnumMap<Roughness, HashMap<Long, SegmentData>> mSegmentCache = new EnumMap<Roughness, HashMap<Long, SegmentData>>(Roughness.class);
+    private EnumMap<Roughness, HashMap<Long, SegmentData>> mSegmentCache = new EnumMap<>(Roughness.class);
 
     public void showSegmentOnMap(Context context, MyMapViewHolder myMapViewHolder, long segmentId, Roughness roughness, boolean zoomToMap, boolean animateZoom) {
         if (DEBUG)
@@ -37,7 +38,7 @@ public class SegmentOnMapHelper {
         Roughness roughness_tmp = roughness;
 
         SegmentData segmentData = getCachedSegmentData(segmentId, roughness_tmp);
-        boolean calcSegmentData = true;
+        boolean calcSegmentData;
         if (segmentData != null) {
             calcSegmentData = false;
         } else {
@@ -73,14 +74,11 @@ public class SegmentOnMapHelper {
         myMapViewHolder.map.addPolyline(segmentData.polylineOptions);
 
         if (zoomToMap) {
-            myMapViewHolder.map.setOnMapLoadedCallback(new GoogleMap.OnMapLoadedCallback() {
-                @Override
-                public void onMapLoaded() {
-                    if (animateZoom) {
-                        myMapViewHolder.map.animateCamera(CameraUpdateFactory.newLatLngBounds(segmentData.latLngBounds, 50));
-                    } else {
-                        myMapViewHolder.map.moveCamera(CameraUpdateFactory.newLatLngBounds(segmentData.latLngBounds, 50));
-                    }
+            myMapViewHolder.map.setOnMapLoadedCallback(() -> {
+                if (animateZoom) {
+                    myMapViewHolder.map.animateCamera(CameraUpdateFactory.newLatLngBounds(segmentData.latLngBounds, 50));
+                } else {
+                    myMapViewHolder.map.moveCamera(CameraUpdateFactory.newLatLngBounds(segmentData.latLngBounds, 50));
                 }
             });
         }
@@ -96,9 +94,8 @@ public class SegmentOnMapHelper {
 
         SegmentData segmentData = null;
 
-        if (mSegmentCache.containsKey(roughness)
-                && mSegmentCache.get(roughness).containsKey(segmentId)) {
-            segmentData = mSegmentCache.get(roughness).get(segmentId);
+        if (mSegmentCache.containsKey(roughness) && Objects.requireNonNull(mSegmentCache.get(roughness)).containsKey(segmentId)) {
+            segmentData = Objects.requireNonNull(mSegmentCache.get(roughness)).get(segmentId);
         }
 
         if (DEBUG) Log.i(TAG, "segmentData=" + segmentData);
@@ -106,6 +103,7 @@ public class SegmentOnMapHelper {
         return segmentData;
     }
 
+    @SuppressLint("Range")
     private boolean calcSegmentData(Context context, long segmentId, Roughness roughness) {
         if (DEBUG)
             Log.i(TAG, "calcSegmentData for segmentId=" + segmentId + ", roughness=" + roughness.name());
@@ -113,9 +111,7 @@ public class SegmentOnMapHelper {
         PolylineOptions polylineOptions = new PolylineOptions().color(context.getResources().getColor(R.color.strava));
 
         SQLiteDatabase db = SegmentsDatabaseManager.getInstance().getOpenDatabase();
-        Cursor cursor = db.query(Segments.TABLE_SEGMENT_STREAMS, null,
-                Segments.SEGMENT_ID + "=?", new String[]{segmentId + ""},
-                null, null, null);
+        Cursor cursor = db.query(Segments.TABLE_SEGMENT_STREAMS, null, Segments.SEGMENT_ID + "=?", new String[]{segmentId + ""}, null, null, null);
 
         LatLng latLng;
         LatLngBounds.Builder latLngBoundsBuilder = new LatLngBounds.Builder();
@@ -127,8 +123,7 @@ public class SegmentOnMapHelper {
                 havePoints = true;
 
                 // get latitude and longitude from the database and create new LatLng object
-                latLng = new LatLng(cursor.getDouble(cursor.getColumnIndex(Segments.LATITUDE)),
-                        cursor.getDouble(cursor.getColumnIndex(Segments.LONGITUDE)));
+                latLng = new LatLng(cursor.getDouble(cursor.getColumnIndex(Segments.LATITUDE)), cursor.getDouble(cursor.getColumnIndex(Segments.LONGITUDE)));
 
                 // add to polyline and builder
                 polylineOptions.add(latLng);
@@ -141,15 +136,16 @@ public class SegmentOnMapHelper {
 
         if (havePoints) {
             if (!mSegmentCache.containsKey(roughness)) {
-                mSegmentCache.put(roughness, new HashMap<Long, SegmentData>());
+                mSegmentCache.put(roughness, new HashMap<>());
             }
-            mSegmentCache.get(roughness).put(segmentId, new SegmentData(polylineOptions, latLngBoundsBuilder.build()));
+            Objects.requireNonNull(mSegmentCache.get(roughness)).put(segmentId, new SegmentData(polylineOptions, latLngBoundsBuilder.build()));
         }
 
         return true;
     }
 
     // TODO: this is stolen several times, so make it a static method of a DatabaseHelper Class
+    @SuppressLint("Range")
     protected boolean dataValid(Cursor cursor, String string) {
         if (cursor.getColumnIndex(string) == -1) {
             if (DEBUG) Log.d(TAG, "dataValid: no such columnIndex!: " + string);
@@ -162,7 +158,7 @@ public class SegmentOnMapHelper {
         return true;
     }
 
-    private class SegmentData {
+    private static class SegmentData {
         PolylineOptions polylineOptions;
         LatLngBounds latLngBounds;
 
@@ -172,7 +168,7 @@ public class SegmentOnMapHelper {
         }
     }
 
-    private class InputArguments {
+    private static class InputArguments {
         MyMapViewHolder myMapViewHolder;
         long segmentId;
         Roughness roughness;
@@ -188,8 +184,8 @@ public class SegmentOnMapHelper {
         }
     }
 
+    @SuppressLint("StaticFieldLeak")
     private class FooAsyncTask extends AsyncTask<InputArguments, Void, Void> {
-
         long segmentId;
         InputArguments inputArguments;
         Context context;
@@ -220,5 +216,4 @@ public class SegmentOnMapHelper {
             }
         }
     }
-
 }

@@ -1,5 +1,6 @@
 package com.atrainingtracker.trainingtracker.fragments.mapFragments;
 
+import android.annotation.SuppressLint;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
 import android.graphics.Color;
@@ -22,43 +23,36 @@ import com.google.android.gms.maps.model.PolylineOptions;
 
 import java.util.EnumMap;
 import java.util.HashMap;
-
+import java.util.Objects;
 
 public class TrackOnMapHelper {
     private static final String TAG = TrackOnMapHelper.class.getName();
     private static final boolean DEBUG = TrainingApplication.DEBUG && false;
     private EnumMap<Roughness, Integer> foo;
-    //                                                    workoutId
-    private EnumMap<Roughness, EnumMap<TrackType, HashMap<Long, TrackData>>> mTrackCache = new EnumMap<Roughness, EnumMap<TrackType, HashMap<Long, TrackData>>>(Roughness.class);
-    private EnumMap<TrackType, HashMap<GoogleMap, Polyline>> mPolylines = new EnumMap<TrackType, HashMap<GoogleMap, Polyline>>(TrackType.class);
+    // workoutId
+    private EnumMap<Roughness, EnumMap<TrackType, HashMap<Long, TrackData>>> mTrackCache = new EnumMap<>(Roughness.class);
+    private EnumMap<TrackType, HashMap<GoogleMap, Polyline>> mPolylines = new EnumMap<>(TrackType.class);
 
+    @SuppressLint("Range")
     public static PolylineOptions getPolylineOptions(long workoutId, Roughness roughness, TrackType trackType) {
         String baseFileName = WorkoutSummariesDatabaseManager.getBaseFileName(workoutId);
         if (baseFileName == null) {
             return null;
         }
 
-        PolylineOptions polylineOptions = new PolylineOptions()
-                .color(trackType.color)
-                .zIndex(5);
+        PolylineOptions polylineOptions = new PolylineOptions().color(trackType.color).zIndex(5);
 
         WorkoutSamplesDatabaseManager databaseManager = WorkoutSamplesDatabaseManager.getInstance();
         SQLiteDatabase db = databaseManager.getOpenDatabase();
         Cursor cursor = db.query(WorkoutSamplesDatabaseManager.getTableName(baseFileName),          // TODO: on some devices, an exception is thrown here
-                null,
-                null,
-                null,
-                null,
-                null,
-                null);  // sorting?
+                null, null, null, null, null, null);  // sorting?
 
         LatLng latLng;
 
         while (cursor.move(roughness.stepSize)) {
             if (dataValid(cursor, trackType.getLatitudeName()) && dataValid(cursor, trackType.getLongitudeName())) {
                 // get latitude and longitude from the database and create new LatLng object
-                latLng = new LatLng(cursor.getDouble(cursor.getColumnIndex(trackType.getLatitudeName())),
-                        cursor.getDouble(cursor.getColumnIndex(trackType.getLongitudeName())));
+                latLng = new LatLng(cursor.getDouble(cursor.getColumnIndex(trackType.getLatitudeName())), cursor.getDouble(cursor.getColumnIndex(trackType.getLongitudeName())));
                 polylineOptions.add(latLng);
             }
         }
@@ -84,6 +78,7 @@ public class TrackOnMapHelper {
     }
 
     // TODO: this is stolen several times, so make it a static method of a DatabaseHelper Class
+    @SuppressLint("Range")
     protected static boolean dataValid(Cursor cursor, String string) {
         if (cursor.getColumnIndex(string) == -1) {
             if (DEBUG) Log.d(TAG, "dataValid: no such columnIndex!: " + string);
@@ -103,7 +98,7 @@ public class TrackOnMapHelper {
         Roughness roughness_tmp = roughness;
 
         TrackData trackData = getCachedTrackData(workoutId, roughness_tmp, trackType);
-        boolean calcTrackData = true;
+        boolean calcTrackData;
         if (trackData != null) {
             calcTrackData = false;
         } else {
@@ -125,9 +120,8 @@ public class TrackOnMapHelper {
         if (DEBUG)
             Log.i(TAG, "plotTrackOnMap for workoutId=" + workoutId + ", roughness=" + roughness.name() + ", trackType=" + trackType.name());
 
-        if (mPolylines.containsKey(trackType) &&
-                mPolylines.get(trackType).containsKey(myMapViewHolder.map)) {
-            mPolylines.get(trackType).get(myMapViewHolder.map).remove();
+        if (mPolylines.containsKey(trackType) && Objects.requireNonNull(mPolylines.get(trackType)).containsKey(myMapViewHolder.map)) {
+            Objects.requireNonNull(Objects.requireNonNull(mPolylines.get(trackType)).get(myMapViewHolder.map)).remove();
         }
 
         final TrackData trackData = getCachedTrackData(workoutId, roughness, trackType);
@@ -144,26 +138,21 @@ public class TrackOnMapHelper {
         Polyline polyline = myMapViewHolder.map.addPolyline(trackData.polylineOptions);
 
         if (!mPolylines.containsKey(trackType)) {
-            mPolylines.put(trackType, new HashMap<GoogleMap, Polyline>());
+            mPolylines.put(trackType, new HashMap<>());
         }
-        mPolylines.get(trackType).put(myMapViewHolder.map, polyline);
+        Objects.requireNonNull(mPolylines.get(trackType)).put(myMapViewHolder.map, polyline);
 
         if (zoomToMap) {
-            myMapViewHolder.map.setOnMapLoadedCallback(new GoogleMap.OnMapLoadedCallback() {
-                @Override
-                public void onMapLoaded() {
-                    if (animateZoom) {
-                        myMapViewHolder.map.animateCamera(CameraUpdateFactory.newLatLngBounds(trackData.latLngBounds, 50));
-                    } else {
-                        myMapViewHolder.map.moveCamera(CameraUpdateFactory.newLatLngBounds(trackData.latLngBounds, 50));
-                    }
+            myMapViewHolder.map.setOnMapLoadedCallback(() -> {
+                if (animateZoom) {
+                    myMapViewHolder.map.animateCamera(CameraUpdateFactory.newLatLngBounds(trackData.latLngBounds, 50));
+                } else {
+                    myMapViewHolder.map.moveCamera(CameraUpdateFactory.newLatLngBounds(trackData.latLngBounds, 50));
                 }
             });
         }
 
         myMapViewHolder.map.setMapType(GoogleMap.MAP_TYPE_TERRAIN);
-
-        return;
     }
 
     @Nullable
@@ -173,10 +162,8 @@ public class TrackOnMapHelper {
 
         TrackData trackData = null;
 
-        if (mTrackCache.containsKey(roughness)
-                && mTrackCache.get(roughness).containsKey(trackType)
-                && mTrackCache.get(roughness).get(trackType).containsKey(workoutId)) {
-            trackData = mTrackCache.get(roughness).get(trackType).get(workoutId);
+        if (mTrackCache.containsKey(roughness) && Objects.requireNonNull(mTrackCache.get(roughness)).containsKey(trackType) && Objects.requireNonNull(mTrackCache.get(roughness)).get(trackType).containsKey(workoutId)) {
+            trackData = Objects.requireNonNull(Objects.requireNonNull(mTrackCache.get(roughness)).get(trackType)).get(workoutId);
         }
 
         if (DEBUG) Log.i(TAG, "trackData=" + trackData);
@@ -191,28 +178,25 @@ public class TrackOnMapHelper {
 
         PolylineOptions polylineOptions = getPolylineOptions(workoutId, roughness, trackType);
 
-        if (polylineOptions != null && polylineOptions.getPoints().size() != 0) {
+        if (polylineOptions != null && !polylineOptions.getPoints().isEmpty()) {
             if (!mTrackCache.containsKey(roughness)) {
-                mTrackCache.put(roughness, new EnumMap<TrackType, HashMap<Long, TrackData>>(TrackType.class));
+                mTrackCache.put(roughness, new EnumMap<>(TrackType.class));
             }
-            if (!mTrackCache.get(roughness).containsKey(trackType)) {
-                mTrackCache.get(roughness).put(trackType, new HashMap<Long, TrackData>());
+            if (!Objects.requireNonNull(mTrackCache.get(roughness)).containsKey(trackType)) {
+                Objects.requireNonNull(mTrackCache.get(roughness)).put(trackType, new HashMap<>());
             }
 
-            mTrackCache.get(roughness).get(trackType).put(workoutId, new TrackData(polylineOptions, getLatLngBounds(polylineOptions)));
+            Objects.requireNonNull(Objects.requireNonNull(mTrackCache.get(roughness)).get(trackType)).put(workoutId, new TrackData(polylineOptions, getLatLngBounds(polylineOptions)));
         }
 
         return true;
     }
 
     public enum TrackType {
-        BEST(Color.BLUE, null),
-        GPS(Color.GREEN, "gps"),
-        NETWORK(Color.MAGENTA, "network"),
-        FUSED(Color.YELLOW, "google_fused");
+        BEST(Color.BLUE, null), GPS(Color.GREEN, "gps"), NETWORK(Color.MAGENTA, "network"), FUSED(Color.YELLOW, "google_fused");
 
-        int color;
-        String source;
+        final int color;
+        final String source;
 
         TrackType(int color, String source) {
             this.color = color;
@@ -238,10 +222,9 @@ public class TrackOnMapHelper {
 
             return longitudeName;
         }
-
     }
 
-    private class TrackData {
+    private static class TrackData {
         PolylineOptions polylineOptions;
         LatLngBounds latLngBounds;
 
@@ -251,7 +234,7 @@ public class TrackOnMapHelper {
         }
     }
 
-    private class InputArguments {
+    private static class InputArguments {
         MyMapViewHolder myMapViewHolder;
         long workoutId;
         Roughness roughness;
@@ -269,8 +252,8 @@ public class TrackOnMapHelper {
         }
     }
 
+    @SuppressLint("StaticFieldLeak")
     private class FooAsyncTask extends AsyncTask<InputArguments, Void, Void> {
-
         long workoutId;
         InputArguments inputArguments;
 
@@ -294,5 +277,4 @@ public class TrackOnMapHelper {
             }
         }
     }
-
 }

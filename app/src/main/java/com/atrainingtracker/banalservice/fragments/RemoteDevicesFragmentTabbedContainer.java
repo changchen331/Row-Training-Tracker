@@ -1,5 +1,6 @@
 package com.atrainingtracker.banalservice.fragments;
 
+import android.annotation.SuppressLint;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.os.Bundle;
@@ -12,6 +13,7 @@ import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
 
+import androidx.annotation.NonNull;
 import androidx.appcompat.app.AlertDialog;
 import androidx.fragment.app.Fragment;
 import androidx.fragment.app.FragmentManager;
@@ -28,7 +30,6 @@ import com.atrainingtracker.banalservice.dialogs.InstallANTShitDialog;
 
 import java.util.ArrayList;
 import java.util.Arrays;
-
 
 // TODO: show option to check ANT Installation
 public class RemoteDevicesFragmentTabbedContainer extends Fragment {
@@ -82,9 +83,9 @@ public class RemoteDevicesFragmentTabbedContainer extends Fragment {
         super.onCreate(savedInstanceState);
         if (DEBUG) Log.i(TAG, "onCreate()");
 
-        mProtocol = Protocol.valueOf(getArguments().getString(BANALService.PROTOCOL));
-        if (getArguments().getString(BANALService.DEVICE_TYPE) != null) {
-            mDeviceType = DeviceType.valueOf(getArguments().getString(BANALService.DEVICE_TYPE));
+        mProtocol = Protocol.valueOf(requireArguments().getString(BANALService.PROTOCOL));
+        if (requireArguments().getString(BANALService.DEVICE_TYPE) != null) {
+            mDeviceType = DeviceType.valueOf(requireArguments().getString(BANALService.DEVICE_TYPE));
         } else if (savedInstanceState != null && savedInstanceState.containsKey(BANALService.DEVICE_TYPE)) {
             mDeviceType = DeviceType.valueOf(savedInstanceState.getString(BANALService.DEVICE_TYPE));
         }
@@ -95,7 +96,7 @@ public class RemoteDevicesFragmentTabbedContainer extends Fragment {
     // onAttach???
 
     @Override
-    public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
+    public View onCreateView(@NonNull LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
         super.onCreateView(inflater, container, savedInstanceState);
         if (DEBUG) Log.i(TAG, "onCreateView()");
 
@@ -118,39 +119,27 @@ public class RemoteDevicesFragmentTabbedContainer extends Fragment {
         } else if (!mShowingDialog) { // show dialog when mDeviceType is not yet known
             mShowingDialog = true;
 
-            AlertDialog.Builder dialogBuilder = new AlertDialog.Builder(getContext());
+            AlertDialog.Builder dialogBuilder = new AlertDialog.Builder(requireContext());
             dialogBuilder.setIcon(mProtocol.getIconId());
-            dialogBuilder.setOnKeyListener(new DialogInterface.OnKeyListener() {
-                @Override
-                public boolean onKey(DialogInterface dialog, int keyCode, KeyEvent event) {
-                    Log.i(TAG, "key pressed: keyCode=" + keyCode + ", keyEvent=" + event);
-                    if (keyCode == KeyEvent.KEYCODE_BACK) {
-                        cancelDialog(dialog);
-                        return true;
-                    }
-                    return false;
+            dialogBuilder.setOnKeyListener((dialog, keyCode, event) -> {
+                Log.i(TAG, "key pressed: keyCode=" + keyCode + ", keyEvent=" + event);
+                if (keyCode == KeyEvent.KEYCODE_BACK) {
+                    cancelDialog(dialog);
+                    return true;
                 }
+                return false;
             });
             dialogBuilder.setCancelable(false);
             dialogBuilder.setTitle(R.string.select_device_type);
 
-            dialogBuilder.setNegativeButton(R.string.Cancel, new DialogInterface.OnClickListener() {
-                @Override
-                public void onClick(DialogInterface dialog, int which) {
-                    cancelDialog(dialog);
-                }
-            });
+            dialogBuilder.setNegativeButton(R.string.Cancel, (dialog, which) -> cancelDialog(dialog));
 
             final ArrayList<DeviceType> deviceTypeList = new ArrayList<>(Arrays.asList(DeviceType.getRemoteDeviceTypes(mProtocol)));
-            dialogBuilder.setAdapter(new DeviceChoiceArrayAdapter(getActivity(), R.layout.device_choice_row, deviceTypeList, mProtocol),
-                    new DialogInterface.OnClickListener() {
-                        @Override
-                        public void onClick(DialogInterface dialog, int which) {
-                            mDeviceType = deviceTypeList.get(which);
-                            startSearching();
-                            setSectionsPagerAdapter();
-                        }
-                    });
+            dialogBuilder.setAdapter(new DeviceChoiceArrayAdapter(getActivity(), R.layout.device_choice_row, deviceTypeList, mProtocol), (dialog, which) -> {
+                mDeviceType = deviceTypeList.get(which);
+                startSearching();
+                setSectionsPagerAdapter();
+            });
             dialogBuilder.show();
         }
 
@@ -168,7 +157,7 @@ public class RemoteDevicesFragmentTabbedContainer extends Fragment {
     }
 
     @Override
-    public void onSaveInstanceState(Bundle outState) {
+    public void onSaveInstanceState(@NonNull Bundle outState) {
         if (DEBUG) Log.i(TAG, "onSaveInstanceState");
 
         if (mProtocol != null) {
@@ -185,7 +174,7 @@ public class RemoteDevicesFragmentTabbedContainer extends Fragment {
      * Called first time user clicks on the menu button
      */
     @Override
-    public void onCreateOptionsMenu(Menu menu, MenuInflater inflater) {
+    public void onCreateOptionsMenu(@NonNull Menu menu, @NonNull MenuInflater inflater) {
         super.onCreateOptionsMenu(menu, inflater);
         if (DEBUG) Log.d(TAG, "onCreateOptionsMenu");
 
@@ -193,14 +182,15 @@ public class RemoteDevicesFragmentTabbedContainer extends Fragment {
     }
 
 
+    @SuppressLint("NonConstantResourceId")
     @Override
-    public boolean onOptionsItemSelected(MenuItem item) {
+    public boolean onOptionsItemSelected(@NonNull MenuItem item) {
         if (DEBUG) Log.i(TAG, "onOptionsItemSelected");
 
         switch (item.getItemId()) {
             case R.id.itemCheckANTInstallation:
                 InstallANTShitDialog installANTShitDialog = new InstallANTShitDialog();
-                installANTShitDialog.show(getFragmentManager(), InstallANTShitDialog.TAG);
+                installANTShitDialog.show(requireFragmentManager(), InstallANTShitDialog.TAG);
 
                 return true;
         }
@@ -236,7 +226,7 @@ public class RemoteDevicesFragmentTabbedContainer extends Fragment {
         Intent intent = new Intent(BANALService.START_SEARCHING_FOR_NEW_DEVICES_INTENT);
         intent.putExtra(BANALService.PROTOCOL, mProtocol.name());
         intent.putExtra(BANALService.DEVICE_TYPE, mDeviceType.name());
-        getActivity().sendBroadcast(intent);
+        requireActivity().sendBroadcast(intent);
 
         mSearching = true;
 
@@ -249,7 +239,7 @@ public class RemoteDevicesFragmentTabbedContainer extends Fragment {
 
         // mtvSearchingForRemoteDevice.setVisibility(View.GONE);
 
-        getActivity().sendBroadcast(new Intent(BANALService.STOP_SEARCHING_FOR_NEW_DEVICES_INTENT));
+        requireActivity().sendBroadcast(new Intent(BANALService.STOP_SEARCHING_FOR_NEW_DEVICES_INTENT));
         mSearching = false;
 
         // anything else?
@@ -266,6 +256,7 @@ public class RemoteDevicesFragmentTabbedContainer extends Fragment {
             super(fm);
         }
 
+        @NonNull
         @Override
         public Fragment getItem(int position) {
             // getItem is called to instantiate the fragment for the given page.

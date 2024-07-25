@@ -1,5 +1,6 @@
 package com.atrainingtracker.trainingtracker.onlinecommunities.strava;
 
+import android.annotation.SuppressLint;
 import android.app.IntentService;
 import android.content.ContentValues;
 import android.content.Intent;
@@ -30,7 +31,6 @@ import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.HashSet;
 import java.util.Set;
-
 
 public class StravaSegmentsIntentService extends IntentService {
     public static final String REQUEST_TYPE = StravaSegmentsIntentService.class.getName() + ".REQUEST_TYPE";
@@ -101,14 +101,7 @@ public class StravaSegmentsIntentService extends IntentService {
         SQLiteDatabase db = SegmentsDatabaseManager.getInstance().getOpenDatabase();
 
         // first, check whether this stream is already in the database
-        Cursor cursor = db.query(streamType.table,
-                null,
-                streamType.idName + "=?",
-                new String[]{id + ""},
-                null,
-                null,
-                null,
-                "1");
+        Cursor cursor = db.query(streamType.table, null, streamType.idName + "=?", new String[]{id + ""}, null, null, null, "1");
         if (cursor.getCount() >= 1) {  // already in database => simply return
             cursor.close();
             return;
@@ -117,15 +110,7 @@ public class StravaSegmentsIntentService extends IntentService {
 
         // "https://www.strava.com/api/v3/segment_efforts/:id/streams/:types";
         Uri.Builder builder = new Uri.Builder();
-        builder.scheme(HTTPS)
-                .authority(AUTHORITY_STRAVA)
-                .appendPath(API)
-                .appendPath(V3)
-                .appendPath(streamType.urlPart)
-                .appendPath(id + "")
-                .appendPath(STREAMS)
-                .appendPath(streamType.requestStreamTypes)
-                .appendQueryParameter(SERIES_TYPE, TIME);
+        builder.scheme(HTTPS).authority(AUTHORITY_STRAVA).appendPath(API).appendPath(V3).appendPath(streamType.urlPart).appendPath(id + "").appendPath(STREAMS).appendPath(streamType.requestStreamTypes).appendQueryParameter(SERIES_TYPE, TIME);
         String leaderboardUrl = builder.build().toString();
 
         HttpClient httpClient = new DefaultHttpClient();
@@ -215,28 +200,28 @@ public class StravaSegmentsIntentService extends IntentService {
             // thereby make sure that each row is one second later
             if (haveTime) {
                 int initialTime = effortStreams[0].getAsInteger("time");
-                int prevTime = initialTime - 1;
+                int prevTime;
                 int curTime = initialTime - 1;
-                for (int j = 0; j < effortStreams.length; j++) {
+                for (ContentValues effortStream : effortStreams) {
                     prevTime = curTime;
-                    curTime = effortStreams[j].getAsInteger("time");
-                    effortStreams[j].remove("time");
-                    effortStreams[j].put(streamType.idName, id);
+                    curTime = effortStream.getAsInteger("time");
+                    effortStream.remove("time");
+                    effortStream.put(streamType.idName, id);
                     for (int delta = 1; delta <= curTime - prevTime; delta++) {
-                        db.insert(streamType.table, null, effortStreams[j]);
+                        db.insert(streamType.table, null, effortStream);
                     }
                 }
             } else {
-                for (int j = 0; j < effortStreams.length; j++) {
-                    effortStreams[j].put(streamType.idName, id);
-                    db.insert(streamType.table, null, effortStreams[j]);
+                if (effortStreams != null) {
+                    for (ContentValues effortStream : effortStreams) {
+                        effortStream.put(streamType.idName, id);
+                        db.insert(streamType.table, null, effortStream);
+                    }
                 }
             }
 
-        } catch (IOException e) {
-            e.printStackTrace();
-        } catch (JSONException e) {
-            e.printStackTrace();
+        } catch (IOException | JSONException e) {
+            throw new RuntimeException(e);
         }
 
         SegmentsDatabaseManager.getInstance().closeDatabase();
@@ -247,8 +232,7 @@ public class StravaSegmentsIntentService extends IntentService {
 
         SQLiteDatabase db = SegmentsDatabaseManager.getInstance().getOpenDatabase();
 
-        db.delete(Segments.TABLE_EFFORT_STREAMS,
-                Segments.EFFORT_ID + "=?", new String[]{effortId + ""});
+        db.delete(Segments.TABLE_EFFORT_STREAMS, Segments.EFFORT_ID + "=?", new String[]{effortId + ""});
 
         SegmentsDatabaseManager.getInstance().closeDatabase();
     }
@@ -277,8 +261,14 @@ public class StravaSegmentsIntentService extends IntentService {
 
     @Override
     protected void onHandleIntent(Intent intent) {
-        Bundle bundle = intent.getExtras();
-        String requestType = bundle.getString(REQUEST_TYPE);
+        Bundle bundle = null;
+        if (intent != null) {
+            bundle = intent.getExtras();
+        }
+        String requestType = null;
+        if (bundle != null) {
+            requestType = bundle.getString(REQUEST_TYPE);
+        }
 
         if (REQUEST_UPDATE_STARRED_SEGMENTS.equals(requestType)) {
             mSportTypeId = bundle.getLong(SPORT_TYPE_ID);
@@ -294,6 +284,7 @@ public class StravaSegmentsIntentService extends IntentService {
         }
     }
 
+    @SuppressLint("Range")
     private void getStarredSegments() {
         if (DEBUG) Log.d(TAG, "getStarredStravaSegments: sportTypeId=" + mSportTypeId);
 
@@ -305,10 +296,7 @@ public class StravaSegmentsIntentService extends IntentService {
         HashSet<Long> segmentIdSet = new HashSet<>();
         HashSet<Long> newSegmentIdSet = new HashSet<>();
 
-        Cursor cursor = db.query(Segments.TABLE_STARRED_SEGMENTS,
-                new String[]{Segments.SEGMENT_ID},
-                Segments.ACTIVITY_TYPE + "=?", new String[]{mStravaSportName},
-                null, null, null);
+        Cursor cursor = db.query(Segments.TABLE_STARRED_SEGMENTS, new String[]{Segments.SEGMENT_ID}, Segments.ACTIVITY_TYPE + "=?", new String[]{mStravaSportName}, null, null, null);
         while (cursor.moveToNext()) {
             segmentIdSet.add(cursor.getLong(cursor.getColumnIndex(Segments.SEGMENT_ID)));
         }
@@ -326,13 +314,7 @@ public class StravaSegmentsIntentService extends IntentService {
 
             // "https://www.strava.com/api/v3/segments/starred
             Uri.Builder builder = new Uri.Builder();
-            builder.scheme(HTTPS)
-                    .authority(AUTHORITY_STRAVA)
-                    .appendPath(API)
-                    .appendPath(V3)
-                    .appendPath(SEGMENTS)
-                    .appendPath(STARRED)
-                    .appendQueryParameter(PAGE, page + "");
+            builder.scheme(HTTPS).authority(AUTHORITY_STRAVA).appendPath(API).appendPath(V3).appendPath(SEGMENTS).appendPath(STARRED).appendQueryParameter(PAGE, page + "");
             String starredSegmentsUrl = builder.build().toString();
 
             HttpClient httpClient = new DefaultHttpClient();
@@ -366,7 +348,6 @@ public class StravaSegmentsIntentService extends IntentService {
                                 Log.i(TAG, "ignore this segment due to the wrong activityType");
                             continue;
                         }
-
 
                         mSegmentId = segmentJsonObject.getInt(ID);
                         newSegmentIdSet.add(mSegmentId);
@@ -413,7 +394,7 @@ public class StravaSegmentsIntentService extends IntentService {
                         notifyNewSegment();
 
                     } catch (JSONException e) {
-                        e.printStackTrace();
+                        throw new RuntimeException(e);
                     }
                 }
             } catch (ClientProtocolException e) {
@@ -489,18 +470,9 @@ public class StravaSegmentsIntentService extends IntentService {
         // delete current leaderboard
         db.delete(Segments.TABLE_SEGMENT_LEADERBOARD, Segments.SEGMENT_ID + "=?", new String[]{mSegmentId + ""});
 
-
         // "https://www.strava.com/api/v3/segments/%i/leaderboard";
         Uri.Builder builder = new Uri.Builder();
-        builder.scheme(HTTPS)
-                .authority(AUTHORITY_STRAVA)
-                .appendPath(API)
-                .appendPath(V3)
-                .appendPath(SEGMENTS)
-                .appendPath(mSegmentId + "")
-                .appendPath(LEADERBOARD)
-                .appendQueryParameter(PER_PAGE, PER_PAGE_DEFAULT + "")
-                .appendQueryParameter(CONTEXT_ENTRIES, DEFAULT_CONTEXT_ENTRIES + "");
+        builder.scheme(HTTPS).authority(AUTHORITY_STRAVA).appendPath(API).appendPath(V3).appendPath(SEGMENTS).appendPath(mSegmentId + "").appendPath(LEADERBOARD).appendQueryParameter(PER_PAGE, PER_PAGE_DEFAULT + "").appendQueryParameter(CONTEXT_ENTRIES, DEFAULT_CONTEXT_ENTRIES + "");
         String leaderboardUrl = builder.build().toString();
 
         HttpClient httpClient = new DefaultHttpClient();
@@ -514,7 +486,6 @@ public class StravaSegmentsIntentService extends IntentService {
             String response;
             response = EntityUtils.toString(httpResponse.getEntity());
             if (DEBUG) Log.d(TAG, "getAndInsertSegmentLeaderboard response: " + response);
-
 
             JSONObject segmentLeaderboard = new JSONObject(response);
 
@@ -581,12 +552,11 @@ public class StravaSegmentsIntentService extends IntentService {
                 Picasso.with(this).load(entry.getString("athlete_profile")).fetch();
 
                 notifyNewLeaderboardEntry();
-
             }
 
             // finally, store the date of this update
             contentValues.clear();
-            SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd");
+            @SuppressLint("SimpleDateFormat") SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd");
             contentValues.put(Segments.LAST_UPDATED, sdf.format(new Date()));
             db.update(Segments.TABLE_STARRED_SEGMENTS, contentValues, Segments.SEGMENT_ID + "=?", new String[]{mSegmentId + ""});
 
@@ -608,7 +578,6 @@ public class StravaSegmentsIntentService extends IntentService {
         }
 
         SegmentsDatabaseManager.getInstance().closeDatabase();
-
         notifyGetLeaderboardComplete(resultMessage);
     }
 
@@ -648,14 +617,13 @@ public class StravaSegmentsIntentService extends IntentService {
         }
     }
 
+    @SuppressLint("Range")
     private void deleteSegment(long segmentId) {
         if (DEBUG) Log.i(TAG, "deleteSegment: segmentId=" + segmentId);
 
         SQLiteDatabase db = SegmentsDatabaseManager.getInstance().getOpenDatabase();
 
-        Cursor cursor = db.query(Segments.TABLE_SEGMENT_LEADERBOARD, null,
-                Segments.SEGMENT_ID + "=?", new String[]{segmentId + ""},
-                null, null, null);
+        @SuppressLint("Recycle") Cursor cursor = db.query(Segments.TABLE_SEGMENT_LEADERBOARD, null, Segments.SEGMENT_ID + "=?", new String[]{segmentId + ""}, null, null, null);
         while (cursor.moveToNext()) {
             deleteEffortStream(cursor.getInt(cursor.getColumnIndex(Segments.EFFORT_ID)));
         }

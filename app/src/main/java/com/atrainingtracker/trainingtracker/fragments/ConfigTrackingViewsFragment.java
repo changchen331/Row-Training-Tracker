@@ -11,7 +11,6 @@ import com.atrainingtracker.trainingtracker.database.TrackingViewsDatabaseManage
 
 import java.util.LinkedList;
 
-
 public class ConfigTrackingViewsFragment extends ConfigViewsFragment {
 
     public static final String TAG = ConfigTrackingViewsFragment.class.getSimpleName();
@@ -64,5 +63,4 @@ public class ConfigTrackingViewsFragment extends ConfigViewsFragment {
     protected Fragment getNewChildFragment(long viewId) {
         return ConfigTrackingViewFragment.newInstance(viewId);
     }
-
 }

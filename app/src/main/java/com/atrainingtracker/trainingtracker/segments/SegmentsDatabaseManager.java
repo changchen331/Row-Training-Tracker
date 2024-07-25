@@ -1,5 +1,6 @@
 package com.atrainingtracker.trainingtracker.segments;
 
+import android.annotation.SuppressLint;
 import android.content.Context;
 import android.database.sqlite.SQLiteDatabase;
 import android.database.sqlite.SQLiteOpenHelper;
@@ -14,6 +15,7 @@ public class SegmentsDatabaseManager {
     private static final String TAG = SegmentsDatabaseManager.class.getName();
     private static final boolean DEBUG = TrainingApplication.DEBUG && false;
     private static SegmentsDatabaseManager cInstance;
+    @SuppressLint("StaticFieldLeak")
     private static SegmentsDbHelper cSegmentsDbHelper;
     private int mOpenCounter;
     private SQLiteDatabase mDatabase;
@@ -27,8 +29,7 @@ public class SegmentsDatabaseManager {
 
     public static synchronized SegmentsDatabaseManager getInstance() {
         if (cInstance == null) {
-            throw new IllegalStateException(SegmentsDatabaseManager.class.getSimpleName() +
-                    " is not initialized, call initializeInstance(..) method first.");
+            throw new IllegalStateException(SegmentsDatabaseManager.class.getSimpleName() + " is not initialized, call initializeInstance(..) method first.");
         }
 
         return cInstance;
@@ -111,7 +112,6 @@ public class SegmentsDatabaseManager {
         public static final String OWN_RANK = "OwnRank";
         public static final String LEADERBOARD_SIZE = "LeaderboardSize";
 
-
         // for TABLE_SEGMENT_LEADERBOARD
         public static final String ATHLETE_NAME = "AthleteName";    // "athlete_name": "Jim Whimpey",
         public static final String ATHLETE_ID = "AthleteID";      // "athlete_id": 123529,
@@ -154,38 +154,12 @@ public class SegmentsDatabaseManager {
         // public static final int DB_VERSION = 1; // created  3.8.2016
         // public static final int DB_VERSION = 2; // updated 19.8.2016
         public static final int DB_VERSION = 3; // updated 26.9.2016
-        protected static final String CREATE_TABLE_STARRED_SEGMENTS_V1 = "create table " + Segments.TABLE_STARRED_SEGMENTS + " ("
-                + Segments.C_ID + " INTEGER PRIMARY KEY AUTOINCREMENT, "
-                + Segments.SEGMENT_ID + " int, "
-                + Segments.RESOURCE_STATE + " int, "
-                + Segments.SEGMENT_NAME + " text, "
-                + Segments.ACTIVITY_TYPE + " text, "  // activity_type: 	string ‘Ride’ or ‘Run’
-                + Segments.DISTANCE + " real, "
-                + Segments.AVERAGE_GRADE + " real, "
-                + Segments.MAXIMUM_GRADE + " real, "
-                + Segments.ELEVATION_HIGH + " real, "
-                + Segments.ELEVATION_LOW + " real, "
-                + Segments.START_LATITUDE + " real, "
-                + Segments.START_LONGITUDE + " real, "
-                + Segments.END_LATITUDE + " real, "
-                + Segments.END_LONGITUDE + " real, "
-                + Segments.CLIMB_CATEGORY + " int, "   // climb_category: 	integer [0, 5], higher is harder ie. 5 is Hors catégorie, 0 is uncategorized
-                + Segments.CITY + " text, "
-                + Segments.STATE + " text, "
-                + Segments.COUNTRY + " text, "
-                + Segments.PRIVATE + " int, "
-                + Segments.STARRED + " int, "
-                + Segments.HAZARDOUS + " int, "
+        protected static final String CREATE_TABLE_STARRED_SEGMENTS_V1 = "create table " + Segments.TABLE_STARRED_SEGMENTS + " (" + Segments.C_ID + " INTEGER PRIMARY KEY AUTOINCREMENT, " + Segments.SEGMENT_ID + " int, " + Segments.RESOURCE_STATE + " int, " + Segments.SEGMENT_NAME + " text, " + Segments.ACTIVITY_TYPE + " text, "  // activity_type: 	string ‘Ride’ or ‘Run’
+                + Segments.DISTANCE + " real, " + Segments.AVERAGE_GRADE + " real, " + Segments.MAXIMUM_GRADE + " real, " + Segments.ELEVATION_HIGH + " real, " + Segments.ELEVATION_LOW + " real, " + Segments.START_LATITUDE + " real, " + Segments.START_LONGITUDE + " real, " + Segments.END_LATITUDE + " real, " + Segments.END_LONGITUDE + " real, " + Segments.CLIMB_CATEGORY + " int, "   // climb_category: 	integer [0, 5], higher is harder ie. 5 is Hors catégorie, 0 is uncategorized
+                + Segments.CITY + " text, " + Segments.STATE + " text, " + Segments.COUNTRY + " text, " + Segments.PRIVATE + " int, " + Segments.STARRED + " int, " + Segments.HAZARDOUS + " int, "
 
-                + Segments.LAST_UPDATED + " datetime, "
-                + Segments.PR_TIME + " int, "
-                + Segments.PR_DATE + " datetime, "
-                + Segments.OWN_RANK + " int, "
-                + Segments.LEADERBOARD_SIZE + " int)";
-        protected static final String CREATE_TABLE_SEGMENT_LEADERBOARD_V1 = "create table " + Segments.TABLE_SEGMENT_LEADERBOARD + " ("
-                + Segments.C_ID + " INTEGER PRIMARY KEY AUTOINCREMENT, "
-                + Segments.SEGMENT_ID + " int, "
-                + Segments.ATHLETE_NAME + " text, "    // "athlete_name": "Jim Whimpey",
+                + Segments.LAST_UPDATED + " datetime, " + Segments.PR_TIME + " int, " + Segments.PR_DATE + " datetime, " + Segments.OWN_RANK + " int, " + Segments.LEADERBOARD_SIZE + " int)";
+        protected static final String CREATE_TABLE_SEGMENT_LEADERBOARD_V1 = "create table " + Segments.TABLE_SEGMENT_LEADERBOARD + " (" + Segments.C_ID + " INTEGER PRIMARY KEY AUTOINCREMENT, " + Segments.SEGMENT_ID + " int, " + Segments.ATHLETE_NAME + " text, "    // "athlete_name": "Jim Whimpey",
                 + Segments.ATHLETE_ID + " int, "     // "athlete_id": 123529,
                 + Segments.ATHLETE_GENDER + " text, "    // "athlete_gender": "M",
                 + Segments.AVERAGE_HR + " real, "    // "average_hr": 190.5,
@@ -199,27 +173,11 @@ public class SegmentsDatabaseManager {
                 + Segments.EFFORT_ID + " int, "     // "effort_id": 801006623,
                 + Segments.RANK + " int, "     // "rank": 1,
                 + Segments.ATHLETE_PROFILE_URL + " text)"; // "athlete_profile": "http://pics.com/227615/large.jpg"
-        protected static final String CREATE_TABLE_SEGMENT_STREAMS_V1 = "create table " + Segments.TABLE_SEGMENT_STREAMS + " ("
-                + Segments.C_ID + " INTEGER PRIMARY KEY AUTOINCREMENT, "
-                + Segments.SEGMENT_ID + " int, "
-                + Segments.DISTANCE + " real, "
-                + Segments.ALTITUDE + " real, "
-                + Segments.LATITUDE + " real, "
-                + Segments.LONGITUDE + " real)";
-        protected static final String CREATE_TABLE_EFFORT_STREAMS_V1 = "create table " + Segments.TABLE_EFFORT_STREAMS + " ("
-                + Segments.C_ID + " INTEGER PRIMARY KEY AUTOINCREMENT, "
-                + Segments.EFFORT_ID + " int, "
-                + Segments.LATITUDE + " real, "
-                + Segments.LONGITUDE + " real, "
-                + Segments.DISTANCE + " real, "
-                + Segments.VELOCITY_SMOOTH + " real, "
-                + Segments.HEART_RATE + " int, "
-                + Segments.CADENCE + " int, "
-                + Segments.WATTS + " real)";
+        protected static final String CREATE_TABLE_SEGMENT_STREAMS_V1 = "create table " + Segments.TABLE_SEGMENT_STREAMS + " (" + Segments.C_ID + " INTEGER PRIMARY KEY AUTOINCREMENT, " + Segments.SEGMENT_ID + " int, " + Segments.DISTANCE + " real, " + Segments.ALTITUDE + " real, " + Segments.LATITUDE + " real, " + Segments.LONGITUDE + " real)";
+        protected static final String CREATE_TABLE_EFFORT_STREAMS_V1 = "create table " + Segments.TABLE_EFFORT_STREAMS + " (" + Segments.C_ID + " INTEGER PRIMARY KEY AUTOINCREMENT, " + Segments.EFFORT_ID + " int, " + Segments.LATITUDE + " real, " + Segments.LONGITUDE + " real, " + Segments.DISTANCE + " real, " + Segments.VELOCITY_SMOOTH + " real, " + Segments.HEART_RATE + " int, " + Segments.CADENCE + " int, " + Segments.WATTS + " real)";
         private static final String TAG = SegmentsDbHelper.class.getName();
         private static final boolean DEBUG = TrainingApplication.DEBUG & true;
         private Context mContext;
-
 
         // Constructor
         public SegmentsDbHelper(Context context) {
@@ -255,7 +213,6 @@ public class SegmentsDatabaseManager {
         public void onUpgrade(SQLiteDatabase db, int oldVersion, int newVersion) {
 
             if (newVersion <= 3) {  // simply clear everything
-
                 db.execSQL("drop table if exists " + Segments.TABLE_SEGMENT_LEADERBOARD);
                 db.execSQL("drop table if exists " + Segments.TABLE_STARRED_SEGMENTS);
                 db.execSQL("drop table if exists " + Segments.TABLE_EFFORT_STREAMS);

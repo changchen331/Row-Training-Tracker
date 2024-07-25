@@ -1,8 +1,8 @@
 package com.atrainingtracker.banalservice.dialogs;
 
+import android.annotation.SuppressLint;
 import android.app.Dialog;
 import android.content.ContentValues;
-import android.content.DialogInterface;
 import android.content.Intent;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
@@ -15,6 +15,7 @@ import android.widget.EditText;
 import android.widget.Spinner;
 import android.widget.TextView;
 
+import androidx.annotation.NonNull;
 import androidx.appcompat.app.AlertDialog;
 import androidx.fragment.app.DialogFragment;
 
@@ -27,7 +28,6 @@ import com.atrainingtracker.trainingtracker.MyHelper;
 
 import java.util.Arrays;
 import java.util.List;
-
 
 public class EditSportTypeDialog extends DialogFragment {
     public static final String TAG = EditSportTypeDialog.class.getName();
@@ -58,16 +58,18 @@ public class EditSportTypeDialog extends DialogFragment {
         super.onCreate(savedInstanceState);
         if (DEBUG) Log.d(TAG, "onCreate");
 
-        mSportTypeId = getArguments().getLong(SPORT_TYPE_ID);
+        mSportTypeId = requireArguments().getLong(SPORT_TYPE_ID);
     }
 
 
+    @NonNull
+    @SuppressLint({"Range", "DefaultLocale"})
     @Override
     public Dialog onCreateDialog(Bundle savedInstanceState) {
 
         // get the values
         BSportType bSportType = SportType.DEFAULT_BASE_SPORT_TYPE;
-        String uiName = SportType.getDefaultUiName(getContext());
+        String uiName = SportType.getDefaultUiName(requireContext());
         String gcName = SportType.DEFAULT_GOLDEN_CHEETAH_NAME;
         String tcxName = SportType.DEFAULT_TCX_NAME;
         String stravaName = SportType.DEFAULT_STRAVA_NAME;
@@ -99,11 +101,11 @@ public class EditSportTypeDialog extends DialogFragment {
         SportTypeDatabaseManager.getInstance().closeDatabase();
 
         // now, create the view
-        AlertDialog.Builder builder = new AlertDialog.Builder(getActivity());
+        AlertDialog.Builder builder = new AlertDialog.Builder(requireActivity());
         builder.setTitle(R.string.edit_sport_type);
 
         // create the main view
-        LayoutInflater inflater = getActivity().getLayoutInflater();
+        LayoutInflater inflater = requireActivity().getLayoutInflater();
         View view = inflater.inflate(R.layout.edit_sport_type, null);
         builder.setView(view);
 
@@ -131,28 +133,28 @@ public class EditSportTypeDialog extends DialogFragment {
 
         if (SportTypeDatabaseManager.canDelete(mSportTypeId)) {
 
-            ArrayAdapter<CharSequence> adapter = ArrayAdapter.createFromResource(getContext(), R.array.Basic_Sport_Types, android.R.layout.simple_list_item_1);
+            ArrayAdapter<CharSequence> adapter = ArrayAdapter.createFromResource(requireContext(), R.array.Basic_Sport_Types, android.R.layout.simple_list_item_1);
             mSpBSportType.setAdapter(adapter);
             mSpBSportType.setSelection(bSportType.ordinal());
 
             List<String> foo = Arrays.asList(getResources().getStringArray(R.array.Strava_Sport_Types_Strava_Names));
-            ArrayAdapter<CharSequence> stravaAdapter = ArrayAdapter.createFromResource(getContext(), R.array.Strava_Sport_Types_UI_Names, android.R.layout.simple_list_item_1);
+            ArrayAdapter<CharSequence> stravaAdapter = ArrayAdapter.createFromResource(requireContext(), R.array.Strava_Sport_Types_UI_Names, android.R.layout.simple_list_item_1);
             mSpStrava.setAdapter(stravaAdapter);
             mSpStrava.setSelection(foo.indexOf(stravaName));
 
-            ArrayAdapter<CharSequence> runkeeperAdapter = ArrayAdapter.createFromResource(getContext(), R.array.Runkeeper_Sport_Types, android.R.layout.simple_list_item_1);
+            ArrayAdapter<CharSequence> runkeeperAdapter = ArrayAdapter.createFromResource(requireContext(), R.array.Runkeeper_Sport_Types, android.R.layout.simple_list_item_1);
             mSpRunkeeper.setAdapter(runkeeperAdapter);
             mSpRunkeeper.setSelection(runkeeperAdapter.getPosition(runkeeperName));
 
-            ArrayAdapter<CharSequence> tpAdapter = ArrayAdapter.createFromResource(getContext(), R.array.Training_Peaks_Sport_Types, android.R.layout.simple_list_item_1);
+            ArrayAdapter<CharSequence> tpAdapter = ArrayAdapter.createFromResource(requireContext(), R.array.Training_Peaks_Sport_Types, android.R.layout.simple_list_item_1);
             mSpTrainingPeaks.setAdapter(tpAdapter);
             mSpTrainingPeaks.setSelection(tpAdapter.getPosition(tpName));
 
-            ArrayAdapter<CharSequence> tcxAdapter = ArrayAdapter.createFromResource(getContext(), R.array.TCX_Sport_Types, android.R.layout.simple_list_item_1);
+            ArrayAdapter<CharSequence> tcxAdapter = ArrayAdapter.createFromResource(requireContext(), R.array.TCX_Sport_Types, android.R.layout.simple_list_item_1);
             mSpTCX.setAdapter(tcxAdapter);
             mSpTCX.setSelection(tcxAdapter.getPosition(tcxName));
 
-            ArrayAdapter<CharSequence> gcAdapter = ArrayAdapter.createFromResource(getContext(), R.array.GC_Sport_Types, android.R.layout.simple_list_item_1);
+            ArrayAdapter<CharSequence> gcAdapter = ArrayAdapter.createFromResource(requireContext(), R.array.GC_Sport_Types, android.R.layout.simple_list_item_1);
             mSpGC.setAdapter(gcAdapter);
             mSpGC.setSelection(gcAdapter.getPosition(gcName));
         } else {
@@ -175,24 +177,18 @@ public class EditSportTypeDialog extends DialogFragment {
         }
 
 
-        builder.setPositiveButton(R.string.OK,
-                new DialogInterface.OnClickListener() {
-                    public void onClick(DialogInterface dialog, int whichButton) {
-                        Log.i(TAG, "OK clicked");
+        builder.setPositiveButton(R.string.OK, (dialog, whichButton) -> {
+            Log.i(TAG, "OK clicked");
 
-                        saveSportTypes();
+            saveSportTypes();
 
-                        dialog.dismiss();
-                    }
-                });
+            dialog.dismiss();
+        });
 
-        builder.setNegativeButton(R.string.Cancel,
-                new DialogInterface.OnClickListener() {
-                    public void onClick(DialogInterface dialog, int whichButton) {
-                        Log.i(TAG, "Cancel clicked");
-                        dialog.dismiss();
-                    }
-                });
+        builder.setNegativeButton(R.string.Cancel, (dialog, whichButton) -> {
+            Log.i(TAG, "Cancel clicked");
+            dialog.dismiss();
+        });
 
         return builder.create();
     }
@@ -217,13 +213,11 @@ public class EditSportTypeDialog extends DialogFragment {
         if (mSportTypeId < 0) {  // create an entry
             db.insert(SportType.TABLE, null, contentValues);
         } else {
-            db.update(SportType.TABLE, contentValues,
-                    SportType.C_ID + "=?", new String[]{Long.toString(mSportTypeId)});
+            db.update(SportType.TABLE, contentValues, SportType.C_ID + "=?", new String[]{Long.toString(mSportTypeId)});
         }
 
         SportTypeDatabaseManager.getInstance().closeDatabase();
 
-        getContext().sendBroadcast(new Intent(SPORT_TYPE_CHANGED_INTENT));
+        requireContext().sendBroadcast(new Intent(SPORT_TYPE_CHANGED_INTENT));
     }
-
 }

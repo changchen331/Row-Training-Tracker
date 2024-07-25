@@ -16,50 +16,27 @@ import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Set;
 
 public class MySensorManager extends MyDevice {
     public static final String EMPTY_GC_DATA = "-----------";
-    protected static final DeviceType[] SPEED_PRIORITY
-            = new DeviceType[]{
-            DeviceType.ROWING_SPEED,
-            DeviceType.ROWING_SPEED_AND_CADENCE,
-            DeviceType.ROWING_POWER,
+    protected static final DeviceType[] SPEED_PRIORITY = new DeviceType[]{DeviceType.ROWING_SPEED, DeviceType.ROWING_SPEED_AND_CADENCE, DeviceType.ROWING_POWER,
             // DeviceType.SPEED_AND_LOCATION_GOOGLE_FUSED,
-            DeviceType.SPEED_AND_LOCATION_GPS,
-            DeviceType.SPEED_AND_LOCATION_NETWORK
-    };
-    protected static final DeviceType[] CADENCE_PRIORITY
-            = new DeviceType[]{
-            DeviceType.ROWING_CADENCE,
-            DeviceType.ROWING_SPEED_AND_CADENCE,
-            DeviceType.ROWING_POWER
-    };
-    protected static final DeviceType[] ALTITUDE_PRIORITY
-            = new DeviceType[]{
-            DeviceType.ALTITUDE_FROM_PRESSURE,
-            DeviceType.SPEED_AND_LOCATION_GPS,
-            DeviceType.SPEED_AND_LOCATION_GOOGLE_FUSED,
-            DeviceType.SPEED_AND_LOCATION_NETWORK
-    };
-    protected static final DeviceType[] LOCATION_PRIORITY
-            = new DeviceType[]{
-            DeviceType.SPEED_AND_LOCATION_GPS,
-            DeviceType.SPEED_AND_LOCATION_GOOGLE_FUSED,
-            DeviceType.SPEED_AND_LOCATION_NETWORK
-    };
+            DeviceType.SPEED_AND_LOCATION_GPS, DeviceType.SPEED_AND_LOCATION_NETWORK};
+    protected static final DeviceType[] CADENCE_PRIORITY = new DeviceType[]{DeviceType.ROWING_CADENCE, DeviceType.ROWING_SPEED_AND_CADENCE, DeviceType.ROWING_POWER};
+    protected static final DeviceType[] ALTITUDE_PRIORITY = new DeviceType[]{DeviceType.ALTITUDE_FROM_PRESSURE, DeviceType.SPEED_AND_LOCATION_GPS, DeviceType.SPEED_AND_LOCATION_GOOGLE_FUSED, DeviceType.SPEED_AND_LOCATION_NETWORK};
+    protected static final DeviceType[] LOCATION_PRIORITY = new DeviceType[]{DeviceType.SPEED_AND_LOCATION_GPS, DeviceType.SPEED_AND_LOCATION_GOOGLE_FUSED, DeviceType.SPEED_AND_LOCATION_NETWORK};
     private static final String TAG = "MySensorManager";
     // String        mGCData            = EMPTY_GC_DATA;
     // protected int mAccumulatedSensors = 0; 
     private static final boolean DEBUG = BANALService.DEBUG & false;
-    protected Map<SensorType, Object> mInitialValues = new HashMap<SensorType, Object>();
+    protected Map<SensorType, Object> mInitialValues = new HashMap<>();
     protected StringBuilder mAccumulatedGCData = new StringBuilder(EMPTY_GC_DATA);
-    protected Set<SensorType> mAccumulatedSensorTypeSet = new HashSet<SensorType>();
-    protected EnumMap<SensorType, LinkedList<DeviceType>> mDevicePriorityList
-            = new EnumMap<SensorType, LinkedList<DeviceType>>(SensorType.class);
+    protected Set<SensorType> mAccumulatedSensorTypeSet = new HashSet<>();
+    protected EnumMap<SensorType, LinkedList<DeviceType>> mDevicePriorityList = new EnumMap<>(SensorType.class);
 
-    protected EnumMap<SensorType, EnumMap<DeviceType, LinkedList<MySensor>>> mAllSensorsMapMap
-            = new EnumMap<SensorType, EnumMap<DeviceType, LinkedList<MySensor>>>(SensorType.class);
+    protected EnumMap<SensorType, EnumMap<DeviceType, LinkedList<MySensor>>> mAllSensorsMapMap = new EnumMap<>(SensorType.class);
 
 
     protected MySensor<String> mSensorsSensor;
@@ -95,8 +72,8 @@ public class MySensorManager extends MyDevice {
     @Override
     protected void addSensors() {
 
-        mSensorsSensor = new MySensor<String>(this, SensorType.SENSORS);
-        mAccumulatedSensorsSensor = new MySensor<String>(this, SensorType.ACCUMULATED_SENSORS);
+        mSensorsSensor = new MySensor<>(this, SensorType.SENSORS);
+        mAccumulatedSensorsSensor = new MySensor<>(this, SensorType.ACCUMULATED_SENSORS);
 
         addSensor(mSensorsSensor);
         addSensor(mAccumulatedSensorsSensor);
@@ -114,7 +91,7 @@ public class MySensorManager extends MyDevice {
     // }    
 
     public ArrayList<MySensor> getSensorList(Collection<SensorType> sensorCollection) {
-        ArrayList<MySensor> sensorList = new ArrayList<MySensor>();
+        ArrayList<MySensor> sensorList = new ArrayList<>();
 
         for (SensorType sensorType : sensorCollection) {
             MySensor mySensor = getSensor(sensorType);
@@ -131,7 +108,7 @@ public class MySensorManager extends MyDevice {
     }
 
     public void setPriorityList(SensorType sensorType, DeviceType[] deviceTypeArray) {
-        mDevicePriorityList.put(sensorType, new LinkedList<DeviceType>(Arrays.asList(deviceTypeArray)));
+        mDevicePriorityList.put(sensorType, new LinkedList<>(Arrays.asList(deviceTypeArray)));
     }
 
     protected LinkedList<DeviceType> getPriorityList(SensorType sensorType) {
@@ -153,13 +130,13 @@ public class MySensorManager extends MyDevice {
         }
 
         if (mAllSensorsMapMap.get(sensorType) == null) {
-            mAllSensorsMapMap.put(sensorType, new EnumMap<DeviceType, LinkedList<MySensor>>(DeviceType.class));
+            mAllSensorsMapMap.put(sensorType, new EnumMap<>(DeviceType.class));
         }
-        if (mAllSensorsMapMap.get(sensorType).get(deviceType) == null) {
-            mAllSensorsMapMap.get(sensorType).put(deviceType, new LinkedList<MySensor>());
+        if (Objects.requireNonNull(mAllSensorsMapMap.get(sensorType)).get(deviceType) == null) {
+            Objects.requireNonNull(mAllSensorsMapMap.get(sensorType)).put(deviceType, new LinkedList<>());
         }
 
-        mAllSensorsMapMap.get(sensorType).get(deviceType).addLast(mySensor);
+        Objects.requireNonNull(Objects.requireNonNull(mAllSensorsMapMap.get(sensorType)).get(deviceType)).addLast(mySensor);
 
         setBestSensorForProxySensor(sensorType);
 
@@ -170,8 +147,8 @@ public class MySensorManager extends MyDevice {
         LinkedList<MySensor> mySensorList = new LinkedList<>();
 
         for (SensorType sensorType : mAllSensorsMapMap.keySet()) {
-            for (DeviceType deviceType : mAllSensorsMapMap.get(sensorType).keySet()) {
-                mySensorList.addAll(mAllSensorsMapMap.get(sensorType).get(deviceType));
+            for (DeviceType deviceType : Objects.requireNonNull(mAllSensorsMapMap.get(sensorType)).keySet()) {
+                mySensorList.addAll(Objects.requireNonNull(mAllSensorsMapMap.get(sensorType)).get(deviceType));
             }
         }
 
@@ -202,11 +179,10 @@ public class MySensorManager extends MyDevice {
         SensorType sensorType = mySensor.getSensorType();
         DeviceType deviceType = mySensor.getDevice().getDeviceType();
 
-        if (mAllSensorsMapMap.get(sensorType) != null
-                && mAllSensorsMapMap.get(sensorType).get(deviceType) != null) {
+        if (mAllSensorsMapMap.get(sensorType) != null && Objects.requireNonNull(mAllSensorsMapMap.get(sensorType)).get(deviceType) != null) {
 
             boolean sensorRemoved = false;
-            mAllSensorsMapMap.get(sensorType).get(deviceType).remove(mySensor);
+            Objects.requireNonNull(Objects.requireNonNull(mAllSensorsMapMap.get(sensorType)).get(deviceType)).remove(mySensor);
             MySensor newBestSensor = getBestSensor(sensorType);
             if (newBestSensor == null) {
                 if (DEBUG) Log.d(TAG, "newBestSensor == null => removeSensor");
@@ -248,7 +224,7 @@ public class MySensorManager extends MyDevice {
             if (mAllSensorsMapMap.get(sensorType) == null) {
                 return null;  // sensorType not yet seen, so there will be no corresponding sensor
             } else {
-                priorityList = mAllSensorsMapMap.get(sensorType).keySet();
+                priorityList = Objects.requireNonNull(mAllSensorsMapMap.get(sensorType)).keySet();
             }
         }
 
@@ -263,10 +239,8 @@ public class MySensorManager extends MyDevice {
     }
 
     protected MySensor getFirstSensor(SensorType sensorType, DeviceType deviceType) {
-        if (mAllSensorsMapMap.get(sensorType) != null
-                && mAllSensorsMapMap.get(sensorType).get(deviceType) != null
-                && mAllSensorsMapMap.get(sensorType).get(deviceType).size() != 0) {
-            return mAllSensorsMapMap.get(sensorType).get(deviceType).getFirst();
+        if (mAllSensorsMapMap.get(sensorType) != null && Objects.requireNonNull(mAllSensorsMapMap.get(sensorType)).get(deviceType) != null && !Objects.requireNonNull(Objects.requireNonNull(mAllSensorsMapMap.get(sensorType)).get(deviceType)).isEmpty()) {
+            return Objects.requireNonNull(Objects.requireNonNull(mAllSensorsMapMap.get(sensorType)).get(deviceType)).getFirst();
         } else {
             return null;
         }

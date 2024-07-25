@@ -16,14 +16,6 @@ import com.atrainingtracker.banalservice.sensor.ThresholdSensor;
 import com.dsi.ant.plugins.antplus.pcc.AntPlusBikePowerPcc;
 import com.dsi.ant.plugins.antplus.pcc.AntPlusBikePowerPcc.CalculatedWheelDistanceReceiver;
 import com.dsi.ant.plugins.antplus.pcc.AntPlusBikePowerPcc.CalculatedWheelSpeedReceiver;
-import com.dsi.ant.plugins.antplus.pcc.AntPlusBikePowerPcc.DataSource;
-import com.dsi.ant.plugins.antplus.pcc.AntPlusBikePowerPcc.ICalculatedCrankCadenceReceiver;
-import com.dsi.ant.plugins.antplus.pcc.AntPlusBikePowerPcc.ICalculatedPowerReceiver;
-import com.dsi.ant.plugins.antplus.pcc.AntPlusBikePowerPcc.ICalculatedTorqueReceiver;
-import com.dsi.ant.plugins.antplus.pcc.AntPlusBikePowerPcc.IInstantaneousCadenceReceiver;
-import com.dsi.ant.plugins.antplus.pcc.AntPlusBikePowerPcc.IPedalPowerBalanceReceiver;
-import com.dsi.ant.plugins.antplus.pcc.AntPlusBikePowerPcc.IPedalSmoothnessReceiver;
-import com.dsi.ant.plugins.antplus.pcc.AntPlusBikePowerPcc.ITorqueEffectivenessReceiver;
 import com.dsi.ant.plugins.antplus.pcc.defines.EventFlag;
 import com.dsi.ant.plugins.antplus.pccbase.AntPluginPcc;
 import com.dsi.ant.plugins.antplus.pccbase.PccReleaseHandle;
@@ -85,7 +77,7 @@ public class ANTBikePowerDevice extends MyANTDevice {
 
     @Override
     protected PccReleaseHandle requestAccess() {
-        return AntPlusBikePowerPcc.requestAccess(mContext, getANTDeviceNumber(), 0, new MyResultReceiver<AntPlusBikePowerPcc>(), new MyDeviceStateChangeReceiver());
+        return AntPlusBikePowerPcc.requestAccess(mContext, getANTDeviceNumber(), 0, new MyResultReceiver<>(), new MyDeviceStateChangeReceiver());
     }
 
 
@@ -199,61 +191,42 @@ public class ANTBikePowerDevice extends MyANTDevice {
     protected void subscribeSpecificEvents() {
         if (rowPowerPcc != null) {
 
-            rowPowerPcc.subscribeCalculatedPowerEvent(new ICalculatedPowerReceiver() {
-
-                @Override
-                public void onNewCalculatedPower(long estTimestamp, EnumSet<EventFlag> eventFlags, AntPlusBikePowerPcc.DataSource dataSource, BigDecimal calculatedPower) {
-                    mPowerSensor.newValue(calculatedPower.intValue());
-                }
-            });
+            rowPowerPcc.subscribeCalculatedPowerEvent((estTimestamp, eventFlags, dataSource, calculatedPower) -> mPowerSensor.newValue(calculatedPower.intValue()));
 
 
             // cadence stuff
-            rowPowerPcc.subscribeCalculatedCrankCadenceEvent(new ICalculatedCrankCadenceReceiver() {
+            rowPowerPcc.subscribeCalculatedCrankCadenceEvent((estTimestamp, eventFlags, dataSource, calculatedCrankCadence) -> {
+                if (DEBUG) Log.d(TAG, "new calculatedCrankCadence: " + calculatedCrankCadence);
 
-                @Override
-                public void onNewCalculatedCrankCadence(long estTimestamp, EnumSet<EventFlag> eventFlags, DataSource dataSource, BigDecimal calculatedCrankCadence) {
-                    if (DEBUG) Log.d(TAG, "new calculatedCrankCadence: " + calculatedCrankCadence);
-
-                    if (mCadenceSensor == null) {  // first time, we get a cadence value ...
-                        createCadenceSensor();
-                    }
-
-                    mCadenceSensor.newValue(calculatedCrankCadence.intValue());
+                if (mCadenceSensor == null) {  // first time, we get a cadence value ...
+                    createCadenceSensor();
                 }
+
+                mCadenceSensor.newValue(calculatedCrankCadence.intValue());
             });
 
-            rowPowerPcc.subscribeInstantaneousCadenceEvent(new IInstantaneousCadenceReceiver() {
+            rowPowerPcc.subscribeInstantaneousCadenceEvent((estTimestamp, eventFlags, dataSource, instantaneousCadence) -> {
+                if (DEBUG) Log.d(TAG, "new instantaneousCadence: " + instantaneousCadence);
 
-                @Override
-                public void onNewInstantaneousCadence(long estTimestamp, java.util.EnumSet<EventFlag> eventFlags, AntPlusBikePowerPcc.DataSource dataSource, int instantaneousCadence) {
-                    if (DEBUG) Log.d(TAG, "new instantaneousCadence: " + instantaneousCadence);
+                if (mCadenceSensor == null) {  // first time, we get a cadence value ...
+                    createCadenceSensor();
+                }
 
-                    if (mCadenceSensor == null) {  // first time, we get a cadence value ...
-                        createCadenceSensor();
-                    }
-
-                    if ((instantaneousCadence <= -1) || (instantaneousCadence > 255)) { // invalid data
-                        if (DEBUG) Log.d(TAG, "invalid cadence: " + instantaneousCadence);
-                        mCadenceSensor.newValue(null);
-                    } else {
-                        mCadenceSensor.newValue(instantaneousCadence);
-                    }
-
+                if ((instantaneousCadence <= -1) || (instantaneousCadence > 255)) { // invalid data
+                    if (DEBUG) Log.d(TAG, "invalid cadence: " + instantaneousCadence);
+                    mCadenceSensor.newValue(null);
+                } else {
+                    mCadenceSensor.newValue(instantaneousCadence);
                 }
 
             });
 
-            rowPowerPcc.subscribeCalculatedTorqueEvent(new ICalculatedTorqueReceiver() {
-
-                @Override
-                public void onNewCalculatedTorque(long estTimestamp, EnumSet<EventFlag> eventFlags, AntPlusBikePowerPcc.DataSource dataSource, BigDecimal calculatedTorque) {
-                    if (mTorqueSensor == null) {
-                        createTorqueSensor();
-                    }
-
-                    mTorqueSensor.newValue(calculatedTorque.doubleValue());
+            rowPowerPcc.subscribeCalculatedTorqueEvent((estTimestamp, eventFlags, dataSource, calculatedTorque) -> {
+                if (mTorqueSensor == null) {
+                    createTorqueSensor();
                 }
+
+                mTorqueSensor.newValue(calculatedTorque.doubleValue());
             });
 
             rowPowerPcc.subscribeCalculatedWheelDistanceEvent(new CalculatedWheelDistanceReceiver(new BigDecimal(mCalibrationFactor)) {
@@ -295,78 +268,58 @@ public class ANTBikePowerDevice extends MyANTDevice {
                 }
             });
 
-            rowPowerPcc.subscribePedalPowerBalanceEvent(new IPedalPowerBalanceReceiver() {
-                @Override
-                public void onNewPedalPowerBalance(long estTimestamp, java.util.EnumSet<EventFlag> eventFlags, boolean rightPedalIndicator, int pedalPowerPercentage) {
-                    if (mPowerBalanceSensor == null
-                            && pedalPowerPercentage >= 0) {
-                        createPowerBalanceSensor();
-                    }
-
-                    if (mPowerBalanceSensor != null) {
-                        if (pedalPowerPercentage >= 0) {
-                            if (mInvertPowerBalanceValues) {
-                                pedalPowerPercentage = 100 - pedalPowerPercentage;
-                            }
-
-                            mPowerBalanceSensor.newValue(pedalPowerPercentage);
-                        } else {
-                            mPowerBalanceSensor.newValue(null);
-                        }
-                    }
+            rowPowerPcc.subscribePedalPowerBalanceEvent((estTimestamp, eventFlags, rightPedalIndicator, pedalPowerPercentage) -> {
+                if (mPowerBalanceSensor == null && pedalPowerPercentage >= 0) {
+                    createPowerBalanceSensor();
                 }
-            });
 
-            rowPowerPcc.subscribePedalSmoothnessEvent(new IPedalSmoothnessReceiver() {
-                @Override
-                public void onNewPedalSmoothness(long estTimestamp, java.util.EnumSet<EventFlag> eventFlags, long powerOnlyUpdateEventCount, boolean separatePedalSmoothnessSupport, java.math.BigDecimal leftOrCombinedPedalSmoothness, java.math.BigDecimal rightPedalSmoothness) {
-                    if (separatePedalSmoothnessSupport) {
-
-                        if (mPedalSmoothnessLeftSensor == null
-                                && leftOrCombinedPedalSmoothness.intValue() != -1
-                                && rightPedalSmoothness.intValue() != -1) {  // sensor not yet added and we get a valid value
-                            createSeparatePedalSmoothnessSensors();
+                if (mPowerBalanceSensor != null) {
+                    if (pedalPowerPercentage >= 0) {
+                        if (mInvertPowerBalanceValues) {
+                            pedalPowerPercentage = 100 - pedalPowerPercentage;
                         }
 
-                        if (mPedalSmoothnessLeftSensor != null) {
-                            mPedalSmoothnessLeftSensor.newValue(leftOrCombinedPedalSmoothness.intValue() != -1 ? leftOrCombinedPedalSmoothness.intValue() : null);
-                            mPedalSmoothnessRightSensor.newValue(rightPedalSmoothness.intValue() != -1 ? rightPedalSmoothness.intValue() : null);
-                        }
+                        mPowerBalanceSensor.newValue(pedalPowerPercentage);
                     } else {
-                        if (mPedalSmoothnessSensor == null
-                                && leftOrCombinedPedalSmoothness.intValue() != -1) {  // sensor not yet added and we get a valid value
-                            createCombinedPedalSmoothnessSensors();
-                        }
-
-                        if (mPedalSmoothnessLeftSensor != null) {
-                            mPedalSmoothnessSensor.newValue(leftOrCombinedPedalSmoothness.intValue() != -1 ? leftOrCombinedPedalSmoothness.intValue() : null);
-                        }
+                        mPowerBalanceSensor.newValue(null);
                     }
-
-
                 }
             });
 
-            rowPowerPcc.subscribeTorqueEffectivenessEvent(new ITorqueEffectivenessReceiver() {
+            rowPowerPcc.subscribePedalSmoothnessEvent((estTimestamp, eventFlags, powerOnlyUpdateEventCount, separatePedalSmoothnessSupport, leftOrCombinedPedalSmoothness, rightPedalSmoothness) -> {
+                Integer value = leftOrCombinedPedalSmoothness.intValue() != -1 ? leftOrCombinedPedalSmoothness.intValue() : null;
+                if (separatePedalSmoothnessSupport) {
 
-                @Override
-                public void onNewTorqueEffectiveness(long estTimestamp,
-                                                     java.util.EnumSet<EventFlag> eventFlags,
-                                                     long powerOnlyUpdateEventCount,
-                                                     java.math.BigDecimal leftTorqueEffectiveness,
-                                                     java.math.BigDecimal rightTorqueEffectiveness) {
-                    if (mTorqueEffectivenessLeftSensor == null
-                            && leftTorqueEffectiveness.intValue() != -1
-                            && rightTorqueEffectiveness.intValue() != -1) {
-                        createTorqueEffectivenessSensors();
+                    if (mPedalSmoothnessLeftSensor == null && leftOrCombinedPedalSmoothness.intValue() != -1 && rightPedalSmoothness.intValue() != -1) {  // sensor not yet added and we get a valid value
+                        createSeparatePedalSmoothnessSensors();
                     }
 
-                    if (mTorqueEffectivenessLeftSensor != null) {
-                        mTorqueEffectivenessLeftSensor.newValue(leftTorqueEffectiveness.intValue() != -1 ? leftTorqueEffectiveness.intValue() : null);
-                        mTorqueEffectivenessRightSensor.newValue(rightTorqueEffectiveness.intValue() != -1 ? rightTorqueEffectiveness.intValue() : null);
+                    if (mPedalSmoothnessLeftSensor != null) {
+                        mPedalSmoothnessLeftSensor.newValue(value);
+                        mPedalSmoothnessRightSensor.newValue(rightPedalSmoothness.intValue() != -1 ? rightPedalSmoothness.intValue() : null);
+                    }
+                } else {
+                    if (mPedalSmoothnessSensor == null && leftOrCombinedPedalSmoothness.intValue() != -1) {  // sensor not yet added and we get a valid value
+                        createCombinedPedalSmoothnessSensors();
+                    }
+
+                    if (mPedalSmoothnessLeftSensor != null) {
+                        mPedalSmoothnessSensor.newValue(value);
                     }
                 }
 
+
+            });
+
+            rowPowerPcc.subscribeTorqueEffectivenessEvent((estTimestamp, eventFlags, powerOnlyUpdateEventCount, leftTorqueEffectiveness, rightTorqueEffectiveness) -> {
+                if (mTorqueEffectivenessLeftSensor == null && leftTorqueEffectiveness.intValue() != -1 && rightTorqueEffectiveness.intValue() != -1) {
+                    createTorqueEffectivenessSensors();
+                }
+
+                if (mTorqueEffectivenessLeftSensor != null) {
+                    mTorqueEffectivenessLeftSensor.newValue(leftTorqueEffectiveness.intValue() != -1 ? leftTorqueEffectiveness.intValue() : null);
+                    mTorqueEffectivenessRightSensor.newValue(rightTorqueEffectiveness.intValue() != -1 ? rightTorqueEffectiveness.intValue() : null);
+                }
             });
         }
     }

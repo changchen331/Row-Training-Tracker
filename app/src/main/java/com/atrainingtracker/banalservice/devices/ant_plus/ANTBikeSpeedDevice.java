@@ -52,8 +52,8 @@ public class ANTBikeSpeedDevice extends MyANTDevice {
 
     @Override
     protected void addSensors() {
-        mSpeedSensor = new ThresholdSensor<BigDecimal>(this, SensorType.SPEED_mps, SPEED_THRESHOLD);
-        mPaceSensor = new ThresholdSensor<Double>(this, SensorType.PACE_spm, SPEED_THRESHOLD);
+        mSpeedSensor = new ThresholdSensor<>(this, SensorType.SPEED_mps, SPEED_THRESHOLD);
+        mPaceSensor = new ThresholdSensor<>(this, SensorType.PACE_spm, SPEED_THRESHOLD);
         mDistanceSensor = new MyDoubleAccumulatorSensor(this, SensorType.DISTANCE_m);
         mLapDistanceSensor = new MyDoubleAccumulatorSensor(this, SensorType.DISTANCE_m_LAP);
 
@@ -74,7 +74,7 @@ public class ANTBikeSpeedDevice extends MyANTDevice {
     protected PccReleaseHandle requestAccess() {
         myLog("requestAccess()");
 
-        return AntPlusBikeSpeedDistancePcc.requestAccess(mContext, getANTDeviceNumber(), 0, false, new MyResultReceiver<AntPlusBikeSpeedDistancePcc>(), new MyDeviceStateChangeReceiver());
+        return AntPlusBikeSpeedDistancePcc.requestAccess(mContext, getANTDeviceNumber(), 0, false, new MyResultReceiver<>(), new MyDeviceStateChangeReceiver());
     }
 
 

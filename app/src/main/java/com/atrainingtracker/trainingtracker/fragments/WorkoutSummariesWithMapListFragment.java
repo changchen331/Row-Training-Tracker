@@ -1,5 +1,6 @@
 package com.atrainingtracker.trainingtracker.fragments;
 
+import android.annotation.SuppressLint;
 import android.app.Activity;
 import android.content.BroadcastReceiver;
 import android.content.Context;
@@ -7,6 +8,7 @@ import android.content.Intent;
 import android.content.IntentFilter;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
+import android.os.Build;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.ContextMenu;
@@ -24,6 +26,8 @@ import android.widget.LinearLayout;
 import android.widget.ListView;
 import android.widget.TextView;
 
+import androidx.annotation.NonNull;
+import androidx.annotation.RequiresApi;
 import androidx.cursoradapter.widget.CursorAdapter;
 import androidx.fragment.app.ListFragment;
 
@@ -52,9 +56,9 @@ import com.google.android.gms.maps.GoogleMap;
 import com.google.android.gms.maps.MapView;
 import com.google.android.gms.maps.MapsInitializer;
 import com.google.android.gms.maps.OnMapReadyCallback;
-import com.google.android.gms.maps.model.LatLng;
 
 import java.util.EnumMap;
+import java.util.Objects;
 
 // import android.view.View.OnClickListener;
 
@@ -83,17 +87,12 @@ public class WorkoutSummariesWithMapListFragment extends ListFragment {
     private ShowWorkoutDetailsInterface mShowWorkoutDetailsListener;
     private ReallyDeleteDialogInterface mReallyDeleteDialogInterface;
     private boolean isPlayServiceAvailable = true;
-    private AbsListView.RecyclerListener mRecycleListener = new AbsListView.RecyclerListener() {
-
-        @Override
-        public void onMovedToScrapHeap(View view) {
-            ViewHolder holder = (ViewHolder) view.getTag();
-            if (holder != null && holder.map != null) {
-                // Clear the map and free up resources by changing the map type to none
-                holder.map.clear();
-                holder.map.setMapType(GoogleMap.MAP_TYPE_NONE);
-            }
-
+    private AbsListView.RecyclerListener mRecycleListener = view -> {
+        ViewHolder holder = (ViewHolder) view.getTag();
+        if (holder != null && holder.map != null) {
+            // Clear the map and free up resources by changing the map type to none
+            holder.map.clear();
+            holder.map.setMapType(GoogleMap.MAP_TYPE_NONE);
         }
     };
 
@@ -106,20 +105,20 @@ public class WorkoutSummariesWithMapListFragment extends ListFragment {
     }
 
     @Override
-    public void onAttach(Context context) {
+    public void onAttach(@NonNull Context context) {
         super.onAttach(context);
         if (DEBUG) Log.d(TAG, "onAttach");
 
         try {
             mShowWorkoutDetailsListener = (ShowWorkoutDetailsInterface) context;
         } catch (ClassCastException e) {
-            throw new ClassCastException(context.toString() + " must implement UpdateWorkoutInterface");
+            throw new ClassCastException(context + " must implement UpdateWorkoutInterface");
         }
 
         try {
             mReallyDeleteDialogInterface = (ReallyDeleteDialogInterface) context;
         } catch (ClassCastException e) {
-            throw new ClassCastException(context.toString() + " must implement ReallyDeleteWorkoutDialogInterface");
+            throw new ClassCastException(context + " must implement ReallyDeleteWorkoutDialogInterface");
         }
     }
 
@@ -129,7 +128,7 @@ public class WorkoutSummariesWithMapListFragment extends ListFragment {
 //        super.onActivityCreated(savedInstanceState);
 //        if (DEBUG) Log.d(TAG, "onActivityCreated");
     @Override
-    public void onViewCreated(View view, Bundle savedInstanceState) {
+    public void onViewCreated(@NonNull View view, Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
         if (DEBUG) Log.i(TAG, "onViewCreated");
 
@@ -147,9 +146,9 @@ public class WorkoutSummariesWithMapListFragment extends ListFragment {
 
         mAdapter = new WorkoutSummaryWithMapAdapter(getActivity(), mCursor);
         setListAdapter(mAdapter);
-
     }
 
+    @RequiresApi(api = Build.VERSION_CODES.TIRAMISU)
     @Override
     public void onResume() {
         super.onResume();
@@ -161,9 +160,8 @@ public class WorkoutSummariesWithMapListFragment extends ListFragment {
         mExportManager = new ExportManager(getActivity(), TAG);
         updateCursor();
 
-        getActivity().registerReceiver(mExportStatusChangedReceiver, mExportStatusChangedFilter);
-        getActivity().registerReceiver(mFinishedDeletingReceiver, mFinishedDeletingFilter);
-
+        requireActivity().registerReceiver(mExportStatusChangedReceiver, mExportStatusChangedFilter, Context.RECEIVER_EXPORTED);
+        requireActivity().registerReceiver(mFinishedDeletingReceiver, mFinishedDeletingFilter, Context.RECEIVER_EXPORTED);
     }
 
     @Override
@@ -172,12 +170,14 @@ public class WorkoutSummariesWithMapListFragment extends ListFragment {
         if (DEBUG) Log.i(TAG, "onPause");
 
         try {
-            getActivity().unregisterReceiver(mExportStatusChangedReceiver);
+            requireActivity().unregisterReceiver(mExportStatusChangedReceiver);
         } catch (IllegalArgumentException e) {
+            throw new RuntimeException(e);
         }
         try {
-            getActivity().unregisterReceiver(mFinishedDeletingReceiver);
+            requireActivity().unregisterReceiver(mFinishedDeletingReceiver);
         } catch (IllegalArgumentException e) {
+            throw new RuntimeException(e);
         }
 
         WorkoutSummariesDatabaseManager.getInstance().closeDatabase();
@@ -201,7 +201,7 @@ public class WorkoutSummariesWithMapListFragment extends ListFragment {
      * Called first time user clicks on the menu button
      */
     @Override
-    public void onCreateOptionsMenu(Menu menu, MenuInflater inflater) {
+    public void onCreateOptionsMenu(@NonNull Menu menu, @NonNull MenuInflater inflater) {
         super.onCreateOptionsMenu(menu, inflater);
         if (DEBUG) Log.d(TAG, "onCreateOptionsMenu");
 
@@ -211,27 +211,22 @@ public class WorkoutSummariesWithMapListFragment extends ListFragment {
     protected void updateCursor() {
         if (DEBUG) Log.i(TAG, "updateCursor");
 
-        mCursor = mDb.query(WorkoutSummaries.TABLE,
-                null,
-                null,
-                null,
-                null,
-                null,
-                WorkoutSummaries.TIME_START + " DESC");
+        mCursor = mDb.query(WorkoutSummaries.TABLE, null, null, null, null, null, WorkoutSummaries.TIME_START + " DESC");
 
         mAdapter.changeCursor(mCursor);
         mAdapter.notifyDataSetChanged();
     }
 
     @Override
-    public void onCreateContextMenu(ContextMenu menu, View v, ContextMenuInfo menuInfo) {
-        super.onCreateContextMenu(menu, v, menuInfo);
-        MenuInflater inflater = getActivity().getMenuInflater();
+    public void onCreateContextMenu(@NonNull ContextMenu menu, @NonNull View view, ContextMenuInfo menuInfo) {
+        super.onCreateContextMenu(menu, view, menuInfo);
+        MenuInflater inflater = requireActivity().getMenuInflater();
         inflater.inflate(R.menu.workout_summaries_context, menu);
     }
 
+    @SuppressLint("NonConstantResourceId")
     @Override
-    public boolean onContextItemSelected(MenuItem item) {
+    public boolean onContextItemSelected(@NonNull MenuItem item) {
         if (DEBUG) Log.i(TAG, "onContextItemSelected");
 
         AdapterContextMenuInfo info = (AdapterContextMenuInfo) item.getMenuInfo();
@@ -240,31 +235,31 @@ public class WorkoutSummariesWithMapListFragment extends ListFragment {
             //    mUpdateWorkoutListener.updateWorkout(info.id);
             //    return true;
             case R.id.contextDelete:
-                mReallyDeleteDialogInterface.confirmDeleteWorkout(info.id);
+                mReallyDeleteDialogInterface.confirmDeleteWorkout(Objects.requireNonNull(info).id);
                 return true;
             case R.id.csvWrite:
-                mShowWorkoutDetailsListener.exportWorkout(info.id, FileFormat.CSV);
+                mShowWorkoutDetailsListener.exportWorkout(Objects.requireNonNull(info).id, FileFormat.CSV);
                 return true;
             case R.id.jsonWrite:
-                mShowWorkoutDetailsListener.exportWorkout(info.id, FileFormat.GC);
+                mShowWorkoutDetailsListener.exportWorkout(Objects.requireNonNull(info).id, FileFormat.GC);
                 return true;
             case R.id.tcxWrite:
-                mShowWorkoutDetailsListener.exportWorkout(info.id, FileFormat.TCX);
+                mShowWorkoutDetailsListener.exportWorkout(Objects.requireNonNull(info).id, FileFormat.TCX);
                 return true;
             case R.id.gpxWrite:
-                mShowWorkoutDetailsListener.exportWorkout(info.id, FileFormat.GPX);
+                mShowWorkoutDetailsListener.exportWorkout(Objects.requireNonNull(info).id, FileFormat.GPX);
                 return true;
             case R.id.stravaUpload:
                 if (DEBUG) Log.i(TAG, "uploading to Strava selected");
-                mShowWorkoutDetailsListener.exportWorkout(info.id, FileFormat.STRAVA);
+                mShowWorkoutDetailsListener.exportWorkout(Objects.requireNonNull(info).id, FileFormat.STRAVA);
                 return true;
             case R.id.runkeeperUpload:
                 if (DEBUG) Log.i(TAG, "uploading to RunKeeper selected");
-                mShowWorkoutDetailsListener.exportWorkout(info.id, FileFormat.RUNKEEPER);
+                mShowWorkoutDetailsListener.exportWorkout(Objects.requireNonNull(info).id, FileFormat.RUNKEEPER);
                 return true;
             case R.id.trainingPeaksUpload:
                 if (DEBUG) Log.i(TAG, "uploading to TrainingPeaks selected");
-                mShowWorkoutDetailsListener.exportWorkout(info.id, FileFormat.TRAINING_PEAKS);
+                mShowWorkoutDetailsListener.exportWorkout(Objects.requireNonNull(info).id, FileFormat.TRAINING_PEAKS);
                 return true;
             default:
                 return super.onContextItemSelected(item);
@@ -296,7 +291,7 @@ public class WorkoutSummariesWithMapListFragment extends ListFragment {
                     break;
             }
 
-            EnumMap<ExportStatus, Integer> exportStatusCounter = new EnumMap<ExportStatus, Integer>(ExportStatus.class);
+            EnumMap<ExportStatus, Integer> exportStatusCounter = new EnumMap<>(ExportStatus.class);
             // initialize with 0
             for (ExportStatus exportStatus : ExportStatus.values()) {
                 exportStatusCounter.put(exportStatus, 0);
@@ -304,7 +299,7 @@ public class WorkoutSummariesWithMapListFragment extends ListFragment {
 
             EnumMap<FileFormat, ExportStatus> bar = foo.get(exportType);
             for (FileFormat fileFormat : FileFormat.values()) {
-                ExportStatus exportStatus = bar.get(fileFormat);
+                ExportStatus exportStatus = Objects.requireNonNull(bar).get(fileFormat);
                 // avoid a NullPointer Exception when there is a workout in the summaries DB but not in the exportStatus DB
                 if (exportStatus != null && exportStatusCounter != null && exportStatusCounter.get(exportStatus) != null) {
                     exportStatusCounter.put(exportStatus, exportStatusCounter.get(exportStatus) + 1);
@@ -334,7 +329,6 @@ public class WorkoutSummariesWithMapListFragment extends ListFragment {
                         break;
                 }
             } else if (exportStatusCounter.get(ExportStatus.FINISHED_FAILED) == 1) {
-
                 ivStatus.setImageResource(R.drawable.export_failed);
 
                 switch (exportType) {
@@ -349,7 +343,6 @@ public class WorkoutSummariesWithMapListFragment extends ListFragment {
                         break; // TODO: which one???
                 }
             } else if (exportStatusCounter.get(ExportStatus.FINISHED_FAILED) > 1) {
-
                 ivStatus.setImageResource(R.drawable.export_failed);
                 int failed = exportStatusCounter.get(ExportStatus.FINISHED_FAILED);
                 switch (exportType) {
@@ -363,9 +356,7 @@ public class WorkoutSummariesWithMapListFragment extends ListFragment {
                         text = context.getString(R.string.uploading_to_community_failed_for_several, failed, wanted);
                         break;
                 }
-
             } else if (exportStatusCounter.get(ExportStatus.FINISHED_SUCCESS) == wanted) {
-
                 ivStatus.setImageResource(R.drawable.export_success);
 
                 switch (exportType) {
@@ -395,7 +386,6 @@ public class WorkoutSummariesWithMapListFragment extends ListFragment {
                         text = context.getString(R.string.uploading_to_community, fileFormat, finished, wanted);
                         break;
                 }
-
             } else if (exportStatusCounter.get(ExportStatus.TRACKING) > 0) {
                 ivStatus.setImageResource(R.drawable.ic_play_circle_outline_black_24dp);
                 text = context.getString(R.string.tracking);
@@ -413,7 +403,6 @@ public class WorkoutSummariesWithMapListFragment extends ListFragment {
                         text = context.getString(R.string.waiting_to_upload_to_community, waiting, wanted);
                         break;
                 }
-
             } else {
                 if (DEBUG) Log.d(TAG, "case not handled");
                 ivStatus.setImageResource(R.drawable.export_error);
@@ -435,7 +424,6 @@ public class WorkoutSummariesWithMapListFragment extends ListFragment {
             }
             textView.setText(text);
         }
-
     }
 
     /**
@@ -445,20 +433,19 @@ public class WorkoutSummariesWithMapListFragment extends ListFragment {
      */
     private boolean checkPlayServices() {
         GoogleApiAvailability apiAvailability = GoogleApiAvailability.getInstance();
-        return (apiAvailability.isGooglePlayServicesAvailable(getContext()) == ConnectionResult.SUCCESS);
+        return (apiAvailability.isGooglePlayServicesAvailable(requireContext()) == ConnectionResult.SUCCESS);
     }
 
     ////////////////////////////////////////////////////////////////////////////////////////////////
     // finally, the adapter
     ////////////////////////////////////////////////////////////////////////////////////////////////
-    class WorkoutSummaryWithMapAdapter
-            extends CursorAdapter {
+    class WorkoutSummaryWithMapAdapter extends CursorAdapter {
         private final String TAG = WorkoutSummaryWithMapAdapter.class.getName();
         private final boolean DEBUG = TrainingApplication.DEBUG & true;
 
-        protected Context mContext = null;
+        protected Context mContext;
 
-        protected ShowWorkoutDetailsInterface mUpdateWorkoutListener = null;
+        protected ShowWorkoutDetailsInterface mUpdateWorkoutListener;
 
 
         public WorkoutSummaryWithMapAdapter(Activity activity, Cursor cursor) {
@@ -470,16 +457,15 @@ public class WorkoutSummariesWithMapListFragment extends ListFragment {
             try {
                 mUpdateWorkoutListener = (ShowWorkoutDetailsInterface) activity;
             } catch (ClassCastException e) {
-                throw new ClassCastException(activity.toString() + " must implement ShowWorkoutDetailsInterface");
+                throw new ClassCastException(activity + " must implement ShowWorkoutDetailsInterface");
             }
         }
-
 
         @Override
         public View newView(Context context, Cursor cursor, ViewGroup parent) {
             if (DEBUG) Log.i(TAG, "newView");
 
-            View row = LayoutInflater.from(context).inflate(R.layout.workout_summaries_with_map_row, null);
+            @SuppressLint("InflateParams") View row = LayoutInflater.from(context).inflate(R.layout.workout_summaries_with_map_row, null);
 
             // ??? LinearLayout llRow = (LinearLayout) row.findViewById(R.id.ll_workout_summaries_row);
 
@@ -507,45 +493,31 @@ public class WorkoutSummariesWithMapListFragment extends ListFragment {
             return row;
         }
 
+        @SuppressLint("Range")
         @Override
         public void bindView(View view, Context context, Cursor cursor) {
             if (DEBUG) Log.i(TAG, "bindView");
 
-            final long workoutId = cursor.getLong(cursor.getColumnIndex(WorkoutSummaries.C_ID));
-            String fileBaseName = cursor.getString(cursor.getColumnIndex(WorkoutSummaries.FILE_BASE_NAME));
+            @SuppressLint("Range") final long workoutId = cursor.getLong(cursor.getColumnIndex(WorkoutSummaries.C_ID));
+            @SuppressLint("Range") String fileBaseName = cursor.getString(cursor.getColumnIndex(WorkoutSummaries.FILE_BASE_NAME));
 
             // Text for distance_type_and_duration
-            double distance_m = cursor.getDouble(cursor.getColumnIndex(WorkoutSummaries.DISTANCE_TOTAL_m));
+            @SuppressLint("Range") double distance_m = cursor.getDouble(cursor.getColumnIndex(WorkoutSummaries.DISTANCE_TOTAL_m));
             String sport = SportTypeDatabaseManager.getUIName(cursor.getLong(cursor.getColumnIndexOrThrow(WorkoutSummaries.SPORT_ID)));
-            double time_s = cursor.getDouble(cursor.getColumnIndex(WorkoutSummaries.TIME_TOTAL_s));
-            String distanceTypeAndDuration = context.getString(R.string.distance_distanceUnit_sport_time_format,
-                    (new DistanceFormatter()).format(distance_m),
-                    context.getString(MyHelper.getDistanceUnitNameId()),
-                    sport,
-                    (new TimeFormatter()).format(time_s));
+            @SuppressLint("Range") double time_s = cursor.getDouble(cursor.getColumnIndex(WorkoutSummaries.TIME_TOTAL_s));
+            String distanceTypeAndDuration = context.getString(R.string.distance_distanceUnit_sport_time_format, (new DistanceFormatter()).format(distance_m), context.getString(MyHelper.getDistanceUnitNameId()), sport, (new TimeFormatter()).format(time_s));
 
             ViewHolder viewHolder = (ViewHolder) view.getTag();
             viewHolder.workoutId = workoutId;
 
             // first, configure the different OnClickListeners
-            viewHolder.llSummary.setOnClickListener(new View.OnClickListener() {
-                @Override
-                public void onClick(View v) {
-                    TrainingApplication.startWorkoutDetailsActivity(workoutId, WorkoutDetailsActivity.SelectedFragment.EDIT_DETAILS);
-                }
-            });
+            viewHolder.llSummary.setOnClickListener(v -> TrainingApplication.startWorkoutDetailsActivity(workoutId, WorkoutDetailsActivity.SelectedFragment.EDIT_DETAILS));
 
-            viewHolder.llExportStatus.setOnClickListener(new View.OnClickListener() {
-                @Override
-                public void onClick(View v) {
-                    mUpdateWorkoutListener.showExportStatusDialog(workoutId);
-                }
-            });
+            viewHolder.llExportStatus.setOnClickListener(v -> mUpdateWorkoutListener.showExportStatusDialog(workoutId));
 
             // now, set the values of the views
             // viewHolder.tvDateAndTime.setText(cursor.getString(cursor.getColumnIndex(WorkoutSummaries.TIME_START)));
             viewHolder.tvDateAndTime.setText(WorkoutSummariesDatabaseManager.getStartTime(workoutId, "localtime"));
-
 
             viewHolder.tvName.setText(cursor.getString(cursor.getColumnIndex(WorkoutSummaries.WORKOUT_NAME)));
             viewHolder.tvDistanceTypeAndDuration.setText(distanceTypeAndDuration);
@@ -563,10 +535,7 @@ public class WorkoutSummariesWithMapListFragment extends ListFragment {
         }
     }
 
-    class ViewHolder
-            extends MyMapViewHolder
-            implements OnMapReadyCallback {
-
+    class ViewHolder extends MyMapViewHolder implements OnMapReadyCallback {
         long workoutId;
         LinearLayout llSummary;
         TextView tvDateAndTime;
@@ -588,8 +557,8 @@ public class WorkoutSummariesWithMapListFragment extends ListFragment {
         }
 
         @Override
-        public void onMapReady(GoogleMap googleMap) {
-            MapsInitializer.initialize(getActivity());
+        public void onMapReady(@NonNull GoogleMap googleMap) {
+            MapsInitializer.initialize(requireActivity());
             // -MapsInitializer.initialize(getActivity().getApplicationContext());
             map = googleMap;
             showTrackOnMap(workoutId);
@@ -617,14 +586,9 @@ public class WorkoutSummariesWithMapListFragment extends ListFragment {
 
                 // first, configure the map
                 map.getUiSettings().setMapToolbarEnabled(false);
-                map.setOnMapClickListener(new GoogleMap.OnMapClickListener() {
-                    @Override
-                    public void onMapClick(LatLng latLng) {
-                        TrainingApplication.startWorkoutDetailsActivity(workoutId, WorkoutDetailsActivity.SelectedFragment.MAP);
-                    }
-                });
+                map.setOnMapClickListener(latLng -> TrainingApplication.startWorkoutDetailsActivity(workoutId, WorkoutDetailsActivity.SelectedFragment.MAP));
 
-                ((TrainingApplication) getActivity().getApplication()).trackOnMapHelper.showTrackOnMap(this, workoutId, Roughness.MEDIUM, TrackOnMapHelper.TrackType.BEST, true, false);
+                ((TrainingApplication) requireActivity().getApplication()).trackOnMapHelper.showTrackOnMap(this, workoutId, Roughness.MEDIUM, TrackOnMapHelper.TrackType.BEST, true, false);
 
                 if (DEBUG) Log.i(TAG, "end of showTrackOnMap()");
             }

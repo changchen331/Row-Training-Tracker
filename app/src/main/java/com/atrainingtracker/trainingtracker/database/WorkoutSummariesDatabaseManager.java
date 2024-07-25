@@ -1,5 +1,6 @@
 package com.atrainingtracker.trainingtracker.database;
 
+import android.annotation.SuppressLint;
 import android.content.ContentValues;
 import android.content.Context;
 import android.database.Cursor;
@@ -23,6 +24,7 @@ public class WorkoutSummariesDatabaseManager {
     private static final String TAG = WorkoutSummariesDatabaseManager.class.getName();
     private static final boolean DEBUG = TrainingApplication.DEBUG && false;
     private static WorkoutSummariesDatabaseManager cInstance;
+    @SuppressLint("StaticFieldLeak")
     private static WorkoutSummariesDbHelper cWorkoutSummariesDbHelper;
     private int mOpenCounter;
     private SQLiteDatabase mDatabase;
@@ -36,8 +38,7 @@ public class WorkoutSummariesDatabaseManager {
 
     public static synchronized WorkoutSummariesDatabaseManager getInstance() {
         if (cInstance == null) {
-            throw new IllegalStateException(WorkoutSummariesDatabaseManager.class.getSimpleName() +
-                    " is not initialized, call initializeInstance(..) method first.");
+            throw new IllegalStateException(WorkoutSummariesDatabaseManager.class.getSimpleName() + " is not initialized, call initializeInstance(..) method first.");
         }
 
         return cInstance;
@@ -46,6 +47,7 @@ public class WorkoutSummariesDatabaseManager {
     ////////////////////////////////////////////////////////////////////////////////////////////////
     // some high level helper methods
     ////////////////////////////////////////////////////////////////////////////////////////////////
+    @SuppressLint("Range")
     public static String getBaseFileName(long workoutId) {
         if (DEBUG) Log.i(TAG, "getBaseFileName for workoutId: " + workoutId);
 
@@ -53,11 +55,7 @@ public class WorkoutSummariesDatabaseManager {
 
         SQLiteDatabase summariesDb = getInstance().getOpenDatabase();
 
-        Cursor cursor = summariesDb.query(WorkoutSummaries.TABLE,
-                null,
-                WorkoutSummaries.C_ID + "=?",
-                new String[]{Long.toString(workoutId)},
-                null, null, null);
+        Cursor cursor = summariesDb.query(WorkoutSummaries.TABLE, null, WorkoutSummaries.C_ID + "=?", new String[]{Long.toString(workoutId)}, null, null, null);
         if (cursor.moveToFirst()) {
             baseFileName = cursor.getString(cursor.getColumnIndex(WorkoutSummaries.FILE_BASE_NAME));
         }
@@ -74,11 +72,7 @@ public class WorkoutSummariesDatabaseManager {
 
         SQLiteDatabase summariesDb = WorkoutSummariesDatabaseManager.getInstance().getOpenDatabase();
 
-        Cursor cursor = summariesDb.query(WorkoutSummaries.TABLE,
-                null,
-                WorkoutSummaries.C_ID + "=?",
-                new String[]{Long.toString(workoutId)},
-                null, null, null);
+        Cursor cursor = summariesDb.query(WorkoutSummaries.TABLE, null, WorkoutSummaries.C_ID + "=?", new String[]{Long.toString(workoutId)}, null, null, null);
         if (cursor.moveToFirst()) {
             try {
                 value = cursor.getDouble(cursor.getColumnIndexOrThrow(key));
@@ -105,11 +99,7 @@ public class WorkoutSummariesDatabaseManager {
         SQLiteDatabase summariesDb = WorkoutSummariesDatabaseManager.getInstance().getOpenDatabase();
 
         // TODO: use method getCursor(...)
-        Cursor cursor = summariesDb.query(WorkoutSummaries.TABLE,
-                null,
-                WorkoutSummaries.FILE_BASE_NAME + "=?",
-                new String[]{baseFileName},
-                null, null, null);
+        Cursor cursor = summariesDb.query(WorkoutSummaries.TABLE, null, WorkoutSummaries.FILE_BASE_NAME + "=?", new String[]{baseFileName}, null, null, null);
         if (cursor.moveToFirst()) {
             try {
                 value = cursor.getDouble(cursor.getColumnIndexOrThrow(key));
@@ -123,19 +113,14 @@ public class WorkoutSummariesDatabaseManager {
         return value;
     }
 
+    @SuppressLint("Range")
     public static String getString(long workoutId, String key) {
         if (DEBUG) Log.i(TAG, "getString(" + workoutId + ", " + key + ")");
 
         String value = null;
 
         SQLiteDatabase db = WorkoutSummariesDatabaseManager.getInstance().getOpenDatabase();
-        Cursor cursor = db.query(WorkoutSummaries.TABLE,
-                null,
-                WorkoutSummaries.C_ID + "=?",
-                new String[]{Long.toString(workoutId)},
-                null,
-                null,
-                null);
+        Cursor cursor = db.query(WorkoutSummaries.TABLE, null, WorkoutSummaries.C_ID + "=?", new String[]{Long.toString(workoutId)}, null, null, null);
         if (cursor.moveToFirst()) {
             value = cursor.getString(cursor.getColumnIndex(key));
         }
@@ -153,11 +138,7 @@ public class WorkoutSummariesDatabaseManager {
 
         SQLiteDatabase summariesDb = WorkoutSummariesDatabaseManager.getInstance().getOpenDatabase();
 
-        Cursor cursor = summariesDb.query(WorkoutSummaries.TABLE,
-                null,
-                WorkoutSummaries.C_ID + "=?",
-                new String[]{Long.toString(workoutId)},
-                null, null, null);
+        Cursor cursor = summariesDb.query(WorkoutSummaries.TABLE, null, WorkoutSummaries.C_ID + "=?", new String[]{Long.toString(workoutId)}, null, null, null);
         if (cursor.moveToFirst()) {
             try {
                 value = cursor.getInt(cursor.getColumnIndexOrThrow(key));
@@ -178,11 +159,7 @@ public class WorkoutSummariesDatabaseManager {
 
         SQLiteDatabase summariesDb = WorkoutSummariesDatabaseManager.getInstance().getOpenDatabase();
 
-        Cursor cursor = summariesDb.query(WorkoutSummaries.TABLE,
-                null,
-                WorkoutSummaries.C_ID + "=?",
-                new String[]{Long.toString(workoutId)},
-                null, null, null);
+        Cursor cursor = summariesDb.query(WorkoutSummaries.TABLE, null, WorkoutSummaries.C_ID + "=?", new String[]{Long.toString(workoutId)}, null, null, null);
         if (cursor.moveToFirst()) {
             try {
                 value = cursor.getLong(cursor.getColumnIndexOrThrow(key));
@@ -203,11 +180,7 @@ public class WorkoutSummariesDatabaseManager {
 
         SQLiteDatabase summariesDb = WorkoutSummariesDatabaseManager.getInstance().getOpenDatabase();
 
-        Cursor cursor = summariesDb.query(WorkoutSummaries.TABLE,
-                null,
-                WorkoutSummaries.FILE_BASE_NAME + "=?",
-                new String[]{baseFileName},
-                null, null, null);
+        Cursor cursor = summariesDb.query(WorkoutSummaries.TABLE, null, WorkoutSummaries.FILE_BASE_NAME + "=?", new String[]{baseFileName}, null, null, null);
         if (cursor.moveToFirst()) {
             try {
                 value = cursor.getInt(cursor.getColumnIndexOrThrow(key));
@@ -228,11 +201,7 @@ public class WorkoutSummariesDatabaseManager {
 
         SQLiteDatabase summariesDb = WorkoutSummariesDatabaseManager.getInstance().getOpenDatabase();
 
-        Cursor cursor = summariesDb.query(WorkoutSummaries.TABLE,
-                null,
-                WorkoutSummaries.C_ID + "=?",
-                new String[]{Long.toString(workoutId)},
-                null, null, null);
+        Cursor cursor = summariesDb.query(WorkoutSummaries.TABLE, null, WorkoutSummaries.C_ID + "=?", new String[]{Long.toString(workoutId)}, null, null, null);
 
         if (DEBUG)
             Log.i(TAG, "cursor has dimension " + cursor.getColumnCount() + " x " + cursor.getCount() + "entries");
@@ -257,16 +226,13 @@ public class WorkoutSummariesDatabaseManager {
         return result;
     }
 
+    @SuppressLint("Range")
     public static Double getExtremaValue(long workoutId, SensorType sensorType, ExtremaType extremaType) {
         Double extremaValue = null;
 
         SQLiteDatabase summariesDb = WorkoutSummariesDatabaseManager.getInstance().getOpenDatabase();
 
-        Cursor cursor = summariesDb.query(WorkoutSummaries.TABLE_EXTREMA_VALUES,
-                null,
-                WorkoutSummaries.WORKOUT_ID + "=? AND " + WorkoutSummaries.SENSOR_TYPE + "=? AND " + WorkoutSummaries.EXTREMA_TYPE + "=?",
-                new String[]{Long.toString(workoutId), sensorType.name(), extremaType.name()},
-                null, null, null);
+        Cursor cursor = summariesDb.query(WorkoutSummaries.TABLE_EXTREMA_VALUES, null, WorkoutSummaries.WORKOUT_ID + "=? AND " + WorkoutSummaries.SENSOR_TYPE + "=? AND " + WorkoutSummaries.EXTREMA_TYPE + "=?", new String[]{Long.toString(workoutId), sensorType.name(), extremaType.name()}, null, null, null);
         if (cursor.moveToFirst()) {
             extremaValue = cursor.getDouble(cursor.getColumnIndex(WorkoutSummaries.VALUE));
             if (DEBUG)
@@ -282,6 +248,7 @@ public class WorkoutSummariesDatabaseManager {
     }
 
     // TODO: make sport specific?
+    @SuppressLint("Range")
     public static List<LatLng> getExtremaTypeLocations(ExtremaType extremaType) {
         if (DEBUG) Log.i(TAG, "getAllStartLocations");
 
@@ -289,38 +256,21 @@ public class WorkoutSummariesDatabaseManager {
 
         SQLiteDatabase db = WorkoutSummariesDatabaseManager.getInstance().getOpenDatabase();
 
-        Cursor latCursor = null;
-        Cursor lonCursor = null;
+        Cursor latCursor;
+        Cursor lonCursor;
         double latitude, longitude;
 
-        Cursor cursor = db.query(WorkoutSummaries.TABLE_EXTREMA_VALUES,
-                null,
-                null,
-                null,
-                null,
-                null,
-                null);
+        Cursor cursor = db.query(WorkoutSummaries.TABLE_EXTREMA_VALUES, null, null, null, null, null, null);
 
         while (cursor.moveToNext()) {
 
-            long workoutId = cursor.getLong(cursor.getColumnIndex(WorkoutSummaries.WORKOUT_ID));
+            @SuppressLint("Range") long workoutId = cursor.getLong(cursor.getColumnIndex(WorkoutSummaries.WORKOUT_ID));
             if (DEBUG) Log.i(TAG, "getAllStartLocations: checking workoutId=" + workoutId);
 
-            latCursor = db.query(WorkoutSummaries.TABLE_EXTREMA_VALUES,
-                    null,
-                    WorkoutSummaries.WORKOUT_ID + "=? AND " + WorkoutSummaries.SENSOR_TYPE + "=? AND " + WorkoutSummaries.EXTREMA_TYPE + "=?",
-                    new String[]{Long.toString(workoutId), SensorType.LATITUDE.name(), extremaType.name()},
-                    null, null, null);
-            lonCursor = db.query(WorkoutSummaries.TABLE_EXTREMA_VALUES,
-                    null,
-                    WorkoutSummaries.WORKOUT_ID + "=? AND " + WorkoutSummaries.SENSOR_TYPE + "=? AND " + WorkoutSummaries.EXTREMA_TYPE + "=?",
-                    new String[]{Long.toString(workoutId), SensorType.LONGITUDE.name(), extremaType.name()},
-                    null, null, null);
+            latCursor = db.query(WorkoutSummaries.TABLE_EXTREMA_VALUES, null, WorkoutSummaries.WORKOUT_ID + "=? AND " + WorkoutSummaries.SENSOR_TYPE + "=? AND " + WorkoutSummaries.EXTREMA_TYPE + "=?", new String[]{Long.toString(workoutId), SensorType.LATITUDE.name(), extremaType.name()}, null, null, null);
+            lonCursor = db.query(WorkoutSummaries.TABLE_EXTREMA_VALUES, null, WorkoutSummaries.WORKOUT_ID + "=? AND " + WorkoutSummaries.SENSOR_TYPE + "=? AND " + WorkoutSummaries.EXTREMA_TYPE + "=?", new String[]{Long.toString(workoutId), SensorType.LONGITUDE.name(), extremaType.name()}, null, null, null);
 
-            if (latCursor.moveToFirst()
-                    && lonCursor.moveToFirst()
-                    && dataValid(latCursor, WorkoutSummaries.VALUE)
-                    && dataValid(lonCursor, WorkoutSummaries.VALUE)) {
+            if (latCursor.moveToFirst() && lonCursor.moveToFirst() && dataValid(latCursor, WorkoutSummaries.VALUE) && dataValid(lonCursor, WorkoutSummaries.VALUE)) {
                 latitude = latCursor.getDouble(latCursor.getColumnIndex(WorkoutSummaries.VALUE));
                 longitude = lonCursor.getDouble(latCursor.getColumnIndex(WorkoutSummaries.VALUE));
                 startLocations.add(new LatLng(latitude, longitude));
@@ -344,6 +294,7 @@ public class WorkoutSummariesDatabaseManager {
     /**
      * stolen from BaseExporter
      */
+    @SuppressLint("Range")
     protected static boolean dataValid(Cursor cursor, String string) {
         if (cursor.getColumnIndex(string) == -1) {
             if (DEBUG) Log.d(TAG, "dataValid: no such columnIndex!: " + string);
@@ -376,16 +327,15 @@ public class WorkoutSummariesDatabaseManager {
     public static Set<SensorType> getAccumulatedSensorTypes(long workoutId) {
         if (DEBUG) Log.i(TAG, "getAccumulatedSensorTypes for workoutId: " + workoutId);
 
-        Set<SensorType> accumulatedSensorTypesSet = new HashSet<SensorType>();
+        Set<SensorType> accumulatedSensorTypesSet = new HashSet<>();
 
         SQLiteDatabase db = WorkoutSummariesDatabaseManager.getInstance().getOpenDatabase();
-        Cursor cursor = db.query(WorkoutSummaries.TABLE_ACCUMULATED_SENSORS,
-                null, // columns
+        Cursor cursor = db.query(WorkoutSummaries.TABLE_ACCUMULATED_SENSORS, null, // columns
                 WorkoutSummaries.WORKOUT_ID + "=?", // selection
                 new String[]{Long.toString(workoutId)}, //selectionArgs,
                 null, null, null); // groupBy, having, orderBy)
         while (cursor.moveToNext()) {
-            String sensorTypeName = cursor.getString(cursor.getColumnIndex(WorkoutSummaries.SENSOR_TYPE));
+            @SuppressLint("Range") String sensorTypeName = cursor.getString(cursor.getColumnIndex(WorkoutSummaries.SENSOR_TYPE));
             if (DEBUG) Log.i(TAG, "got sensor: " + sensorTypeName);
             accumulatedSensorTypesSet.add(SensorType.valueOf(sensorTypeName));
         }
@@ -402,16 +352,15 @@ public class WorkoutSummariesDatabaseManager {
      */
 
     public static List<Long> getWorkoutIds() {
-        List<Long> workoutIds = new LinkedList<Long>();
+        List<Long> workoutIds = new LinkedList<>();
 
         SQLiteDatabase db = WorkoutSummariesDatabaseManager.getInstance().getOpenDatabase();
 
-        Cursor cursor = db.query(WorkoutSummaries.TABLE,
-                null, // columns,
+        Cursor cursor = db.query(WorkoutSummaries.TABLE, null, // columns,
                 null, // selection
                 null, null, null, null); // selectionArgs, groupBy, having, orderBy)
         while (cursor.moveToNext()) {
-            long workoutId = cursor.getLong(cursor.getColumnIndex(WorkoutSummaries.C_ID));
+            @SuppressLint("Range") long workoutId = cursor.getLong(cursor.getColumnIndex(WorkoutSummaries.C_ID));
             workoutIds.add(workoutId);
         }
 
@@ -421,22 +370,21 @@ public class WorkoutSummariesDatabaseManager {
         return workoutIds;
     }
 
+    @SuppressLint("Range")
     public static List<Long> getOldWorkouts(int days) {
         if (DEBUG) Log.i(TAG, "getOldWorkouts(" + days + ")");
 
-        List<Long> oldWorkoutIds = new LinkedList<Long>();
+        List<Long> oldWorkoutIds = new LinkedList<>();
 
         SQLiteDatabase db = WorkoutSummariesDatabaseManager.getInstance().getOpenDatabase();
 
-        Cursor cursor = db.query(WorkoutSummaries.TABLE,
-                null, // columns,
+        Cursor cursor = db.query(WorkoutSummaries.TABLE, null, // columns,
                 WorkoutSummaries.TIME_START + " <= datetime('now', '-" + days + " day')", // selection
                 null, null, null, null); // selectionArgs, groupBy, having, orderBy)
         while (cursor.moveToNext()) {
-            long workoutId = cursor.getLong(cursor.getColumnIndex(WorkoutSummaries.C_ID));
-            if (DEBUG) Log.i(TAG, "adding " + workoutId + " to oldWorkoutId List (name="
-                    + cursor.getString(cursor.getColumnIndex(WorkoutSummaries.WORKOUT_NAME)) + ", startTime="
-                    + cursor.getString(cursor.getColumnIndex(WorkoutSummaries.TIME_START)) + ")");
+            @SuppressLint("Range") long workoutId = cursor.getLong(cursor.getColumnIndex(WorkoutSummaries.C_ID));
+            if (DEBUG)
+                Log.i(TAG, "adding " + workoutId + " to oldWorkoutId List (name=" + cursor.getString(cursor.getColumnIndex(WorkoutSummaries.WORKOUT_NAME)) + ", startTime=" + cursor.getString(cursor.getColumnIndex(WorkoutSummaries.TIME_START)) + ")");
             oldWorkoutIds.add(workoutId);
         }
 
@@ -452,7 +400,7 @@ public class WorkoutSummariesDatabaseManager {
 
         SQLiteDatabase db = WorkoutSummariesDatabaseManager.getInstance().getOpenDatabase();
 
-        Cursor cursor = db.query(WorkoutSummaries.TABLE, // table
+        @SuppressLint("Recycle") Cursor cursor = db.query(WorkoutSummaries.TABLE, // table
                 new String[]{"datetime(" + WorkoutSummaries.TIME_START + ", '" + timeZone + "')"}, // columns
                 WorkoutSummaries.C_ID + "=?",  // selection
                 new String[]{Long.toString(workoutId)}, //selectionArgs,
@@ -471,11 +419,11 @@ public class WorkoutSummariesDatabaseManager {
 
     public static String getStartTime(String fileBaseName, String timeZone) {
         if (DEBUG) Log.i(TAG, "getStartTime: fileBaseName=" + fileBaseName);
-        String startTime = null;
+        String startTime;
 
         SQLiteDatabase db = WorkoutSummariesDatabaseManager.getInstance().getOpenDatabase();
 
-        Cursor cursor = db.query(WorkoutSummaries.TABLE, // table
+        @SuppressLint("Recycle") Cursor cursor = db.query(WorkoutSummaries.TABLE, // table
                 new String[]{"datetime(" + WorkoutSummaries.TIME_START + ", '" + timeZone + "')"}, // columns
                 WorkoutSummaries.FILE_BASE_NAME + "=?",  // selection
                 new String[]{fileBaseName}, //selectionArgs,
@@ -488,11 +436,12 @@ public class WorkoutSummariesDatabaseManager {
         return startTime;
     }
 
-    public static List<String> getFancyNameList() {
+    @SuppressLint("Range")
+    public static List getFancyNameList() {
         List result = new LinkedList();
 
         SQLiteDatabase db = getInstance().getOpenDatabase();
-        Cursor cursor = db.query(WorkoutSummaries.TABLE_WORKOUT_NAME_PATTERNS, // table
+        @SuppressLint("Recycle") Cursor cursor = db.query(WorkoutSummaries.TABLE_WORKOUT_NAME_PATTERNS, // table
                 null, null, null, null, null, null);
 
         while (cursor.moveToNext()) {
@@ -503,16 +452,13 @@ public class WorkoutSummariesDatabaseManager {
         return result;
     }
 
+    @SuppressLint("Range")
     public static long getFancyNameId(String fancyName) {
         long fancyNameId = -1;
 
         SQLiteDatabase db = getInstance().getOpenDatabase();
 
-        Cursor cursor = db.query(WorkoutSummaries.TABLE_WORKOUT_NAME_PATTERNS,
-                null,
-                WorkoutSummaries.FANCY_NAME + "=?",
-                new String[]{fancyName},
-                null, null, null);
+        @SuppressLint("Recycle") Cursor cursor = db.query(WorkoutSummaries.TABLE_WORKOUT_NAME_PATTERNS, null, WorkoutSummaries.FANCY_NAME + "=?", new String[]{fancyName}, null, null, null);
         if (cursor.moveToFirst()) {
             fancyNameId = cursor.getLong(cursor.getColumnIndex(WorkoutSummaries.C_ID));
         }
@@ -522,17 +468,14 @@ public class WorkoutSummariesDatabaseManager {
         return fancyNameId;
     }
 
+    @SuppressLint("Range")
     public static String getFancyNameAndIncrement(String fancyName) {
         StringBuilder stringBuilder = new StringBuilder();
         stringBuilder.append(fancyName);
 
         SQLiteDatabase db = getInstance().getOpenDatabase();
 
-        Cursor cursor = db.query(WorkoutSummaries.TABLE_WORKOUT_NAME_PATTERNS,
-                null,
-                WorkoutSummaries.FANCY_NAME + "=?",
-                new String[]{fancyName},
-                null, null, null);
+        @SuppressLint("Recycle") Cursor cursor = db.query(WorkoutSummaries.TABLE_WORKOUT_NAME_PATTERNS, null, WorkoutSummaries.FANCY_NAME + "=?", new String[]{fancyName}, null, null, null);
 
         if (cursor.moveToFirst()) {
             if (cursor.getInt(cursor.getColumnIndex(WorkoutSummaries.ADD_COUNTER)) >= 1) {
@@ -542,9 +485,7 @@ public class WorkoutSummariesDatabaseManager {
 
                 ContentValues contentValues = new ContentValues();
                 contentValues.put(WorkoutSummaries.COUNTER, counter);
-                db.update(WorkoutSummaries.TABLE_WORKOUT_NAME_PATTERNS, contentValues,
-                        WorkoutSummaries.FANCY_NAME + "=?",
-                        new String[]{fancyName});
+                db.update(WorkoutSummaries.TABLE_WORKOUT_NAME_PATTERNS, contentValues, WorkoutSummaries.FANCY_NAME + "=?", new String[]{fancyName});
             }
         }
 
@@ -553,10 +494,8 @@ public class WorkoutSummariesDatabaseManager {
         return stringBuilder.toString();
     }
 
-    public static String getFancyName(long sportTypeId,
-                                      KnownLocationsDatabaseManager.MyLocation startLocation,
-                                      KnownLocationsDatabaseManager.MyLocation maxLineDistanceLocation,
-                                      KnownLocationsDatabaseManager.MyLocation endLocation) {
+    @SuppressLint("Range")
+    public static String getFancyName(long sportTypeId, KnownLocationsDatabaseManager.MyLocation startLocation, KnownLocationsDatabaseManager.MyLocation maxLineDistanceLocation, KnownLocationsDatabaseManager.MyLocation endLocation) {
         if (startLocation != null & endLocation != null) {
 
             StringBuilder stringBuilder = new StringBuilder();
@@ -587,8 +526,7 @@ public class WorkoutSummariesDatabaseManager {
 
                     ContentValues contentValues = new ContentValues();
                     contentValues.put(WorkoutSummaries.COUNTER, counter);
-                    db.update(WorkoutSummaries.TABLE_WORKOUT_NAME_PATTERNS, contentValues,
-                            WorkoutSummaries.SPORT_ID + "=? AND " + WorkoutSummaries.START_LOCATION_NAME + "=? AND " + WorkoutSummaries.END_LOCATION_NAME + "=?", // selection,
+                    db.update(WorkoutSummaries.TABLE_WORKOUT_NAME_PATTERNS, contentValues, WorkoutSummaries.SPORT_ID + "=? AND " + WorkoutSummaries.START_LOCATION_NAME + "=? AND " + WorkoutSummaries.END_LOCATION_NAME + "=?", // selection,
                             new String[]{Long.toString(sportTypeId), startLocation.name, endLocation.name}); // selectionArgs,
                 }
 
@@ -616,10 +554,7 @@ public class WorkoutSummariesDatabaseManager {
         return null;
     }
 
-    protected static String createDefaultFancyName(long sportTypeId,
-                                                   KnownLocationsDatabaseManager.MyLocation startLocation,
-                                                   KnownLocationsDatabaseManager.MyLocation maxLineDistanceLocation,
-                                                   KnownLocationsDatabaseManager.MyLocation endLocation) {
+    protected static String createDefaultFancyName(long sportTypeId, KnownLocationsDatabaseManager.MyLocation startLocation, KnownLocationsDatabaseManager.MyLocation maxLineDistanceLocation, KnownLocationsDatabaseManager.MyLocation endLocation) {
 
         if (startLocation != null & endLocation != null) {
             StringBuilder stringBuilder = new StringBuilder();
@@ -630,7 +565,7 @@ public class WorkoutSummariesDatabaseManager {
                 stringBuilder.append("2");
                 stringBuilder.append(endLocation.name);
             } else { // a loop
-                stringBuilder.append(SportTypeDatabaseManager.getUIName(sportTypeId) + "@" + startLocation.name);
+                stringBuilder.append(SportTypeDatabaseManager.getUIName(sportTypeId)).append("@").append(startLocation.name);
             }
 
             String baseName = stringBuilder.toString();
@@ -658,9 +593,7 @@ public class WorkoutSummariesDatabaseManager {
         if (DEBUG) Log.i(TAG, "deleteFancyName: id=" + id);
 
         SQLiteDatabase db = getInstance().getOpenDatabase();
-        db.delete(WorkoutSummaries.TABLE_WORKOUT_NAME_PATTERNS,
-                WorkoutSummaries.C_ID + " =? ",
-                new String[]{Long.toString(id)});
+        db.delete(WorkoutSummaries.TABLE_WORKOUT_NAME_PATTERNS, WorkoutSummaries.C_ID + " =? ", new String[]{Long.toString(id)});
         getInstance().closeDatabase();
     }
 
@@ -770,65 +703,16 @@ public class WorkoutSummariesDatabaseManager {
         // public static final int DB_VERSION = 9; // upgrade to Version 9 at 7. June 2016
         // public static final int DB_VERSION = 10; // upgrade to Version 10 at 8. June 2016
         public static final int DB_VERSION = 11; // upgrade to Version 11 at 19. 01. 2017
-        protected static final String CREATE_TABLE_V11 = "create table " + WorkoutSummaries.TABLE + " ("
-                + WorkoutSummaries.C_ID + " INTEGER PRIMARY KEY AUTOINCREMENT, "
-                + WorkoutSummaries.WORKOUT_NAME + " text,"
-                + WorkoutSummaries.FILE_BASE_NAME + " text,"
-                + WorkoutSummaries.ATHLETE_NAME + " text,"
-                + WorkoutSummaries.DESCRIPTION + " text,"
-                + WorkoutSummaries.GOAL + " text,"
-                + WorkoutSummaries.METHOD + " text,"
+        protected static final String CREATE_TABLE_V11 = "create table " + WorkoutSummaries.TABLE + " (" + WorkoutSummaries.C_ID + " INTEGER PRIMARY KEY AUTOINCREMENT, " + WorkoutSummaries.WORKOUT_NAME + " text," + WorkoutSummaries.FILE_BASE_NAME + " text," + WorkoutSummaries.ATHLETE_NAME + " text," + WorkoutSummaries.DESCRIPTION + " text," + WorkoutSummaries.GOAL + " text," + WorkoutSummaries.METHOD + " text,"
                 // + WorkoutSummaries.SPORT + " text,"
-                + WorkoutSummaries.B_SPORT + " text,"
-                + WorkoutSummaries.SPORT_ID + " int,"
-                + WorkoutSummaries.EQUIPMENT_ID + " int,"
-                + WorkoutSummaries.SAMPLING_TIME + " int,"
-                + WorkoutSummaries.TIME_START + " DATETIME DEFAULT CURRENT_TIMESTAMP,"
-                + WorkoutSummaries.TIME_ACTIVE_s + " int,"
-                + WorkoutSummaries.TIME_TOTAL_s + " int,"
-                + WorkoutSummaries.DISTANCE_TOTAL_m + " real,"
-                + WorkoutSummaries.SPEED_AVERAGE_mps + " real,"
-                + WorkoutSummaries.GC_DATA + " text,"
-                + WorkoutSummaries.CALORIES + " int,"
-                + WorkoutSummaries.LAPS + " int,"
-                + WorkoutSummaries.FINISHED + " int," // end of version 3
-                + WorkoutSummaries.PRIVATE + " int,"
-                + WorkoutSummaries.COMMUTE + " int,"
-                + WorkoutSummaries.TRAINER + " int,"
-                + WorkoutSummaries.ASCENDING + " int,"
-                + WorkoutSummaries.DESCENDING + " int," // end of version 4
+                + WorkoutSummaries.B_SPORT + " text," + WorkoutSummaries.SPORT_ID + " int," + WorkoutSummaries.EQUIPMENT_ID + " int," + WorkoutSummaries.SAMPLING_TIME + " int," + WorkoutSummaries.TIME_START + " DATETIME DEFAULT CURRENT_TIMESTAMP," + WorkoutSummaries.TIME_ACTIVE_s + " int," + WorkoutSummaries.TIME_TOTAL_s + " int," + WorkoutSummaries.DISTANCE_TOTAL_m + " real," + WorkoutSummaries.SPEED_AVERAGE_mps + " real," + WorkoutSummaries.GC_DATA + " text," + WorkoutSummaries.CALORIES + " int," + WorkoutSummaries.LAPS + " int," + WorkoutSummaries.FINISHED + " int," // end of version 3
+                + WorkoutSummaries.PRIVATE + " int," + WorkoutSummaries.COMMUTE + " int," + WorkoutSummaries.TRAINER + " int," + WorkoutSummaries.ASCENDING + " int," + WorkoutSummaries.DESCENDING + " int," // end of version 4
                 + WorkoutSummaries.EXTREMA_VALUES_CALCULATED + " int)";
-        protected static final String CREATE_TABLE_EXTREMA_VALUES_V6 = "create table " + WorkoutSummaries.TABLE_EXTREMA_VALUES + " ("
-                + WorkoutSummaries.C_ID + " INTEGER PRIMARY KEY AUTOINCREMENT, "
-                + WorkoutSummaries.WORKOUT_ID + " int,"
-                + WorkoutSummaries.EXTREMA_TYPE + " text,"
-                + WorkoutSummaries.SENSOR_TYPE + " text,"
-                + WorkoutSummaries.VALUE + " real," // end of version 5
+        protected static final String CREATE_TABLE_EXTREMA_VALUES_V6 = "create table " + WorkoutSummaries.TABLE_EXTREMA_VALUES + " (" + WorkoutSummaries.C_ID + " INTEGER PRIMARY KEY AUTOINCREMENT, " + WorkoutSummaries.WORKOUT_ID + " int," + WorkoutSummaries.EXTREMA_TYPE + " text," + WorkoutSummaries.SENSOR_TYPE + " text," + WorkoutSummaries.VALUE + " real," // end of version 5
                 + WorkoutSummaries.SAMPLES_COLUMN_ID + " int)";
-        protected static final String CREATE_TABLE_ACCUMULATED_SENSORS_V6 = "create table " + WorkoutSummaries.TABLE_ACCUMULATED_SENSORS + " ("
-                + WorkoutSummaries.C_ID + " INTEGER PRIMARY KEY AUTOINCREMENT, "
-                + WorkoutSummaries.WORKOUT_ID + " int,"
-                + WorkoutSummaries.SENSOR_TYPE + " text)";
-        protected static final String CREATE_TABLE_WORKOUT_NAME_PATTERNS_V10
-                = "create table " + WorkoutSummaries.TABLE_WORKOUT_NAME_PATTERNS + " ("
-                + WorkoutSummaries.C_ID + " INTEGER PRIMARY KEY AUTOINCREMENT, "
-                + WorkoutSummaries.SPORT_OLD + " text, "
-                + WorkoutSummaries.START_LOCATION_NAME + " text, "
-                + WorkoutSummaries.END_LOCATION_NAME + " text, "
-                + WorkoutSummaries.FANCY_NAME + " text, "
-                + WorkoutSummaries.ADD_COUNTER + " int, "
-                + WorkoutSummaries.COUNTER + " int, "
-                + WorkoutSummaries.ADD_VIA + " int)";
-        protected static final String CREATE_TABLE_WORKOUT_NAME_PATTERNS_V11
-                = "create table " + WorkoutSummaries.TABLE_WORKOUT_NAME_PATTERNS + " ("
-                + WorkoutSummaries.C_ID + " INTEGER PRIMARY KEY AUTOINCREMENT, "
-                + WorkoutSummaries.SPORT_ID + " int, "
-                + WorkoutSummaries.START_LOCATION_NAME + " text, "
-                + WorkoutSummaries.END_LOCATION_NAME + " text, "
-                + WorkoutSummaries.FANCY_NAME + " text, "
-                + WorkoutSummaries.ADD_COUNTER + " int, "
-                + WorkoutSummaries.COUNTER + " int, "
-                + WorkoutSummaries.ADD_VIA + " int)";
+        protected static final String CREATE_TABLE_ACCUMULATED_SENSORS_V6 = "create table " + WorkoutSummaries.TABLE_ACCUMULATED_SENSORS + " (" + WorkoutSummaries.C_ID + " INTEGER PRIMARY KEY AUTOINCREMENT, " + WorkoutSummaries.WORKOUT_ID + " int," + WorkoutSummaries.SENSOR_TYPE + " text)";
+        protected static final String CREATE_TABLE_WORKOUT_NAME_PATTERNS_V10 = "create table " + WorkoutSummaries.TABLE_WORKOUT_NAME_PATTERNS + " (" + WorkoutSummaries.C_ID + " INTEGER PRIMARY KEY AUTOINCREMENT, " + WorkoutSummaries.SPORT_OLD + " text, " + WorkoutSummaries.START_LOCATION_NAME + " text, " + WorkoutSummaries.END_LOCATION_NAME + " text, " + WorkoutSummaries.FANCY_NAME + " text, " + WorkoutSummaries.ADD_COUNTER + " int, " + WorkoutSummaries.COUNTER + " int, " + WorkoutSummaries.ADD_VIA + " int)";
+        protected static final String CREATE_TABLE_WORKOUT_NAME_PATTERNS_V11 = "create table " + WorkoutSummaries.TABLE_WORKOUT_NAME_PATTERNS + " (" + WorkoutSummaries.C_ID + " INTEGER PRIMARY KEY AUTOINCREMENT, " + WorkoutSummaries.SPORT_ID + " int, " + WorkoutSummaries.START_LOCATION_NAME + " text, " + WorkoutSummaries.END_LOCATION_NAME + " text, " + WorkoutSummaries.FANCY_NAME + " text, " + WorkoutSummaries.ADD_COUNTER + " int, " + WorkoutSummaries.COUNTER + " int, " + WorkoutSummaries.ADD_VIA + " int)";
         private static final String TAG = "WorkoutSummariesDbHelper";
         private static final boolean DEBUG = TrainingApplication.DEBUG & true;
         private Context mContext;
@@ -842,6 +726,7 @@ public class WorkoutSummariesDatabaseManager {
         // TODO: add location (latitude and longitude) and add them when needed
 
         // Called only once, first time the DB is created
+        @SuppressLint("LongLogTag")
         @Override
         public void onCreate(SQLiteDatabase db) {
 
@@ -874,11 +759,12 @@ public class WorkoutSummariesDatabaseManager {
         //         + WorkoutSummaries.ADD_COUNTER          + " int, "
         //         + WorkoutSummaries.ADD_VIA              + " int)";
 
-        private final void addColumn(SQLiteDatabase db, String table, String column, String type) {
+        private void addColumn(SQLiteDatabase db, String table, String column, String type) {
             db.execSQL("ALTER TABLE " + table + " ADD COLUMN " + column + " " + type + ";");
         }
 
         //Called whenever newVersion != oldVersion
+        @SuppressLint("LongLogTag")
         @Override
         public void onUpgrade(SQLiteDatabase db, int oldVersion, int newVersion) {
             if (oldVersion < 4) {
@@ -928,40 +814,30 @@ public class WorkoutSummariesDatabaseManager {
                 db.setTransactionSuccessful();
                 db.endTransaction();
 
-                Cursor cursor = db.query(WorkoutSummaries.TABLE,
-                        new String[]{WorkoutSummaries.C_ID, WorkoutSummaries.SPORT_OLD},
-                        null, null,
-                        null, null, null);
+                Cursor cursor = db.query(WorkoutSummaries.TABLE, new String[]{WorkoutSummaries.C_ID, WorkoutSummaries.SPORT_OLD}, null, null, null, null, null);
                 ContentValues contentValues = new ContentValues();
                 while (cursor.moveToNext()) {
                     contentValues.clear();
-                    long id = cursor.getLong(cursor.getColumnIndex(WorkoutSummaries.C_ID));
-                    String sport = cursor.getString(cursor.getColumnIndex(WorkoutSummaries.SPORT_OLD));
+                    @SuppressLint("Range") long id = cursor.getLong(cursor.getColumnIndex(WorkoutSummaries.C_ID));
+                    @SuppressLint("Range") String sport = cursor.getString(cursor.getColumnIndex(WorkoutSummaries.SPORT_OLD));
                     contentValues.put(WorkoutSummaries.SPORT_ID, SportTypeDatabaseManager.getSportTypeIdFromTTSportTypeName(sport));
                     contentValues.put(WorkoutSummaries.B_SPORT, SportTypeDatabaseManager.getBSportType(sport).name());
-                    db.update(WorkoutSummaries.TABLE, contentValues,
-                            WorkoutSummaries.C_ID + "=?", new String[]{Long.toString(id)});
+                    db.update(WorkoutSummaries.TABLE, contentValues, WorkoutSummaries.C_ID + "=?", new String[]{Long.toString(id)});
                 }
                 cursor.close();
 
 
                 addColumn(db, WorkoutSummaries.TABLE_WORKOUT_NAME_PATTERNS, WorkoutSummaries.SPORT_ID, "text");
 
-                cursor = db.query(WorkoutSummaries.TABLE_WORKOUT_NAME_PATTERNS,
-                        new String[]{WorkoutSummaries.C_ID, WorkoutSummaries.SPORT_OLD},
-                        null, null,
-                        null, null, null);
+                cursor = db.query(WorkoutSummaries.TABLE_WORKOUT_NAME_PATTERNS, new String[]{WorkoutSummaries.C_ID, WorkoutSummaries.SPORT_OLD}, null, null, null, null, null);
                 while (cursor.moveToNext()) {
-                    long id = cursor.getLong(cursor.getColumnIndex(WorkoutSummaries.C_ID));
-                    String sport = cursor.getString(cursor.getColumnIndex(WorkoutSummaries.SPORT_OLD));
+                    @SuppressLint("Range") long id = cursor.getLong(cursor.getColumnIndex(WorkoutSummaries.C_ID));
+                    @SuppressLint("Range") String sport = cursor.getString(cursor.getColumnIndex(WorkoutSummaries.SPORT_OLD));
                     contentValues.put(WorkoutSummaries.SPORT_ID, SportTypeDatabaseManager.getSportTypeIdFromTTSportTypeName(sport));
-                    db.update(WorkoutSummaries.TABLE_WORKOUT_NAME_PATTERNS, contentValues,
-                            WorkoutSummaries.C_ID + "=?", new String[]{Long.toString(id)});
+                    db.update(WorkoutSummaries.TABLE_WORKOUT_NAME_PATTERNS, contentValues, WorkoutSummaries.C_ID + "=?", new String[]{Long.toString(id)});
                 }
                 cursor.close();
-
             }
-
         }
     }
 }

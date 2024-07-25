@@ -2,10 +2,12 @@ package com.atrainingtracker.trainingtracker.fragments;
 
 import static com.atrainingtracker.trainingtracker.dialogs.EditFieldDialog.TRACKING_VIEW_CHANGED_INTENT;
 
+import android.annotation.SuppressLint;
 import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
+import android.os.Build;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.Gravity;
@@ -19,6 +21,9 @@ import android.widget.Button;
 import android.widget.FrameLayout;
 import android.widget.LinearLayout;
 import android.widget.TextView;
+
+import androidx.annotation.NonNull;
+import androidx.annotation.RequiresApi;
 
 import com.atrainingtracker.R;
 import com.atrainingtracker.banalservice.ActivityType;
@@ -38,6 +43,7 @@ import com.atrainingtracker.trainingtracker.fragments.mapFragments.TrackOnMapTra
 import com.atrainingtracker.trainingtracker.fragments.mapFragments.TrackOnMapTrackingFragment;
 
 import java.util.HashMap;
+import java.util.Objects;
 import java.util.TreeMap;
 
 public class TrackingFragment extends BaseTrackingFragment {
@@ -139,7 +145,6 @@ public class TrackingFragment extends BaseTrackingFragment {
             default:
                 return "";
         }
-
     }
 
     @Override
@@ -147,10 +152,17 @@ public class TrackingFragment extends BaseTrackingFragment {
         super.onCreate(savedInstanceState);
         if (DEBUG) Log.i(TAG, "onCreate " + getArguments().getLong(VIEW_ID));
 
-        mViewId = getArguments().getLong(VIEW_ID);
-        mActivityType = ActivityType.valueOf(getArguments().getString(ACTIVITY_TYPE));
+        if (getArguments() != null) {
+            mViewId = getArguments().getLong(VIEW_ID);
+        }
+        if (getArguments() != null) {
+            mActivityType = ActivityType.valueOf(getArguments().getString(ACTIVITY_TYPE));
+        }
 
-        String mode = getArguments().getString(MODE);
+        String mode = null;
+        if (getArguments() != null) {
+            mode = getArguments().getString(MODE);
+        }
         if (DEBUG) Log.i(TAG, "mode=" + mode);
         if (mode != null) {
             mMode = Mode.valueOf(mode);
@@ -158,7 +170,7 @@ public class TrackingFragment extends BaseTrackingFragment {
     }
 
     @Override
-    public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
+    public View onCreateView(@NonNull LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
         super.onCreateView(inflater, container, savedInstanceState);
         if (DEBUG) Log.d(TAG, "onCreateView " + mViewId);
 
@@ -178,11 +190,7 @@ public class TrackingFragment extends BaseTrackingFragment {
         if (mButtonLap != null) {
             // Log.d(TAG, "setting onClickListener to Lap Button");
 
-            mButtonLap.setOnClickListener(new View.OnClickListener() {
-                public void onClick(View v) {
-                    getActivity().sendBroadcast(new Intent(TrainingApplication.REQUEST_NEW_LAP));
-                }
-            });
+            mButtonLap.setOnClickListener(v -> requireActivity().sendBroadcast(new Intent(TrainingApplication.REQUEST_NEW_LAP)));
         } else {
             if (DEBUG) {
                 Log.d(TAG, "!!! could not find Lap Button !!!");
@@ -203,13 +211,14 @@ public class TrackingFragment extends BaseTrackingFragment {
         return view;
     }
 
+    @RequiresApi(api = Build.VERSION_CODES.TIRAMISU)
     @Override
     public void onActivityCreated(Bundle bundle) {
         super.onActivityCreated(bundle);
         if (DEBUG) Log.i(TAG, "onActivityCreated " + mViewId);
 
-        getActivity().registerReceiver(mNewTimeEventReceiver, mNewTimeEventFilter);
-        getActivity().registerReceiver(mTrackingViewChangedReceiver, mTrackingViewChangedFilter);
+        requireActivity().registerReceiver(mNewTimeEventReceiver, mNewTimeEventFilter, android.content.Context.RECEIVER_EXPORTED);
+        requireActivity().registerReceiver(mTrackingViewChangedReceiver, mTrackingViewChangedFilter, Context.RECEIVER_EXPORTED);
     }
 
     @Override
@@ -242,7 +251,6 @@ public class TrackingFragment extends BaseTrackingFragment {
         }
     }
 
-
     @Override
     public void onPause() {
         super.onPause();
@@ -269,8 +277,8 @@ public class TrackingFragment extends BaseTrackingFragment {
         super.onDestroyView();
         if (DEBUG) Log.i(TAG, "onDestroyView " + mViewId);
 
-        getActivity().unregisterReceiver(mNewTimeEventReceiver);
-        getActivity().unregisterReceiver(mTrackingViewChangedReceiver);
+        requireActivity().unregisterReceiver(mNewTimeEventReceiver);
+        requireActivity().unregisterReceiver(mTrackingViewChangedReceiver);
     }
 
     @Override
@@ -289,15 +297,16 @@ public class TrackingFragment extends BaseTrackingFragment {
      * Called first time user clicks on the menu button
      */
     @Override
-    public void onCreateOptionsMenu(Menu menu, MenuInflater inflater) {
+    public void onCreateOptionsMenu(@NonNull Menu menu, @NonNull MenuInflater inflater) {
         super.onCreateOptionsMenu(menu, inflater);
         if (DEBUG) Log.d(TAG, "onCreateOptionsMenu");
 
         inflater.inflate(R.menu.tracking_menu, menu);
     }
 
+    @SuppressLint("NonConstantResourceId")
     @Override
-    public boolean onOptionsItemSelected(MenuItem item) {
+    public boolean onOptionsItemSelected(@NonNull MenuItem item) {
         if (DEBUG) Log.i(TAG, "onOptionsItemSelected");
 
         // Log.d(TAG, "onOptionsItemSelected");
@@ -327,9 +336,8 @@ public class TrackingFragment extends BaseTrackingFragment {
 
         for (int rowNr : viewInfoMap.keySet()) {
             if (DEBUG) Log.i(TAG, "adding rowNr=" + rowNr);
-            addRow(viewInfoMap.get(rowNr));
+            addRow(Objects.requireNonNull(viewInfoMap.get(rowNr)));
         }
-
 
         if (TrackingViewsDatabaseManager.showLapButton(mViewId)) {
             mButtonLap.setVisibility(View.VISIBLE);
@@ -341,8 +349,9 @@ public class TrackingFragment extends BaseTrackingFragment {
         doDisplayUpdate();
     }
 
+    @SuppressLint("SetTextI18n")
     protected void addRow(final TreeMap<Integer, TrackingViewsDatabaseManager.ViewInfo> rowMap) {
-        if (rowMap.size() == 0) {
+        if (rowMap.isEmpty()) {
             if (DEBUG) Log.i(TAG, "row contains no entries => returning");
             return;
         }
@@ -361,17 +370,20 @@ public class TrackingFragment extends BaseTrackingFragment {
             llRow.addView(llField);
 
             if (mMode != Mode.PREVIEW) {
-                llField.setOnLongClickListener(new View.OnLongClickListener() {
-                    @Override
-                    public boolean onLongClick(View v) {
-                        showEditFieldDialog(viewInfo);
-                        return true;
-                    }
+                llField.setOnLongClickListener(v -> {
+                    showEditFieldDialog(viewInfo);
+                    return true;
                 });
             }
 
-            SensorType sensorType = viewInfo.sensorType;
-            long deviceId = viewInfo.sourceDeviceId;
+            SensorType sensorType = null;
+            if (viewInfo != null) {
+                sensorType = viewInfo.sensorType;
+            }
+            long deviceId = 0;
+            if (viewInfo != null) {
+                deviceId = viewInfo.sourceDeviceId;
+            }
             String deviceName = null;
             if (deviceId > 0) {
                 deviceName = DevicesDatabaseManager.getDeviceName(deviceId);
@@ -384,9 +396,14 @@ public class TrackingFragment extends BaseTrackingFragment {
             TextView tv = new TextView(getContext());
             // tv.setBackgroundColor(getResources().getColor(R.color.my_white));
             tv.setTextSize(TEXT_SIZE_TITLE);
-            String filterSummary = getShortFilterSummary(getContext(), viewInfo.filterType, viewInfo.filterConstant);
+            String filterSummary = null;
+            if (viewInfo != null) {
+                filterSummary = getShortFilterSummary(getContext(), viewInfo.filterType, viewInfo.filterConstant);
+            }
             if (deviceName == null) {
-                tv.setText(filterSummary + getString(sensorType.getFullNameId()) + ":");
+                if (sensorType != null) {
+                    tv.setText(filterSummary + getString(sensorType.getFullNameId()) + ":");
+                }
             } else {
                 tv.setText(filterSummary + getString(R.string.format_sensorType_and_DeviceName, getString(sensorType.getFullNameId()), deviceName));
             }
@@ -397,30 +414,32 @@ public class TrackingFragment extends BaseTrackingFragment {
             // TextView for the content
             tv = new TextView(getContext());
             // tv.setBackgroundColor(getResources().getColor(R.color.my_white));
-            tv.setTextSize(viewInfo.textSize);
+            if (viewInfo != null) {
+                tv.setTextSize(viewInfo.textSize);
+            }
             // tv.setGravity(Gravity.CENTER_VERTICAL | Gravity.CENTER_HORIZONTAL);
             tv.setGravity(Gravity.CENTER_HORIZONTAL);
             llField.addView(tv);
 
             // finally, add this TextView to the Map
-            mHashMapTextViews.put((new FilterData(deviceName, sensorType, viewInfo.filterType, viewInfo.filterConstant)).getHashKey(),
-                    new TvSensorType(tv, sensorType));
+            if (viewInfo != null) {
+                mHashMapTextViews.put((new FilterData(deviceName, sensorType, viewInfo.filterType, viewInfo.filterConstant)).getHashKey(), new TvSensorType(tv, sensorType));
+            }
         }
     }
 
     private void showEditFieldDialog(TrackingViewsDatabaseManager.ViewInfo viewInfo) {
         EditFieldDialog editFieldDialog = EditFieldDialog.newInstance(mActivityType, viewInfo);
-        editFieldDialog.show(getFragmentManager(), EditFieldDialog.TAG);
+        if (getFragmentManager() != null) {
+            editFieldDialog.show(getFragmentManager(), EditFieldDialog.TAG);
+        }
     }
-
 
     public void doDisplayUpdate() {
         if (DEBUG) Log.d(TAG, "doDisplayUpdate for " + mViewId);
 
         if (mMode == Mode.PREVIEW || getSensorData()) {
-
             for (String hashKey : mHashMapTextViews.keySet()) {
-
                 TvSensorType tvSensorType = mHashMapTextViews.get(hashKey);
 
                 // get the value
@@ -447,20 +466,26 @@ public class TrackingFragment extends BaseTrackingFragment {
 
                 // now, display it
                 if (TrainingApplication.showUnits() && getActivity() != null) {
-                    String units = getString(MyHelper.getUnitsId(tvSensorType.sensorType));
-                    tvSensorType.textView.setText(getString(R.string.value_unit_string_string, value, units));
+                    String units = null;
+                    if (tvSensorType != null) {
+                        units = getString(MyHelper.getUnitsId(tvSensorType.sensorType));
+                    }
+                    if (tvSensorType != null) {
+                        tvSensorType.textView.setText(getString(R.string.value_unit_string_string, value, units));
+                    }
                 } else {
-                    tvSensorType.textView.setText(value);
+                    if (tvSensorType != null) {
+                        tvSensorType.textView.setText(value);
+                    }
                 }
             }
         }
     }
 
-
     protected boolean getSensorData() {
         if (DEBUG) Log.d(TAG, "getSensorData for " + mViewId);
 
-        if (mGetBanalServiceIf != null & mGetBanalServiceIf.getBanalServiceComm() != null) {
+        if (mGetBanalServiceIf != null && mGetBanalServiceIf != null & mGetBanalServiceIf.getBanalServiceComm() != null) {
             // for (SensorData sensorData : mGetBanalServiceIf.getBanalServiceComm().getBestSensorData()) {
             for (FilteredSensorData filteredSensorData : mGetBanalServiceIf.getBanalServiceComm().getAllFilteredSensorData()) {
                 if (DEBUG) {
@@ -470,16 +495,14 @@ public class TrackingFragment extends BaseTrackingFragment {
                 mHashMapValues.put(filteredSensorData.getFilterData().getHashKey(), filteredSensorData.getStringValue());
             }
             return true;
-        } else {
-            if (DEBUG) Log.i(TAG, "no Connection to BANALService");
-            return false;
         }
-    }
 
+        return false;
+    }
 
     public enum Mode {TRACKING, PREVIEW}
 
-    protected class TvSensorType {
+    protected static class TvSensorType {
         protected TextView textView;
         protected SensorType sensorType;
 

@@ -8,6 +8,7 @@ import android.content.Intent;
 import android.content.IntentFilter;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
+import android.os.Build;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.LayoutInflater;
@@ -16,6 +17,8 @@ import android.view.ViewGroup;
 import android.widget.ImageButton;
 import android.widget.LinearLayout;
 
+import androidx.annotation.NonNull;
+import androidx.annotation.RequiresApi;
 import androidx.fragment.app.FragmentManager;
 import androidx.fragment.app.FragmentTransaction;
 
@@ -28,6 +31,8 @@ import com.atrainingtracker.trainingtracker.TrainingApplication;
 import com.atrainingtracker.trainingtracker.database.WorkoutSummariesDatabaseManager;
 import com.atrainingtracker.trainingtracker.interfaces.RemoteDevicesSettingsInterface;
 import com.atrainingtracker.trainingtracker.interfaces.StartOrResumeInterface;
+
+import java.util.Objects;
 
 public class ControlTrackingFragment extends BaseTrackingFragment {
     public static final String TAG = ControlTrackingFragment.class.getName();
@@ -45,7 +50,6 @@ public class ControlTrackingFragment extends BaseTrackingFragment {
     private ImageButton mBluetoothPairingButton;
     private ImageButton mStartButton, mPauseButton, mResumeFromPauseButton, mStopButton, mResearchButton;
     private LinearLayout mStartLayout, mPauseLayout, mResumeAndStopLayout, mResearchLayout;
-
 
     ////////////////////////////////////////////////////////////////////////////////////////////////
     // BroadcastReceivers
@@ -88,25 +92,24 @@ public class ControlTrackingFragment extends BaseTrackingFragment {
     };
     //private IntentFilter mUpdateResearchFilter = new IntentFilter();  // Intents will be added in onResume
 
-
     ////////////////////////////////////////////////////////////////////////////////////////////////
     // Lifecycle methods
     ////////////////////////////////////////////////////////////////////////////////////////////////
     @Override
-    public void onAttach(Context context) {
+    public void onAttach(@NonNull Context context) {
         super.onAttach(context);
         if (DEBUG) Log.d(TAG, "onAttach");
 
         try {
             mRemoteDevicesSettingsInterface = (RemoteDevicesSettingsInterface) context;
         } catch (ClassCastException e) {
-            throw new ClassCastException(context.toString() + " must implement StartPairingListener");
+            throw new ClassCastException(context + " must implement StartPairingListener");
         }
 
         try {
             mStartOrResumeInterface = (StartOrResumeInterface) context;
         } catch (ClassCastException e) {
-            throw new ClassCastException(context.toString() + " must implement StartOrResumeInterface");
+            throw new ClassCastException(context + " must implement StartOrResumeInterface");
         }
 
         mGetBanalServiceIf.registerConnectionStatusListener(new BANALService.GetBanalServiceInterface.ConnectionStatusListener() {
@@ -120,7 +123,6 @@ public class ControlTrackingFragment extends BaseTrackingFragment {
                 updatePairing();
             }
         });
-
 
 //        mUpdateResearchFilter.addAction(BANALService.SEARCHING_STARTED_FOR_ALL_INTENT);
 //        mUpdateResearchFilter.addAction(BANALService.SEARCHING_FINISHED_FOR_ALL_INTENT);
@@ -136,20 +138,19 @@ public class ControlTrackingFragment extends BaseTrackingFragment {
     }
 
     @Override
-    public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
+    public View onCreateView(@NonNull LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
         super.onCreateView(inflater, container, savedInstanceState);
         if (DEBUG) Log.d(TAG, "onCreateView");
 
         // Inflate the layout for this fragment
         View view = inflater.inflate(R.layout.control_tracking_layout, container, false);
 
-
         // add the fragments for showing the tracking mode as well as the fragment to change the sport type
 
         FragmentManager fragmentManager = getFragmentManager();
 
         TrackingModeFragment trackingModeFragment = new TrackingModeFragment();
-        FragmentTransaction ft = fragmentManager.beginTransaction();
+        FragmentTransaction ft = Objects.requireNonNull(fragmentManager).beginTransaction();
         ft.replace(R.id.tracking_mode_container, trackingModeFragment);
         ft.commitAllowingStateLoss();
 
@@ -157,7 +158,6 @@ public class ControlTrackingFragment extends BaseTrackingFragment {
         ft = fragmentManager.beginTransaction();
         ft.replace(R.id.ctl_control_sport_type_container, controlSportTypeFragment);
         ft.commitAllowingStateLoss();
-
 
         // set the handlers for the main tracking control buttons (start, pause, resume, stop)
 
@@ -175,53 +175,39 @@ public class ControlTrackingFragment extends BaseTrackingFragment {
 //        });
 
         mStartButton = view.findViewById(R.id.imageButtonStart);
-        mStartButton.setOnClickListener(new View.OnClickListener() {
-            public void onClick(View v) {
-                if (DEBUG) Log.i(TAG, "start button clicked");
-                // mControlTrackingListener.startTracking();
-                getContext().sendBroadcast(new Intent(TrainingApplication.REQUEST_START_TRACKING));
-            }
+        mStartButton.setOnClickListener(v -> {
+            if (DEBUG) Log.i(TAG, "start button clicked");
+            // mControlTrackingListener.startTracking();
+            requireContext().sendBroadcast(new Intent(TrainingApplication.REQUEST_START_TRACKING));
         });
 
         mPauseButton = view.findViewById(R.id.imageButtonPause);
-        mPauseButton.setOnClickListener(new View.OnClickListener() {
-            public void onClick(View v) {
-                if (DEBUG) Log.i(TAG, "start button clicked");
-                // mControlTrackingListener.pauseTracking();
-                getContext().sendBroadcast(new Intent(TrainingApplication.REQUEST_PAUSE_TRACKING));
-            }
+        mPauseButton.setOnClickListener(v -> {
+            if (DEBUG) Log.i(TAG, "start button clicked");
+            // mControlTrackingListener.pauseTracking();
+            requireContext().sendBroadcast(new Intent(TrainingApplication.REQUEST_PAUSE_TRACKING));
         });
 
         mResumeFromPauseButton = view.findViewById(R.id.imageButtonResume);
-        mResumeFromPauseButton.setOnClickListener(new View.OnClickListener() {
-            public void onClick(View v) {
-                if (DEBUG) Log.i(TAG, "resume button clicked");
-                // mControlTrackingListener.resumeTracking();
-                getContext().sendBroadcast(new Intent(TrainingApplication.REQUEST_RESUME_FROM_PAUSED));
-            }
+        mResumeFromPauseButton.setOnClickListener(v -> {
+            if (DEBUG) Log.i(TAG, "resume button clicked");
+            // mControlTrackingListener.resumeTracking();
+            requireContext().sendBroadcast(new Intent(TrainingApplication.REQUEST_RESUME_FROM_PAUSED));
         });
 
         mStopButton = view.findViewById(R.id.imageButtonStop);
-        mStopButton.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                if (DEBUG) Log.i(TAG, "stop button clicked");
-                // mControlTrackingListener.stopTracking();
-                getContext().sendBroadcast(new Intent(TrainingApplication.REQUEST_STOP_TRACKING));
+        mStopButton.setOnClickListener(v -> {
+            if (DEBUG) Log.i(TAG, "stop button clicked");
+            // mControlTrackingListener.stopTracking();
+            requireContext().sendBroadcast(new Intent(TrainingApplication.REQUEST_STOP_TRACKING));
 
-            }
         });
-
 
         // now, the ANT+ and Bluetooth buttons
 
         mANTPairingButton = view.findViewById(R.id.imageButtonANTPairing);
         if (mANTPairingButton != null) {
-            mANTPairingButton.setOnClickListener(new View.OnClickListener() {
-                public void onClick(View v) {
-                    mRemoteDevicesSettingsInterface.startPairing(Protocol.ANT_PLUS);
-                }
-            });
+            mANTPairingButton.setOnClickListener(v -> mRemoteDevicesSettingsInterface.startPairing(Protocol.ANT_PLUS));
         } else {
             if (DEBUG) Log.d(TAG, "WTF, could not find the ANT+ pairing button");
         }
@@ -233,6 +219,7 @@ public class ControlTrackingFragment extends BaseTrackingFragment {
         return view;
     }
 
+    @RequiresApi(api = Build.VERSION_CODES.TIRAMISU)
     @Override
     public void onActivityCreated(Bundle savedInstanceState) {
         super.onActivityCreated(savedInstanceState);
@@ -240,24 +227,22 @@ public class ControlTrackingFragment extends BaseTrackingFragment {
 
         if (mBluetoothPairingButton != null) {
             if (BANALService.isProtocolSupported(getActivity(), Protocol.BLUETOOTH_LE)) {
-                mBluetoothPairingButton.setOnClickListener(new View.OnClickListener() {
-                    public void onClick(View v) {
-                        BluetoothManager bluetoothManager = (BluetoothManager) getContext().getSystemService(Context.BLUETOOTH_SERVICE);
-                        BluetoothAdapter bluetoothAdapter = bluetoothManager.getAdapter();
+                mBluetoothPairingButton.setOnClickListener(v -> {
+                    BluetoothManager bluetoothManager = (BluetoothManager) requireContext().getSystemService(Context.BLUETOOTH_SERVICE);
+                    BluetoothAdapter bluetoothAdapter = bluetoothManager.getAdapter();
 
-                        if (bluetoothAdapter.isEnabled()) {
-                            mRemoteDevicesSettingsInterface.startPairing(Protocol.BLUETOOTH_LE);
-                        } else {
-                            mRemoteDevicesSettingsInterface.enableBluetoothRequest();
-                            // Intent enableBtIntent = new Intent(BluetoothAdapter.ACTION_REQUEST_ENABLE);
-                            // // enableBtIntent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
-                            // // getContext().startActivity(enableBtIntent);
-                            // getActivity().startActivityForResult(enableBtIntent, ENABLE_BLUETOOTH_INTENT); TODO: do this via the mainActivity
-                        }
+                    if (bluetoothAdapter.isEnabled()) {
+                        mRemoteDevicesSettingsInterface.startPairing(Protocol.BLUETOOTH_LE);
+                    } else {
+                        mRemoteDevicesSettingsInterface.enableBluetoothRequest();
+                        // Intent enableBtIntent = new Intent(BluetoothAdapter.ACTION_REQUEST_ENABLE);
+                        // // enableBtIntent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+                        // // getContext().startActivity(enableBtIntent);
+                        // getActivity().startActivityForResult(enableBtIntent, ENABLE_BLUETOOTH_INTENT); TODO: do this via the mainActivity
                     }
                 });
             } else {
-                View view = getActivity().findViewById(R.id.llBluetoothPairing);
+                View view = requireActivity().findViewById(R.id.llBluetoothPairing);
                 if (view != null) {
                     view.setVisibility(View.INVISIBLE);
                 }
@@ -270,10 +255,10 @@ public class ControlTrackingFragment extends BaseTrackingFragment {
             mStartOrResumeInterface.showStartOrResumeDialog();
         }
 
-        //getActivity().registerReceiver(mUpdateResearchReceiver, mUpdateResearchFilter);
-        getActivity().registerReceiver(mStartTrackingReceiver, mStartTrackingFilter);
-        getActivity().registerReceiver(mPauseTrackingReceiver, new IntentFilter(TrainingApplication.REQUEST_PAUSE_TRACKING));
-        getActivity().registerReceiver(mStopTrackingReceiver, new IntentFilter(TrainingApplication.REQUEST_STOP_TRACKING));
+        //requireActivity().registerReceiver(mUpdateResearchReceiver, mUpdateResearchFilter);
+        requireActivity().registerReceiver(mStartTrackingReceiver, mStartTrackingFilter, Context.RECEIVER_EXPORTED);
+        requireActivity().registerReceiver(mPauseTrackingReceiver, new IntentFilter(TrainingApplication.REQUEST_PAUSE_TRACKING), android.content.Context.RECEIVER_EXPORTED);
+        requireActivity().registerReceiver(mStopTrackingReceiver, new IntentFilter(TrainingApplication.REQUEST_STOP_TRACKING), android.content.Context.RECEIVER_EXPORTED);
     }
 
     @Override
@@ -301,7 +286,6 @@ public class ControlTrackingFragment extends BaseTrackingFragment {
     public void onPause() {
         super.onPause();
         if (DEBUG) Log.i(TAG, "onPause");
-
     }
 
     @Override
@@ -315,9 +299,9 @@ public class ControlTrackingFragment extends BaseTrackingFragment {
         super.onDestroyView();
         if (DEBUG) Log.i(TAG, "onDestroyView");
 
-        getActivity().unregisterReceiver(mStartTrackingReceiver);
-        getActivity().unregisterReceiver(mPauseTrackingReceiver);
-        getActivity().unregisterReceiver(mStopTrackingReceiver);
+        requireActivity().unregisterReceiver(mStartTrackingReceiver);
+        requireActivity().unregisterReceiver(mPauseTrackingReceiver);
+        requireActivity().unregisterReceiver(mStopTrackingReceiver);
         //getActivity().unregisterReceiver(mUpdateResearchReceiver);
     }
 
@@ -377,10 +361,8 @@ public class ControlTrackingFragment extends BaseTrackingFragment {
                 disablePauseLayout();
                 // disableResumeAndStopLayout();
                 break;
-
         }
     }
-
 
     // show and enable Start Button
     protected void showStartLayout() {
@@ -389,7 +371,6 @@ public class ControlTrackingFragment extends BaseTrackingFragment {
         mStartLayout.setVisibility(View.VISIBLE);
         mStartButton.setClickable(true);
         mStartButton.setEnabled(true);
-
     }
 
     // remove and disable Start Buttons
@@ -399,7 +380,6 @@ public class ControlTrackingFragment extends BaseTrackingFragment {
         mStartButton.setEnabled(false);
     }
 
-
     // show and enable Pause Buttons
     protected void showPauseLayout() {
         if (DEBUG) Log.i(TAG, "showPauseLayout");
@@ -407,7 +387,6 @@ public class ControlTrackingFragment extends BaseTrackingFragment {
         mPauseLayout.setVisibility(View.VISIBLE);
         mPauseButton.setClickable(true);
         mPauseButton.setEnabled(true);
-
     }
 
     // remove and disable Pause Buttons
@@ -416,7 +395,6 @@ public class ControlTrackingFragment extends BaseTrackingFragment {
         mPauseButton.setClickable(false);
         mPauseButton.setEnabled(false);
     }
-
 
     // show and enable the Resume and Stop
     protected void showResumeAndStopLayout() {
@@ -438,9 +416,8 @@ public class ControlTrackingFragment extends BaseTrackingFragment {
         mStopButton.setEnabled(false);
     }
 
-
     protected void updatePairing() {
-        if (mGetBanalServiceIf == null | mGetBanalServiceIf.getBanalServiceComm() == null) {
+        if (mGetBanalServiceIf == null | Objects.requireNonNull(mGetBanalServiceIf).getBanalServiceComm() == null) {
             disablePairing();
         } else {
             enablePairing();
@@ -471,7 +448,6 @@ public class ControlTrackingFragment extends BaseTrackingFragment {
         }
     }
 
-
     protected boolean prevTrackingFinishedProperly() {
         if (TrainingApplication.isTracking()) {
             return true;
@@ -491,6 +467,5 @@ public class ControlTrackingFragment extends BaseTrackingFragment {
         databaseManager.closeDatabase(); // db.close();
 
         return finishedProperly;
-
     }
 }

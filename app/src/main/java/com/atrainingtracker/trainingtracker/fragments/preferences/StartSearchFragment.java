@@ -8,7 +8,6 @@ import androidx.preference.PreferenceFragmentCompat;
 import com.atrainingtracker.R;
 import com.atrainingtracker.trainingtracker.TrainingApplication;
 
-
 public class StartSearchFragment extends PreferenceFragmentCompat {
     private static final boolean DEBUG = TrainingApplication.DEBUG;
     private static final String TAG = StartSearchFragment.class.getName();
@@ -18,7 +17,5 @@ public class StartSearchFragment extends PreferenceFragmentCompat {
         if (DEBUG) Log.i(TAG, "onCreatePreferences(savedInstanceState, rootKey=" + rootKey + ")");
 
         setPreferencesFromResource(R.xml.prefs, rootKey);
-
     }
-
 }

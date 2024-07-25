@@ -3,6 +3,7 @@ package com.atrainingtracker.trainingtracker.exporter;
 import static com.atrainingtracker.trainingtracker.TrainingApplication.NOTIFICATION_CHANNEL__EXPORT;
 
 import android.Manifest;
+import android.annotation.SuppressLint;
 import android.app.IntentService;
 import android.app.PendingIntent;
 import android.content.Intent;
@@ -23,13 +24,9 @@ import com.atrainingtracker.trainingtracker.activities.MainActivityWithNavigatio
 import java.io.File;
 import java.util.ArrayList;
 
-/**
- *
- */
 public class ExportWorkoutIntentService extends IntentService {
     private static final String TAG = "ExportWorkoutIntentService";
     private static final boolean DEBUG = TrainingApplication.DEBUG & true;
-
 
     boolean exported = false;
 
@@ -37,7 +34,7 @@ public class ExportWorkoutIntentService extends IntentService {
         super(TAG);
     }
 
-
+    @SuppressLint({"LongLogTag", "ForegroundServiceType", "MissingPermission"})
     @Override
     protected void onHandleIntent(Intent intent) {
         if (DEBUG) Log.d(TAG, "onHandleIntent");
@@ -51,11 +48,10 @@ public class ExportWorkoutIntentService extends IntentService {
             tryExporting = false;
             for (ExportInfo exportInfo : exportManager.getExportQueue()) {
 
-                if (DEBUG) Log.d(TAG, "ExportType: " + exportInfo.getExportType().toString()
-                        + ", FileFormat: " + exportInfo.getFileFormat());
+                if (DEBUG)
+                    Log.d(TAG, "ExportType: " + exportInfo.getExportType().toString() + ", FileFormat: " + exportInfo.getFileFormat());
 
-                if ((exportInfo.getExportType() == ExportType.FILE | exportInfo.getExportType() == ExportType.COMMUNITY)
-                        && !TrainingApplication.havePermission(Manifest.permission.WRITE_EXTERNAL_STORAGE)) {
+                if ((exportInfo.getExportType() == ExportType.FILE | exportInfo.getExportType() == ExportType.COMMUNITY) && !TrainingApplication.havePermission(Manifest.permission.WRITE_EXTERNAL_STORAGE)) {
                     continue;
                 }
 
@@ -68,33 +64,25 @@ public class ExportWorkoutIntentService extends IntentService {
                             case CSV:
                                 exporter = new CSVFileExporter(this);
                                 if (TrainingApplication.sendCSVEmail()) {
-                                    emailUris.add(FileProvider.getUriForFile(this,
-                                            this.getApplicationContext().getPackageName() + ".com.atrainingtracker.file.provider",
-                                            new File(BaseExporter.getDir(this, FileFormat.CSV.getDirName()), exportInfo.getFileBaseName() + FileFormat.CSV.getFileEnding())));
+                                    emailUris.add(FileProvider.getUriForFile(this, this.getApplicationContext().getPackageName() + ".com.atrainingtracker.file.provider", new File(BaseExporter.getDir(this, FileFormat.CSV.getDirName()), exportInfo.getFileBaseName() + FileFormat.CSV.getFileEnding())));
                                 }
                                 break;
                             case GC:
                                 exporter = new GCFileExporter(this);
                                 if (TrainingApplication.sendGCEmail()) {
-                                    emailUris.add(FileProvider.getUriForFile(this,
-                                            this.getApplicationContext().getPackageName() + ".com.atrainingtracker.file.provider",
-                                            new File(BaseExporter.getDir(this, FileFormat.GC.getDirName()), exportInfo.getFileBaseName() + FileFormat.GC.getFileEnding())));
+                                    emailUris.add(FileProvider.getUriForFile(this, this.getApplicationContext().getPackageName() + ".com.atrainingtracker.file.provider", new File(BaseExporter.getDir(this, FileFormat.GC.getDirName()), exportInfo.getFileBaseName() + FileFormat.GC.getFileEnding())));
                                 }
                                 break;
                             case TCX:
                                 exporter = new TCXFileExporter(this);
                                 if (TrainingApplication.sendTCXEmail()) {
-                                    emailUris.add(FileProvider.getUriForFile(this,
-                                            this.getApplicationContext().getPackageName() + ".com.atrainingtracker.file.provider",
-                                            new File(BaseExporter.getDir(this, FileFormat.TCX.getDirName()), exportInfo.getFileBaseName() + FileFormat.TCX.getFileEnding())));
+                                    emailUris.add(FileProvider.getUriForFile(this, this.getApplicationContext().getPackageName() + ".com.atrainingtracker.file.provider", new File(BaseExporter.getDir(this, FileFormat.TCX.getDirName()), exportInfo.getFileBaseName() + FileFormat.TCX.getFileEnding())));
                                 }
                                 break;
                             case GPX:
                                 exporter = new GPXFileExporter(this);
                                 if (TrainingApplication.sendGPXEmail()) {
-                                    emailUris.add(FileProvider.getUriForFile(this,
-                                            this.getApplicationContext().getPackageName() + ".com.atrainingtracker.file.provider",
-                                            new File(BaseExporter.getDir(this, FileFormat.GPX.getDirName()), exportInfo.getFileBaseName() + FileFormat.GPX.getFileEnding())));
+                                    emailUris.add(FileProvider.getUriForFile(this, this.getApplicationContext().getPackageName() + ".com.atrainingtracker.file.provider", new File(BaseExporter.getDir(this, FileFormat.GPX.getDirName()), exportInfo.getFileBaseName() + FileFormat.GPX.getFileEnding())));
                                 }
                                 break;
                             case STRAVA:
@@ -156,16 +144,10 @@ public class ExportWorkoutIntentService extends IntentService {
             Intent notificationIntent = new Intent(this, MainActivityWithNavigation.class);
             notificationIntent.putExtras(bundle);
             // notificationIntent.setAction("barAction");
-            PendingIntent contentIntent = PendingIntent.getActivity(this, 0, notificationIntent, 0);
+            PendingIntent contentIntent = PendingIntent.getActivity(this, 0, notificationIntent, PendingIntent.FLAG_IMMUTABLE);
             // PendingIntent contentIntent = PendingIntent.getActivity(this, 0, notificationIntent, 0);
 
-            NotificationCompat.Builder notificationBuilder = new NotificationCompat.Builder(this, NOTIFICATION_CHANNEL__EXPORT)
-                    .setLargeIcon(BitmapFactory.decodeResource(getResources(), R.drawable.ic_save_black_48dp))
-                    .setSmallIcon(R.drawable.logo)
-                    .setContentTitle(getString(R.string.TrainingTracker))
-                    .setContentText(getString(R.string.notification_exporting_finished))
-                    .setContentIntent(contentIntent)
-                    .setAutoCancel(true);
+            NotificationCompat.Builder notificationBuilder = new NotificationCompat.Builder(this, NOTIFICATION_CHANNEL__EXPORT).setLargeIcon(BitmapFactory.decodeResource(getResources(), R.drawable.ic_save_black_48dp)).setSmallIcon(R.drawable.logo).setContentTitle(getString(R.string.TrainingTracker)).setContentText(getString(R.string.notification_exporting_finished)).setContentIntent(contentIntent).setAutoCancel(true);
 
             notificationManager.notify(TrainingApplication.EXPORT_RESULT_NOTIFICATION_ID, notificationBuilder.build());
 
@@ -181,15 +163,9 @@ public class ExportWorkoutIntentService extends IntentService {
 
                 // emailIntent.setAction(Long.toString(System.currentTimeMillis()));
 
-                PendingIntent pendingShareIntent = PendingIntent.getActivity(this, 0, emailIntent, PendingIntent.FLAG_ONE_SHOT);
+                PendingIntent pendingShareIntent = PendingIntent.getActivity(this, 0, emailIntent, PendingIntent.FLAG_ONE_SHOT | PendingIntent.FLAG_IMMUTABLE);
 
-                NotificationCompat.Builder notificationBuilder2 = new NotificationCompat.Builder(this, NOTIFICATION_CHANNEL__EXPORT)
-                        .setLargeIcon(BitmapFactory.decodeResource(getResources(), R.drawable.ic_mail_outline_black_48dp))
-                        .setSmallIcon(R.drawable.logo)
-                        .setContentTitle(getString(R.string.TrainingTracker))
-                        .setContentText(getString(R.string.ready_to_send_email))
-                        .setContentIntent(pendingShareIntent)
-                        .setAutoCancel(true);
+                NotificationCompat.Builder notificationBuilder2 = new NotificationCompat.Builder(this, NOTIFICATION_CHANNEL__EXPORT).setLargeIcon(BitmapFactory.decodeResource(getResources(), R.drawable.ic_mail_outline_black_48dp)).setSmallIcon(R.drawable.logo).setContentTitle(getString(R.string.TrainingTracker)).setContentText(getString(R.string.ready_to_send_email)).setContentIntent(pendingShareIntent).setAutoCancel(true);
 
                 notificationManager.notify(TrainingApplication.SEND_EMAIL_NOTIFICATION_ID, notificationBuilder2.build());
             }

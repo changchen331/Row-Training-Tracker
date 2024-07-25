@@ -2,9 +2,9 @@ package com.atrainingtracker.trainingtracker.fragments;
 
 import android.content.BroadcastReceiver;
 import android.content.Context;
-import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.IntentFilter;
+import android.os.Build;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.LayoutInflater;
@@ -12,6 +12,8 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
 
+import androidx.annotation.NonNull;
+import androidx.annotation.RequiresApi;
 import androidx.appcompat.app.AlertDialog;
 import androidx.fragment.app.Fragment;
 import androidx.fragment.app.FragmentManager;
@@ -28,9 +30,7 @@ import com.atrainingtracker.trainingtracker.activities.ConfigViewsActivity;
 import java.util.HashMap;
 import java.util.LinkedList;
 
-
 public abstract class ConfigViewsFragment extends Fragment {
-
     public static final String TAG = ConfigViewsFragment.class.getSimpleName();
     private static final boolean DEBUG = TrainingApplication.DEBUG && true;
     private static final String CURRENT_ITEM = "CURRENT_ITEM";
@@ -52,7 +52,6 @@ public abstract class ConfigViewsFragment extends Fragment {
      */
     SectionsPagerAdapter mSectionsPagerAdapter;
 
-
     /**
      * The {@link ViewPager} that will host the section contents.
      */
@@ -61,7 +60,6 @@ public abstract class ConfigViewsFragment extends Fragment {
     BroadcastReceiver mNameChangedReceiver = new BroadcastReceiver() {
         @Override
         public void onReceive(Context context, Intent intent) {
-
             long viewId = intent.getLongExtra(ConfigViewsActivity.VIEW_ID, -1);
             String name = intent.getStringExtra(ConfigViewsActivity.NAME);
 
@@ -71,7 +69,6 @@ public abstract class ConfigViewsFragment extends Fragment {
             if (viewId >= 0 && name != null && mViewId2Position.containsKey(viewId)) {  // with the test containsKey, there is sometimes? no update of the titles.  but without it, we get nullPointer Exceptions...
                 mTitleList.set(mViewId2Position.get(viewId), name);  // throws null pointer exceptions
                 mSectionsPagerAdapter.notifyDataSetChanged();
-
             } else {
                 Log.i(TAG, "WTF: we can not change it");
             }
@@ -109,14 +106,14 @@ public abstract class ConfigViewsFragment extends Fragment {
 //	}
 
     @Override
-    public void onAttach(Context context) {
+    public void onAttach(@NonNull Context context) {
         super.onAttach(context);
         if (DEBUG) Log.i(TAG, "onAttach()");
 
         try {
             mViewSetChangedListener = (ViewSetChangedListener) context;
         } catch (ClassCastException e) {
-            throw new ClassCastException(context.toString() + " must implement ViewSetChangedListener");
+            throw new ClassCastException(context + " must implement ViewSetChangedListener");
         }
     }
 
@@ -124,8 +121,8 @@ public abstract class ConfigViewsFragment extends Fragment {
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
-        mActivityType = ActivityType.valueOf(getArguments().getString(ConfigViewsActivity.ACTIVITY_TYPE));
-        mViewId = getArguments().getLong(ConfigViewsActivity.VIEW_ID);
+        mActivityType = ActivityType.valueOf(requireArguments().getString(ConfigViewsActivity.ACTIVITY_TYPE));
+        mViewId = requireArguments().getLong(ConfigViewsActivity.VIEW_ID);
         if (savedInstanceState != null && savedInstanceState.containsKey(CURRENT_ITEM)) {
             mCurrentItem = savedInstanceState.getInt(CURRENT_ITEM);
         }
@@ -142,7 +139,7 @@ public abstract class ConfigViewsFragment extends Fragment {
 //    }
 
     @Override
-    public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
+    public View onCreateView(@NonNull LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
         if (DEBUG) Log.i(TAG, "onCreateView()");
 
         View v = inflater.inflate(R.layout.tabbed_config_views, container, false);
@@ -153,32 +150,22 @@ public abstract class ConfigViewsFragment extends Fragment {
         mViewPager.setAdapter(mSectionsPagerAdapter);
 
         Button button = v.findViewById(R.id.buttonAddViewBefore);
-        button.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                Log.i(TAG, "add before button pressed");
-                showAddViewDialog(false);
-            }
+        button.setOnClickListener(v12 -> {
+            Log.i(TAG, "add before button pressed");
+            showAddViewDialog(false);
         });
 
-
         button = v.findViewById(R.id.buttonAddViewAfter);
-        button.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                Log.i(TAG, "add after button pressed");
-                showAddViewDialog(true);
-            }
+        button.setOnClickListener(v13 -> {
+            Log.i(TAG, "add after button pressed");
+            showAddViewDialog(true);
         });
 
         // configure delete button
         mDeleteButton = v.findViewById(R.id.buttonDeleteView);
-        mDeleteButton.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                Log.i(TAG, "delete button pressed");
-                showReallyDeleteDialog();
-            }
+        mDeleteButton.setOnClickListener(v1 -> {
+            Log.i(TAG, "delete button pressed");
+            showReallyDeleteDialog();
         });
         configureDeleteButton();
 
@@ -197,6 +184,7 @@ public abstract class ConfigViewsFragment extends Fragment {
         }
     }
 
+    @RequiresApi(api = Build.VERSION_CODES.TIRAMISU)
     @Override
     public void onResume() {
         super.onResume();
@@ -204,7 +192,7 @@ public abstract class ConfigViewsFragment extends Fragment {
 
         // create list of views
         createViewIdList();
-        getActivity().registerReceiver(mNameChangedReceiver, mNameChangedFilter);
+        requireActivity().registerReceiver(mNameChangedReceiver, mNameChangedFilter, Context.RECEIVER_EXPORTED);
 
         if (mCurrentItem >= 0) {
             if (DEBUG) Log.i(TAG, "setCurrentItem based on mCurrentItem=" + mCurrentItem);
@@ -226,13 +214,14 @@ public abstract class ConfigViewsFragment extends Fragment {
         mCurrentItem = mViewPager.getCurrentItem();
 
         try {
-            getActivity().unregisterReceiver(mNameChangedReceiver);
+            requireActivity().unregisterReceiver(mNameChangedReceiver);
         } catch (Exception e) {
+            throw new RuntimeException(e);
         }
     }
 
     @Override
-    public void onSaveInstanceState(Bundle outState) {
+    public void onSaveInstanceState(@NonNull Bundle outState) {
         if (mViewPager != null) {
             outState.putInt(CURRENT_ITEM, mViewPager.getCurrentItem());
         }
@@ -265,37 +254,27 @@ public abstract class ConfigViewsFragment extends Fragment {
     }
 
     protected void showReallyDeleteDialog() {
-        AlertDialog.Builder builder = new AlertDialog.Builder(getContext());
-        builder.setTitle(R.string.delete_view)
-                .setMessage(getString(R.string.really_delete_view_format, mTitleList.get(mViewPager.getCurrentItem())))
-                .setIcon(android.R.drawable.ic_menu_delete)
-                .setPositiveButton(R.string.delete_view, new DialogInterface.OnClickListener() {
-                    public void onClick(DialogInterface dialog, int whichButton) {
-                        int position = mViewPager.getCurrentItem();
-                        long viewId = mPosition2ViewId.get(position);
-                        if (DEBUG) Log.i(TAG, "delete position=" + position);
+        AlertDialog.Builder builder = new AlertDialog.Builder(requireContext());
+        builder.setTitle(R.string.delete_view).setMessage(getString(R.string.really_delete_view_format, mTitleList.get(mViewPager.getCurrentItem()))).setIcon(android.R.drawable.ic_menu_delete).setPositiveButton(R.string.delete_view, (dialog, whichButton) -> {
+            int position = mViewPager.getCurrentItem();
+            long viewId = mPosition2ViewId.get(position);
+            if (DEBUG) Log.i(TAG, "delete position=" + position);
 
-                        deleteView(viewId);
+            deleteView(viewId);
 
-                        long newViewId;
-                        if (mPosition2ViewId.containsKey(position + 1)) {
-                            newViewId = mPosition2ViewId.get(position + 1);
-                        } else {
-                            newViewId = mPosition2ViewId.get(position - 1);
-                        }
+            long newViewId;
+            if (mPosition2ViewId.containsKey(position + 1)) {
+                newViewId = mPosition2ViewId.get(position + 1);
+            } else {
+                newViewId = mPosition2ViewId.get(position - 1);
+            }
 
-                        mViewSetChangedListener.viewSetChanged(mActivityType, newViewId);
+            mViewSetChangedListener.viewSetChanged(mActivityType, newViewId);
 
-                        // recreateViewIdList();
+            // recreateViewIdList();
 
-                        dialog.dismiss();
-                    }
-                })
-                .setNegativeButton(R.string.Cancel, new DialogInterface.OnClickListener() {
-                    public void onClick(DialogInterface dialog, int which) {
-                        dialog.dismiss();
-                    }
-                });
+            dialog.dismiss();
+        }).setNegativeButton(R.string.Cancel, (dialog, which) -> dialog.dismiss());
         // Create the AlertDialog object and return it
         builder.create().show();
     }
@@ -317,7 +296,6 @@ public abstract class ConfigViewsFragment extends Fragment {
         void viewSetChanged(ActivityType activityType, long viewId);
     }
 
-
     ////////////////////////////////////////////////////////////////////////////////////////////////
 
     /**
@@ -338,7 +316,7 @@ public abstract class ConfigViewsFragment extends Fragment {
 
         // see http://stackoverflow.com/questions/10849552/update-viewpager-dynamically
         @Override
-        public int getItemPosition(Object object) {
+        public int getItemPosition(@NonNull Object object) {
             if (DEBUG) Log.i(TAG, "SectionsPagerAdapter.getItemPosition");
 
             ConfigViewFragment configViewFragment = (ConfigViewFragment) object;
@@ -354,6 +332,7 @@ public abstract class ConfigViewsFragment extends Fragment {
             }
         }
 
+        @NonNull
         @Override
         public Fragment getItem(int position) {
             // getItem is called to instantiate the fragment for the given page.

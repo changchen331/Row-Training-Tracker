@@ -2,12 +2,14 @@ package com.atrainingtracker.banalservice.sensor.formater;
 
 // import java.text.NumberFormat;
 
+import android.annotation.SuppressLint;
+
 import com.atrainingtracker.banalservice.BANALService;
 import com.atrainingtracker.trainingtracker.TrainingApplication;
 
-
 public class DistanceFormatter implements MyFormatter<Number> {
 
+    @SuppressLint("DefaultLocale")
     @Override
     public String format(Number distance_m) {
 
@@ -27,6 +29,7 @@ public class DistanceFormatter implements MyFormatter<Number> {
         }
     }
 
+    @SuppressLint("DefaultLocale")
     public String format_with_units(Number distance_m) {
 
         if (distance_m == null) {
@@ -49,6 +52,7 @@ public class DistanceFormatter implements MyFormatter<Number> {
         }
     }
 
+    @SuppressLint("DefaultLocale")
     public String format_3(Number distance_m) {
 
         if (distance_m == null) {

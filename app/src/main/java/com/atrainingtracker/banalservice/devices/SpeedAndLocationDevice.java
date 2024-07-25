@@ -1,5 +1,6 @@
 package com.atrainingtracker.banalservice.devices;
 
+import android.annotation.SuppressLint;
 import android.content.Context;
 import android.content.Intent;
 import android.location.Location;
@@ -10,7 +11,6 @@ import com.atrainingtracker.banalservice.sensor.MyDoubleAccumulatorSensor;
 import com.atrainingtracker.banalservice.sensor.MySensor;
 import com.atrainingtracker.banalservice.sensor.MySensorManager;
 import com.atrainingtracker.banalservice.sensor.SensorType;
-
 
 public abstract class SpeedAndLocationDevice extends MyDevice {
     public static final double ACCURACY_THRESHOLD = 200;
@@ -33,6 +33,7 @@ public abstract class SpeedAndLocationDevice extends MyDevice {
     double mDistance, mSpeed;
 
 
+    @SuppressLint("LongLogTag")
     public SpeedAndLocationDevice(Context context, MySensorManager mySensorManager, DeviceType deviceType) {
         super(context, mySensorManager, deviceType);
         if (DEBUG) {
@@ -40,6 +41,7 @@ public abstract class SpeedAndLocationDevice extends MyDevice {
         }
     }
 
+    @SuppressLint("LongLogTag")
     protected void LocationAvailable() {
         if (DEBUG) Log.d(TAG, "LocationAvailable()");
 
@@ -50,6 +52,7 @@ public abstract class SpeedAndLocationDevice extends MyDevice {
         }
     }
 
+    @SuppressLint("LongLogTag")
     protected void LocationUnavailable() {
         if (DEBUG) Log.d(TAG, "LocationUnavailable()");
 
@@ -62,13 +65,13 @@ public abstract class SpeedAndLocationDevice extends MyDevice {
 
     @Override
     protected void addSensors() {
-        mLongitudeSensor = new MySensor<Double>(this, SensorType.LONGITUDE);
-        mLatitudeSensor = new MySensor<Double>(this, SensorType.LATITUDE);
-        mAccuracySensor = new MySensor<Double>(this, SensorType.ACCURACY);
-        mBearingSensor = new MySensor<Number>(this, SensorType.BEARING);
-        mAltitudeSensor = new MySensor<Double>(this, SensorType.ALTITUDE);
-        mSpeedSensor = new MySensor<Double>(this, SensorType.SPEED_mps);
-        mPaceSensor = new MySensor<Double>(this, SensorType.PACE_spm);
+        mLongitudeSensor = new MySensor<>(this, SensorType.LONGITUDE);
+        mLatitudeSensor = new MySensor<>(this, SensorType.LATITUDE);
+        mAccuracySensor = new MySensor<>(this, SensorType.ACCURACY);
+        mBearingSensor = new MySensor<>(this, SensorType.BEARING);
+        mAltitudeSensor = new MySensor<>(this, SensorType.ALTITUDE);
+        mSpeedSensor = new MySensor<>(this, SensorType.SPEED_mps);
+        mPaceSensor = new MySensor<>(this, SensorType.PACE_spm);
         mLineDistanceSensor = new MyDoubleAccumulatorSensor(this, SensorType.LINE_DISTANCE_m);
         mDistanceSensor = new MyDoubleAccumulatorSensor(this, SensorType.DISTANCE_m);
         mLapDistanceSensor = new MyDoubleAccumulatorSensor(this, SensorType.DISTANCE_m_LAP);
@@ -94,6 +97,7 @@ public abstract class SpeedAndLocationDevice extends MyDevice {
     }
 
 
+    @SuppressLint("LongLogTag")
     public void onNewLocation(Location location) {
         if (DEBUG) Log.i(TAG, "onNewLocation()");
 

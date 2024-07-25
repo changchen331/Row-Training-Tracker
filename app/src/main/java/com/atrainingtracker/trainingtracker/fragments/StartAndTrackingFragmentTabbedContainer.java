@@ -1,17 +1,21 @@
 package com.atrainingtracker.trainingtracker.fragments;
 
+import android.annotation.SuppressLint;
 import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
+import android.os.Build;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 
+import androidx.annotation.NonNull;
+import androidx.annotation.RequiresApi;
 import androidx.fragment.app.Fragment;
 import androidx.fragment.app.FragmentManager;
 import androidx.fragment.app.FragmentPagerAdapter;
@@ -31,9 +35,7 @@ import com.atrainingtracker.trainingtracker.tracker.TrackerService;
 
 import java.util.LinkedList;
 
-
 public class StartAndTrackingFragmentTabbedContainer extends Fragment {
-
     public static final String TAG = StartAndTrackingFragmentTabbedContainer.class.getSimpleName();
     public static final String ACTIVITY_TYPE = "ACTIVITY_TYPE";
     public static final String SELECTED_ITEM = "SELECTED_ITEM";
@@ -68,7 +70,6 @@ public class StartAndTrackingFragmentTabbedContainer extends Fragment {
     BroadcastReceiver mTrackingStartedReceiver = new BroadcastReceiver() {
         @Override
         public void onReceive(Context context, Intent intent) {
-
             if (DEBUG) Log.i(TAG, "received TrackingStarted");
             mViewPager.setCurrentItem(1);
         }
@@ -76,7 +77,6 @@ public class StartAndTrackingFragmentTabbedContainer extends Fragment {
     BroadcastReceiver mTrackingFinishedReceiver = new BroadcastReceiver() {
         @Override
         public void onReceive(Context context, Intent intent) {
-
             if (DEBUG) Log.i(TAG, "received TrackingFinished");
             mViewPager.setCurrentItem(0);
         }
@@ -84,10 +84,7 @@ public class StartAndTrackingFragmentTabbedContainer extends Fragment {
     BroadcastReceiver mLapSummaryReceiver = new BroadcastReceiver() {
         @Override
         public void onReceive(Context context, Intent intent) {
-            showLapSummaryDialog(intent.getIntExtra(BANALService.PREV_LAP_NR, 0),
-                    intent.getStringExtra(BANALService.PREV_LAP_TIME_STRING),
-                    intent.getStringExtra(BANALService.PREV_LAP_DISTANCE_STRING),
-                    intent.getStringExtra(BANALService.PREV_LAP_SPEED_STRING));
+            showLapSummaryDialog(intent.getIntExtra(BANALService.PREV_LAP_NR, 0), intent.getStringExtra(BANALService.PREV_LAP_TIME_STRING), intent.getStringExtra(BANALService.PREV_LAP_DISTANCE_STRING), intent.getStringExtra(BANALService.PREV_LAP_SPEED_STRING));
         }
     };
     BroadcastReceiver mPauseChangedReceiver = new BroadcastReceiver() {
@@ -123,8 +120,12 @@ public class StartAndTrackingFragmentTabbedContainer extends Fragment {
         super.onCreate(savedInstanceState);
         if (DEBUG) Log.i(TAG, "onCreate()");
 
-        mActivityType = ActivityType.valueOf(getArguments().getString(ACTIVITY_TYPE));
-        mSelectedItemNr = getArguments().getInt(SELECTED_ITEM);
+        if (getArguments() != null) {
+            mActivityType = ActivityType.valueOf(getArguments().getString(ACTIVITY_TYPE));
+        }
+        if (getArguments() != null) {
+            mSelectedItemNr = getArguments().getInt(SELECTED_ITEM);
+        }
 
         if (savedInstanceState != null && savedInstanceState.containsKey(SELECTED_ITEM)) {
             mSelectedItemNr = savedInstanceState.getInt(SELECTED_ITEM);
@@ -136,20 +137,20 @@ public class StartAndTrackingFragmentTabbedContainer extends Fragment {
     }
 
     @Override
-    public void onAttach(Context context) {
+    public void onAttach(@NonNull Context context) {
         super.onAttach(context);
         if (DEBUG) Log.i(TAG, "onAttach");
 
         try {
             mUpdateActivityInterface = (UpdateActivityTypeInterface) context;
         } catch (ClassCastException e) {
-            throw new ClassCastException(context.toString() + " must implement UpdateActivityTypeInterface");
+            throw new ClassCastException(context + " must implement UpdateActivityTypeInterface");
         }
 
         try {
             mRemoteDevicesSettingsInterface = (RemoteDevicesSettingsInterface) context;
         } catch (ClassCastException e) {
-            throw new ClassCastException(context.toString() + "must implement RemoteDevicesSettingsInterface");
+            throw new ClassCastException(context + "must implement RemoteDevicesSettingsInterface");
         }
 
         try {
@@ -167,12 +168,12 @@ public class StartAndTrackingFragmentTabbedContainer extends Fragment {
                 }
             });
         } catch (ClassCastException e) {
-            throw new ClassCastException(context.toString() + " must implement GetBanalServiceInterface");
+            throw new ClassCastException(context + " must implement GetBanalServiceInterface");
         }
     }
 
     @Override
-    public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
+    public View onCreateView(@NonNull LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
         if (DEBUG) Log.i(TAG, "onCreateView()");
 
         View v = inflater.inflate(R.layout.tabbed_tracking_fragment, container, false);
@@ -199,23 +200,24 @@ public class StartAndTrackingFragmentTabbedContainer extends Fragment {
         }
     }
 
+    @RequiresApi(api = Build.VERSION_CODES.TIRAMISU)
     @Override
     public void onResume() {
         super.onResume();
         if (DEBUG) Log.i(TAG, "onResume()");
 
-        getActivity().registerReceiver(mTrackingStartedReceiver, mTrackingStartedFilter);
-        getActivity().registerReceiver(mTrackingFinishedReceiver, mTrackingFinishedFilter);
-        getActivity().registerReceiver(mLapSummaryReceiver, mLapSummaryFilter);
+        requireActivity().registerReceiver(mTrackingStartedReceiver, mTrackingStartedFilter, Context.RECEIVER_EXPORTED);
+        requireActivity().registerReceiver(mTrackingFinishedReceiver, mTrackingFinishedFilter, Context.RECEIVER_EXPORTED);
+        requireActivity().registerReceiver(mLapSummaryReceiver, mLapSummaryFilter, Context.RECEIVER_EXPORTED);
 
         mPauseChangedFilter.addAction(TrainingApplication.REQUEST_START_TRACKING);
         mPauseChangedFilter.addAction(TrainingApplication.REQUEST_PAUSE_TRACKING);
         mPauseChangedFilter.addAction(TrainingApplication.REQUEST_RESUME_FROM_PAUSED);
-        getActivity().registerReceiver(mPauseChangedReceiver, mPauseChangedFilter);
+        requireActivity().registerReceiver(mPauseChangedReceiver, mPauseChangedFilter, Context.RECEIVER_EXPORTED);
 
         mUpdateActivityTypeFilter.addAction(BANALService.SENSORS_CHANGED);
         mUpdateActivityTypeFilter.addAction(BANALService.SPORT_TYPE_CHANGED_BY_USER_INTENT);
-        getActivity().registerReceiver(mUpdateActivityTypeReceiver, mUpdateActivityTypeFilter);
+        requireActivity().registerReceiver(mUpdateActivityTypeReceiver, mUpdateActivityTypeFilter, Context.RECEIVER_EXPORTED);
 
         createViewIdList();
 
@@ -229,24 +231,29 @@ public class StartAndTrackingFragmentTabbedContainer extends Fragment {
         if (DEBUG) Log.i(TAG, "onPause()");
 
         try {
-            getActivity().unregisterReceiver(mTrackingStartedReceiver);
+            requireActivity().unregisterReceiver(mTrackingStartedReceiver);
         } catch (Exception e) {
+            throw new RuntimeException(e);
         }
         try {
-            getActivity().unregisterReceiver(mTrackingFinishedReceiver);
+            requireActivity().unregisterReceiver(mTrackingFinishedReceiver);
         } catch (Exception e) {
+            throw new RuntimeException(e);
         }
         try {
-            getActivity().unregisterReceiver(mLapSummaryReceiver);
+            requireActivity().unregisterReceiver(mLapSummaryReceiver);
         } catch (Exception e) {
+            throw new RuntimeException(e);
         }
         try {
-            getActivity().unregisterReceiver(mPauseChangedReceiver);
+            requireActivity().unregisterReceiver(mPauseChangedReceiver);
         } catch (Exception e) {
+            throw new RuntimeException(e);
         }
         try {
-            getActivity().unregisterReceiver(mUpdateActivityTypeReceiver);
+            requireActivity().unregisterReceiver(mUpdateActivityTypeReceiver);
         } catch (Exception e) {
+            throw new RuntimeException(e);
         }
     }
 
@@ -278,19 +285,14 @@ public class StartAndTrackingFragmentTabbedContainer extends Fragment {
         }
     }
 
+    @SuppressLint("Range")
     protected void createViewIdList() {
         if (DEBUG)
             Log.i(TAG, "createViewIdList(), mActivityType=" + mActivityType + "mSelectedItemNr=" + mSelectedItemNr);
 
         TrackingViewsDatabaseManager databaseManager = TrackingViewsDatabaseManager.getInstance();
         SQLiteDatabase db = databaseManager.getOpenDatabase();
-        Cursor cursor = db.query(TrackingViewsDatabaseManager.TrackingViewsDbHelper.VIEWS_TABLE,
-                null,
-                TrackingViewsDatabaseManager.TrackingViewsDbHelper.ACTIVITY_TYPE + "=?",
-                new String[]{mActivityType.name()},
-                null,
-                null,
-                TrackingViewsDbHelper.LAYOUT_NR + " ASC");
+        Cursor cursor = db.query(TrackingViewsDatabaseManager.TrackingViewsDbHelper.VIEWS_TABLE, null, TrackingViewsDatabaseManager.TrackingViewsDbHelper.ACTIVITY_TYPE + "=?", new String[]{mActivityType.name()}, null, null, TrackingViewsDbHelper.LAYOUT_NR + " ASC");
 
         mTitleList.clear();
         mViewIdList.clear();
@@ -320,7 +322,9 @@ public class StartAndTrackingFragmentTabbedContainer extends Fragment {
         }  // the control tracking fragment is in the foreground, so we do not show this dialog/info
 
         LapSummaryDialog lapSummaryDialog = LapSummaryDialog.newInstance(lapNr, lapTime, lapDistance, lapSpeed);
-        lapSummaryDialog.show(getFragmentManager(), LapSummaryDialog.TAG);
+        if (getFragmentManager() != null) {
+            lapSummaryDialog.show(getFragmentManager(), LapSummaryDialog.TAG);
+        }
     }
 
     public interface UpdateActivityTypeInterface {
@@ -337,6 +341,7 @@ public class StartAndTrackingFragmentTabbedContainer extends Fragment {
             super(fm, BEHAVIOR_RESUME_ONLY_CURRENT_FRAGMENT);
         }
 
+        @NonNull
         @Override
         public Fragment getItem(int position) {
             // getItem is called to instantiate the fragment for the given page.

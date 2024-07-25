@@ -1,5 +1,6 @@
 package com.atrainingtracker.trainingtracker.exporter;
 
+import android.annotation.SuppressLint;
 import android.content.ContentValues;
 import android.content.Context;
 import android.content.Intent;
@@ -71,7 +72,7 @@ public class ExportManager {
                 try {
                     cExportStatusDb.insert(ExportStatusDbHelper.TABLE, null, exportProgressValues);
                 } catch (SQLException e) {
-                    Log.e(TAG, "Error while writing" + e.toString() + "to ExportStatusDbHelper.TABLE");
+                    Log.e(TAG, "Error while writing" + e + "to ExportStatusDbHelper.TABLE");
                 }
             }
         }
@@ -86,20 +87,14 @@ public class ExportManager {
         ContentValues values = new ContentValues();
 
         values.put(ExportStatusDbHelper.EXPORT_STATUS, ExportStatus.UNWANTED.name());
-        cExportStatusDb.update(ExportStatusDbHelper.TABLE,
-                values,
-                WorkoutSummaries.FILE_BASE_NAME + "=?",
-                new String[]{fileBaseName});
+        cExportStatusDb.update(ExportStatusDbHelper.TABLE, values, WorkoutSummaries.FILE_BASE_NAME + "=?", new String[]{fileBaseName});
 
         // FILE
         for (FileFormat fileFormat : ExportType.FILE.getExportToFileFormats()) {
             if (TrainingApplication.exportToFile(fileFormat) || TrainingApplication.exportViaEmail(fileFormat)) {
                 values.put(ExportStatusDbHelper.EXPORT_STATUS, ExportStatus.WAITING.name());
                 //values.put(ExportStatusDbHelper.RETRIES,  DEFAULT_RETRIES);
-                cExportStatusDb.update(ExportStatusDbHelper.TABLE,
-                        values,
-                        WorkoutSummaries.FILE_BASE_NAME + "=? AND " + ExportStatusDbHelper.TYPE + "=? AND " + ExportStatusDbHelper.FORMAT + "=?",
-                        new String[]{fileBaseName, ExportType.FILE.name(), fileFormat.name()});
+                cExportStatusDb.update(ExportStatusDbHelper.TABLE, values, WorkoutSummaries.FILE_BASE_NAME + "=? AND " + ExportStatusDbHelper.TYPE + "=? AND " + ExportStatusDbHelper.FORMAT + "=?", new String[]{fileBaseName, ExportType.FILE.name(), fileFormat.name()});
             }
         }
 
@@ -110,10 +105,7 @@ public class ExportManager {
 
                     values.put(ExportStatusDbHelper.EXPORT_STATUS, ExportStatus.WAITING.name());
 
-                    cExportStatusDb.update(ExportStatusDbHelper.TABLE,
-                            values,
-                            WorkoutSummaries.FILE_BASE_NAME + "=? AND " + ExportStatusDbHelper.TYPE + "=? AND " + ExportStatusDbHelper.FORMAT + "=?",
-                            new String[]{fileBaseName, ExportType.DROPBOX.name(), fileFormat.name()});
+                    cExportStatusDb.update(ExportStatusDbHelper.TABLE, values, WorkoutSummaries.FILE_BASE_NAME + "=? AND " + ExportStatusDbHelper.TYPE + "=? AND " + ExportStatusDbHelper.FORMAT + "=?", new String[]{fileBaseName, ExportType.DROPBOX.name(), fileFormat.name()});
                 }
             }
         }
@@ -124,10 +116,7 @@ public class ExportManager {
 
                 values.put(ExportStatusDbHelper.EXPORT_STATUS, ExportStatus.WAITING.name());
 
-                cExportStatusDb.update(ExportStatusDbHelper.TABLE,
-                        values,
-                        WorkoutSummaries.FILE_BASE_NAME + "=? AND " + ExportStatusDbHelper.TYPE + "=? AND " + ExportStatusDbHelper.FORMAT + "=?",
-                        new String[]{fileBaseName, ExportType.COMMUNITY.name(), fileFormat.name()});
+                cExportStatusDb.update(ExportStatusDbHelper.TABLE, values, WorkoutSummaries.FILE_BASE_NAME + "=? AND " + ExportStatusDbHelper.TYPE + "=? AND " + ExportStatusDbHelper.FORMAT + "=?", new String[]{fileBaseName, ExportType.COMMUNITY.name(), fileFormat.name()});
             }
 
         }
@@ -145,10 +134,7 @@ public class ExportManager {
             if (TrainingApplication.exportToFile(fileFormat) || TrainingApplication.exportViaEmail(fileFormat)) {
                 values.put(ExportStatusDbHelper.RETRIES, DEFAULT_RETRIES_FILE);
 
-                int updates = cExportStatusDb.update(ExportStatusDbHelper.TABLE,
-                        values,
-                        WorkoutSummaries.FILE_BASE_NAME + "=? AND " + ExportStatusDbHelper.TYPE + "=? AND " + ExportStatusDbHelper.FORMAT + "=?",
-                        new String[]{fileBaseName, ExportType.FILE.name(), fileFormat.name()});
+                int updates = cExportStatusDb.update(ExportStatusDbHelper.TABLE, values, WorkoutSummaries.FILE_BASE_NAME + "=? AND " + ExportStatusDbHelper.TYPE + "=? AND " + ExportStatusDbHelper.FORMAT + "=?", new String[]{fileBaseName, ExportType.FILE.name(), fileFormat.name()});
                 if (DEBUG) Log.d(TAG, fileFormat.name() + ": " + updates + " updates");
             }
         }
@@ -160,13 +146,7 @@ public class ExportManager {
 
         SQLiteDatabase db = WorkoutSummariesDatabaseManager.getInstance().getOpenDatabase();
 
-        Cursor cursor = db.query(WorkoutSummaries.TABLE,
-                new String[]{WorkoutSummaries.FILE_BASE_NAME},
-                WorkoutSummaries.C_ID + "=?",
-                new String[]{Long.toString(workoutId)},
-                null,
-                null,
-                null);
+        Cursor cursor = db.query(WorkoutSummaries.TABLE, new String[]{WorkoutSummaries.FILE_BASE_NAME}, WorkoutSummaries.C_ID + "=?", new String[]{Long.toString(workoutId)}, null, null, null);
         cursor.moveToFirst();
         String fileBaseName = cursor.getString(0);
         if (fileBaseName == null) {
@@ -185,10 +165,7 @@ public class ExportManager {
         values.put(ExportStatusDbHelper.EXPORT_STATUS, ExportStatus.WAITING.name());
         values.put(ExportStatusDbHelper.RETRIES, DEFAULT_RETRIES_FILE);
         values.put(ExportStatusDbHelper.ANSWER, "");
-        cExportStatusDb.update(ExportStatusDbHelper.TABLE,
-                values,
-                WorkoutSummaries.FILE_BASE_NAME + "=? AND " + ExportStatusDbHelper.TYPE + "=? AND " + ExportStatusDbHelper.FORMAT + "=?",
-                new String[]{fileBaseName, ExportType.FILE.name(), fileFormat.name()});
+        cExportStatusDb.update(ExportStatusDbHelper.TABLE, values, WorkoutSummaries.FILE_BASE_NAME + "=? AND " + ExportStatusDbHelper.TYPE + "=? AND " + ExportStatusDbHelper.FORMAT + "=?", new String[]{fileBaseName, ExportType.FILE.name(), fileFormat.name()});
         // }
 
         // dropbox: either waiting or unwanted (retries are not yet set)
@@ -197,10 +174,7 @@ public class ExportManager {
         } else {
             values.put(ExportStatusDbHelper.EXPORT_STATUS, ExportStatus.UNWANTED.name());
         }
-        cExportStatusDb.update(ExportStatusDbHelper.TABLE,
-                values,
-                WorkoutSummaries.FILE_BASE_NAME + "=? AND " + ExportStatusDbHelper.TYPE + "=? AND " + ExportStatusDbHelper.FORMAT + "=?",
-                new String[]{fileBaseName, ExportType.DROPBOX.name(), fileFormat.name()});
+        cExportStatusDb.update(ExportStatusDbHelper.TABLE, values, WorkoutSummaries.FILE_BASE_NAME + "=? AND " + ExportStatusDbHelper.TYPE + "=? AND " + ExportStatusDbHelper.FORMAT + "=?", new String[]{fileBaseName, ExportType.DROPBOX.name(), fileFormat.name()});
 
         exportStatusChanged();
     }
@@ -210,23 +184,16 @@ public class ExportManager {
     public synchronized ArrayList<ExportInfo> getExportQueue() {
         if (DEBUG) Log.d(TAG, "getExportQueue");
 
-        ArrayList<ExportInfo> result = new ArrayList<ExportInfo>();
+        ArrayList<ExportInfo> result = new ArrayList<>();
 
         // 
-        Cursor cursor = cExportStatusDb.query(ExportStatusDbHelper.TABLE,
-                new String[]{ExportStatusDbHelper.RETRIES, WorkoutSummaries.FILE_BASE_NAME, ExportStatusDbHelper.TYPE, ExportStatusDbHelper.FORMAT},
-                null, // maybe something like RETRIES > 0.  How to do this?  
-                null,
-                null,
-                null,
-                ExportStatusDbHelper.RETRIES + " DESC");
+        Cursor cursor = cExportStatusDb.query(ExportStatusDbHelper.TABLE, new String[]{ExportStatusDbHelper.RETRIES, WorkoutSummaries.FILE_BASE_NAME, ExportStatusDbHelper.TYPE, ExportStatusDbHelper.FORMAT}, null, // maybe something like RETRIES > 0.  How to do this?
+                null, null, null, ExportStatusDbHelper.RETRIES + " DESC");
 
         while (cursor.moveToNext()) {
-            int retries = cursor.getInt(cursor.getColumnIndex(ExportStatusDbHelper.RETRIES));
+            @SuppressLint("Range") int retries = cursor.getInt(cursor.getColumnIndex(ExportStatusDbHelper.RETRIES));
             if (retries > 0) {
-                ExportInfo exportInfo = new ExportInfo(cursor.getString(cursor.getColumnIndex(WorkoutSummaries.FILE_BASE_NAME)),
-                        FileFormat.valueOf(cursor.getString(cursor.getColumnIndex(ExportStatusDbHelper.FORMAT))),
-                        ExportType.valueOf(cursor.getString(cursor.getColumnIndex(ExportStatusDbHelper.TYPE))));
+                @SuppressLint("Range") ExportInfo exportInfo = new ExportInfo(cursor.getString(cursor.getColumnIndex(WorkoutSummaries.FILE_BASE_NAME)), FileFormat.valueOf(cursor.getString(cursor.getColumnIndex(ExportStatusDbHelper.FORMAT))), ExportType.valueOf(cursor.getString(cursor.getColumnIndex(ExportStatusDbHelper.TYPE))));
                 result.add(exportInfo);
                 if (DEBUG) Log.d(TAG, "added " + exportInfo + " retries: " + retries);
             }
@@ -244,16 +211,14 @@ public class ExportManager {
 
         values.put(ExportStatusDbHelper.EXPORT_STATUS, ExportStatus.PROCESSING.name());
 
-        cExportStatusDb.update(ExportStatusDbHelper.TABLE,
-                values,
-                WorkoutSummaries.FILE_BASE_NAME + "=? AND " + ExportStatusDbHelper.TYPE + "=? AND " + ExportStatusDbHelper.FORMAT + "=?",
-                new String[]{exportInfo.getFileBaseName(), exportInfo.getExportType().name(), exportInfo.getFileFormat().name()});
+        cExportStatusDb.update(ExportStatusDbHelper.TABLE, values, WorkoutSummaries.FILE_BASE_NAME + "=? AND " + ExportStatusDbHelper.TYPE + "=? AND " + ExportStatusDbHelper.FORMAT + "=?", new String[]{exportInfo.getFileBaseName(), exportInfo.getExportType().name(), exportInfo.getFileFormat().name()});
         // db.close();
 
         exportStatusChanged();
     }
 
 
+    @SuppressLint("Range")
     public synchronized void exportingFinished(ExportInfo exportInfo, boolean success, String answer) {
         if (DEBUG) Log.d(TAG, "exportingFinished: " + exportInfo + ": " + answer);
 
@@ -265,13 +230,7 @@ public class ExportManager {
             exportStatus = ExportStatus.FINISHED_SUCCESS;
         } else {
             // get the number of retries from the db
-            Cursor cursor = cExportStatusDb.query(ExportStatusDbHelper.TABLE,
-                    new String[]{ExportStatusDbHelper.RETRIES},
-                    WorkoutSummaries.FILE_BASE_NAME + "=? AND " + ExportStatusDbHelper.TYPE + "=? AND " + ExportStatusDbHelper.FORMAT + "=?",
-                    new String[]{exportInfo.getFileBaseName(), exportInfo.getExportType().name(), exportInfo.getFileFormat().name()},
-                    null,
-                    null,
-                    null);
+            Cursor cursor = cExportStatusDb.query(ExportStatusDbHelper.TABLE, new String[]{ExportStatusDbHelper.RETRIES}, WorkoutSummaries.FILE_BASE_NAME + "=? AND " + ExportStatusDbHelper.TYPE + "=? AND " + ExportStatusDbHelper.FORMAT + "=?", new String[]{exportInfo.getFileBaseName(), exportInfo.getExportType().name(), exportInfo.getFileFormat().name()}, null, null, null);
             if (cursor.getCount() > 0) {
                 cursor.moveToFirst();
                 retries = cursor.getLong(cursor.getColumnIndex(ExportStatusDbHelper.RETRIES));
@@ -292,10 +251,7 @@ public class ExportManager {
         values.put(ExportStatusDbHelper.EXPORT_STATUS, exportStatus.name());
         values.put(ExportStatusDbHelper.ANSWER, answer);
 
-        cExportStatusDb.update(ExportStatusDbHelper.TABLE,
-                values,
-                WorkoutSummaries.FILE_BASE_NAME + "=? AND " + ExportStatusDbHelper.TYPE + "=? AND " + ExportStatusDbHelper.FORMAT + "=?",
-                new String[]{exportInfo.getFileBaseName(), exportInfo.getExportType().name(), exportInfo.getFileFormat().name()});
+        cExportStatusDb.update(ExportStatusDbHelper.TABLE, values, WorkoutSummaries.FILE_BASE_NAME + "=? AND " + ExportStatusDbHelper.TYPE + "=? AND " + ExportStatusDbHelper.FORMAT + "=?", new String[]{exportInfo.getFileBaseName(), exportInfo.getExportType().name(), exportInfo.getFileFormat().name()});
         // db.close();
 
 
@@ -307,24 +263,19 @@ public class ExportManager {
     }
 
 
+    @SuppressLint("Range")
     public synchronized EnumMap<ExportType, EnumMap<FileFormat, ExportStatus>> getExportStatus(String fileBaseName) {
         if (DEBUG) Log.d(TAG, "getExportStatus");
 
-        EnumMap<ExportType, EnumMap<FileFormat, ExportStatus>> result = new EnumMap<ExportType, EnumMap<FileFormat, ExportStatus>>(ExportType.class);
+        EnumMap<ExportType, EnumMap<FileFormat, ExportStatus>> result = new EnumMap<>(ExportType.class);
 
         Cursor cursor;
 
         for (ExportType exportType : ExportType.values()) {
 
-            EnumMap<FileFormat, ExportStatus> foo = new EnumMap<FileFormat, ExportStatus>(FileFormat.class);
+            EnumMap<FileFormat, ExportStatus> foo = new EnumMap<>(FileFormat.class);
             for (FileFormat fileFormat : FileFormat.values()) {
-                cursor = cExportStatusDb.query(ExportStatusDbHelper.TABLE,
-                        new String[]{ExportStatusDbHelper.EXPORT_STATUS},
-                        WorkoutSummaries.FILE_BASE_NAME + "=? AND " + ExportStatusDbHelper.TYPE + "=? AND " + ExportStatusDbHelper.FORMAT + "=?",
-                        new String[]{fileBaseName, exportType.name(), fileFormat.name()},
-                        null,
-                        null,
-                        null);
+                cursor = cExportStatusDb.query(ExportStatusDbHelper.TABLE, new String[]{ExportStatusDbHelper.EXPORT_STATUS}, WorkoutSummaries.FILE_BASE_NAME + "=? AND " + ExportStatusDbHelper.TYPE + "=? AND " + ExportStatusDbHelper.FORMAT + "=?", new String[]{fileBaseName, exportType.name(), fileFormat.name()}, null, null, null);
                 if (cursor.getCount() > 0) {
                     cursor.moveToFirst();
                     foo.put(fileFormat, ExportStatus.valueOf(cursor.getString(cursor.getColumnIndex(ExportStatusDbHelper.EXPORT_STATUS))));
@@ -340,18 +291,13 @@ public class ExportManager {
     }
 
 
+    @SuppressLint("Range")
     public synchronized String getExportAnswer(ExportInfo exportInfo) {
         if (DEBUG) Log.d(TAG, "getExportAnswer");
 
         String exportAnswer = null;
 
-        Cursor cursor = cExportStatusDb.query(ExportStatusDbHelper.TABLE,
-                new String[]{ExportStatusDbHelper.ANSWER},
-                WorkoutSummaries.FILE_BASE_NAME + "=? AND " + ExportStatusDbHelper.TYPE + "=? AND " + ExportStatusDbHelper.FORMAT + "=?",
-                new String[]{exportInfo.getFileBaseName(), exportInfo.getExportType().name(), exportInfo.getFileFormat().name()},
-                null,
-                null,
-                null);
+        Cursor cursor = cExportStatusDb.query(ExportStatusDbHelper.TABLE, new String[]{ExportStatusDbHelper.ANSWER}, WorkoutSummaries.FILE_BASE_NAME + "=? AND " + ExportStatusDbHelper.TYPE + "=? AND " + ExportStatusDbHelper.FORMAT + "=?", new String[]{exportInfo.getFileBaseName(), exportInfo.getExportType().name(), exportInfo.getFileFormat().name()}, null, null, null);
         if (cursor.getCount() > 0) {
             cursor.moveToFirst();
             exportAnswer = cursor.getString(cursor.getColumnIndex(ExportStatusDbHelper.ANSWER));
@@ -362,18 +308,13 @@ public class ExportManager {
     }
 
 
+    @SuppressLint("Range")
     public synchronized ExportStatus getExportStatus(ExportInfo exportInfo) {
         if (DEBUG) Log.d(TAG, "getExportStatus");
 
         ExportStatus exportStatus = null;
 
-        Cursor cursor = cExportStatusDb.query(ExportStatusDbHelper.TABLE,
-                new String[]{ExportStatusDbHelper.EXPORT_STATUS},
-                WorkoutSummaries.FILE_BASE_NAME + "=? AND " + ExportStatusDbHelper.TYPE + "=? AND " + ExportStatusDbHelper.FORMAT + "=?",
-                new String[]{exportInfo.getFileBaseName(), exportInfo.getExportType().name(), exportInfo.getFileFormat().name()},
-                null,
-                null,
-                null);
+        Cursor cursor = cExportStatusDb.query(ExportStatusDbHelper.TABLE, new String[]{ExportStatusDbHelper.EXPORT_STATUS}, WorkoutSummaries.FILE_BASE_NAME + "=? AND " + ExportStatusDbHelper.TYPE + "=? AND " + ExportStatusDbHelper.FORMAT + "=?", new String[]{exportInfo.getFileBaseName(), exportInfo.getExportType().name(), exportInfo.getFileFormat().name()}, null, null, null);
         if (cursor.getCount() > 0) {
             cursor.moveToFirst();
             exportStatus = ExportStatus.valueOf(cursor.getString(cursor.getColumnIndex(ExportStatusDbHelper.EXPORT_STATUS)));
@@ -402,19 +343,13 @@ public class ExportManager {
 
             if (TrainingApplication.uploadToDropbox()) {
                 values.put(ExportStatusDbHelper.RETRIES, DEFAULT_RETRIES_DROPBOX);
-                cExportStatusDb.update(ExportStatusDbHelper.TABLE,
-                        values,
-                        WorkoutSummaries.FILE_BASE_NAME + "=? AND " + ExportStatusDbHelper.TYPE + "=? AND " + ExportStatusDbHelper.FORMAT + "=?",
-                        new String[]{fileBaseName, ExportType.DROPBOX.name(), fileFormat.name()});
+                cExportStatusDb.update(ExportStatusDbHelper.TABLE, values, WorkoutSummaries.FILE_BASE_NAME + "=? AND " + ExportStatusDbHelper.TYPE + "=? AND " + ExportStatusDbHelper.FORMAT + "=?", new String[]{fileBaseName, ExportType.DROPBOX.name(), fileFormat.name()});
             }
         }
 
         if (TrainingApplication.uploadToCommunity(fileFormat)) {
             values.put(ExportStatusDbHelper.RETRIES, DEFAULT_RETRIES_COMMUNITY);
-            cExportStatusDb.update(ExportStatusDbHelper.TABLE,
-                    values,
-                    WorkoutSummaries.FILE_BASE_NAME + "=? AND " + ExportStatusDbHelper.TYPE + "=? AND " + ExportStatusDbHelper.FORMAT + "=?",
-                    new String[]{fileBaseName, ExportType.COMMUNITY.name(), fileFormat.name()});
+            cExportStatusDb.update(ExportStatusDbHelper.TABLE, values, WorkoutSummaries.FILE_BASE_NAME + "=? AND " + ExportStatusDbHelper.TYPE + "=? AND " + ExportStatusDbHelper.FORMAT + "=?", new String[]{fileBaseName, ExportType.COMMUNITY.name(), fileFormat.name()});
         }
     }
 
@@ -440,16 +375,12 @@ public class ExportManager {
         static final String EXPORT_STATUS = "Progress"; // TODO: rename to ExportStatus
         static final String RETRIES = "Retries";
         static final String ANSWER = "Answer";
-        protected static final String CREATE_TABLE = "create table " + TABLE + " ("
-                + C_ID + " INTEGER PRIMARY KEY AUTOINCREMENT, "
+        protected static final String CREATE_TABLE = "create table " + TABLE + " (" + C_ID + " INTEGER PRIMARY KEY AUTOINCREMENT, "
 
-                + WorkoutSummaries.FILE_BASE_NAME + " text, "
-                + FORMAT + " text, "  // CSV, GPX, TCX, GC, Strava, RunKeeper, TrainingPeaks
+                + WorkoutSummaries.FILE_BASE_NAME + " text, " + FORMAT + " text, "  // CSV, GPX, TCX, GC, Strava, RunKeeper, TrainingPeaks
                 + TYPE + " text, "  // File, Dropbox, Community
 
-                + EXPORT_STATUS + " text, "
-                + RETRIES + " int, "
-                + ANSWER + " text)";
+                + EXPORT_STATUS + " text, " + RETRIES + " int, " + ANSWER + " text)";
 
         // Constructor
         public ExportStatusDbHelper(Context context) {

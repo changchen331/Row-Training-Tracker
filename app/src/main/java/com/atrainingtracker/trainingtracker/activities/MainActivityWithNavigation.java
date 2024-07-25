@@ -1,17 +1,18 @@
 package com.atrainingtracker.trainingtracker.activities;
 
 import android.Manifest;
+import android.annotation.SuppressLint;
 import android.app.Dialog;
 import android.content.BroadcastReceiver;
 import android.content.ComponentName;
 import android.content.Context;
-import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.IntentFilter;
 import android.content.ServiceConnection;
 import android.content.pm.ActivityInfo;
 import android.location.LocationManager;
 import android.net.Uri;
+import android.os.Build;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.IBinder;
@@ -21,6 +22,8 @@ import android.view.WindowManager;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import androidx.annotation.NonNull;
+import androidx.annotation.RequiresApi;
 import androidx.appcompat.app.ActionBar;
 import androidx.appcompat.app.ActionBarDrawerToggle;
 import androidx.appcompat.app.AlertDialog;
@@ -90,24 +93,11 @@ import com.google.android.material.navigation.NavigationView;
 
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Objects;
 
 // import android.support.v7.app.AlertDialog;
 
-
-public class MainActivityWithNavigation
-        extends AppCompatActivity
-        implements
-        NavigationView.OnNavigationItemSelectedListener,
-        DeviceTypeChoiceFragment.OnDeviceTypeSelectedListener,
-        RemoteDevicesFragment.OnRemoteDeviceSelectedListener,
-        RemoteDevicesSettingsInterface,
-        ShowWorkoutDetailsInterface,
-        BANALService.GetBanalServiceInterface,
-        ReallyDeleteDialogInterface,
-        PreferenceFragmentCompat.OnPreferenceStartScreenCallback,
-        StartAndTrackingFragmentTabbedContainer.UpdateActivityTypeInterface,
-        StarredSegmentsListFragment.StartSegmentDetailsActivityInterface,
-        StartOrResumeInterface {
+public class MainActivityWithNavigation extends AppCompatActivity implements NavigationView.OnNavigationItemSelectedListener, DeviceTypeChoiceFragment.OnDeviceTypeSelectedListener, RemoteDevicesFragment.OnRemoteDeviceSelectedListener, RemoteDevicesSettingsInterface, ShowWorkoutDetailsInterface, BANALService.GetBanalServiceInterface, ReallyDeleteDialogInterface, PreferenceFragmentCompat.OnPreferenceStartScreenCallback, StartAndTrackingFragmentTabbedContainer.UpdateActivityTypeInterface, StarredSegmentsListFragment.StartSegmentDetailsActivityInterface, StartOrResumeInterface {
     public static final String SELECTED_FRAGMENT_ID = "SELECTED_FRAGMENT_ID";
     public static final String SELECTED_FRAGMENT = "SELECTED_FRAGMENT";
     private static final String TAG = "com.atrainingtracker.trainingtracker.MainActivityWithNavigation";
@@ -133,8 +123,7 @@ public class MainActivityWithNavigation
     protected boolean mStartAndNotResume = true;        // start a new workout or continue with the previous one
     protected BANALService.BANALServiceComm mBanalServiceComm = null;
     LinkedList<ConnectionStatusListener> mConnectionStatusListeners = new LinkedList<>();
-    /* Broadcast Receiver to adapt the title based on the tracking state */
-    BroadcastReceiver mStartTrackingReceiver = new BroadcastReceiver() {
+    /* Broadcast Receiver to adapt the title based on the tracking state */ BroadcastReceiver mStartTrackingReceiver = new BroadcastReceiver() {
         @Override
         public void onReceive(Context context, Intent intent) {
             setTitle(R.string.Tracking);
@@ -164,6 +153,7 @@ public class MainActivityWithNavigation
     private boolean mAlreadyTriedToRequestDropboxToken = false;
     // class BANALConnection implements ServiceConnection
     private ServiceConnection mBanalConnection = new ServiceConnection() {
+        @SuppressLint("LongLogTag")
         public void onServiceConnected(ComponentName name, IBinder service) {
             if (DEBUG) Log.i(TAG, "onServiceConnected");
 
@@ -180,6 +170,7 @@ public class MainActivityWithNavigation
             }
         }
 
+        @SuppressLint("LongLogTag")
         public void onServiceDisconnected(ComponentName name) {
             if (DEBUG) Log.i(TAG, "onServiceDisconnected");
 
@@ -191,13 +182,10 @@ public class MainActivityWithNavigation
             }
         }
     };
-    protected Runnable mDisconnectFromBANALServiceRunnable = new Runnable() {
-        @Override
-        public void run() {
-            disconnectFromBANALService();
-        }
-    };
+    protected Runnable mDisconnectFromBANALServiceRunnable = this::disconnectFromBANALService;
 
+    @RequiresApi(api = Build.VERSION_CODES.Q)
+    @SuppressLint("LongLogTag")
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -218,7 +206,7 @@ public class MainActivityWithNavigation
 
         final ActionBar supportAB = getSupportActionBar();
         // supportAB.setHomeAsUpIndicator(R.drawable.abc_ic_ab_back_mtrl_am_alpha);
-        supportAB.setDisplayHomeAsUpEnabled(true);
+        Objects.requireNonNull(supportAB).setDisplayHomeAsUpEnabled(true);
 
         mDrawerLayout = findViewById(R.id.drawer_layout);
 
@@ -236,14 +224,10 @@ public class MainActivityWithNavigation
         }
 
         // getPermissions
-        if ((!TrainingApplication.havePermission(Manifest.permission.ACCESS_FINE_LOCATION)
-                || !TrainingApplication.havePermission(Manifest.permission.ACCESS_BACKGROUND_LOCATION))
-                && !TrainingApplication.havePermission(Manifest.permission.WRITE_EXTERNAL_STORAGE)) {
-            ActivityCompat.requestPermissions(this, new String[]{Manifest.permission.ACCESS_FINE_LOCATION, Manifest.permission.ACCESS_BACKGROUND_LOCATION, Manifest.permission.WRITE_EXTERNAL_STORAGE},
-                    MY_PERMISSIONS_REQUEST_ACCESS_FINE_LOCATION_AND_WRITE_EXTERNAL_STORAGE);
+        if ((!TrainingApplication.havePermission(Manifest.permission.ACCESS_FINE_LOCATION) || !TrainingApplication.havePermission(Manifest.permission.ACCESS_BACKGROUND_LOCATION)) && !TrainingApplication.havePermission(Manifest.permission.WRITE_EXTERNAL_STORAGE)) {
+            ActivityCompat.requestPermissions(this, new String[]{Manifest.permission.ACCESS_FINE_LOCATION, Manifest.permission.ACCESS_BACKGROUND_LOCATION, Manifest.permission.WRITE_EXTERNAL_STORAGE}, MY_PERMISSIONS_REQUEST_ACCESS_FINE_LOCATION_AND_WRITE_EXTERNAL_STORAGE);
         }
-        if (!TrainingApplication.havePermission(Manifest.permission.ACCESS_FINE_LOCATION)
-                || !TrainingApplication.havePermission(Manifest.permission.ACCESS_BACKGROUND_LOCATION)) {
+        if (!TrainingApplication.havePermission(Manifest.permission.ACCESS_FINE_LOCATION) || !TrainingApplication.havePermission(Manifest.permission.ACCESS_BACKGROUND_LOCATION)) {
             ActivityCompat.requestPermissions(this, new String[]{Manifest.permission.ACCESS_FINE_LOCATION, Manifest.permission.ACCESS_BACKGROUND_LOCATION}, MY_PERMISSIONS_REQUEST_ACCESS_FINE_LOCATION);
         }
         if (!TrainingApplication.havePermission(Manifest.permission.WRITE_EXTERNAL_STORAGE)) {
@@ -301,6 +285,7 @@ public class MainActivityWithNavigation
         }
     }
 
+    @SuppressLint("LongLogTag")
     @Override
     protected void onResume() {
         super.onResume();
@@ -321,14 +306,16 @@ public class MainActivityWithNavigation
         }
 
         if (TrainingApplication.forcePortrait()) {
-            setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_PORTRAIT);
+            setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_UNSPECIFIED);
         }
 
 
         // register the receivers
-        registerReceiver(mStartTrackingReceiver, mStartTrackingFilter);
-        registerReceiver(mPauseTrackingReceiver, new IntentFilter(TrainingApplication.REQUEST_PAUSE_TRACKING));
-        registerReceiver(mStopTrackingReceiver, new IntentFilter(TrainingApplication.REQUEST_STOP_TRACKING));
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+            registerReceiver(mStartTrackingReceiver, mStartTrackingFilter, Context.RECEIVER_NOT_EXPORTED);
+            registerReceiver(mPauseTrackingReceiver, new IntentFilter(TrainingApplication.REQUEST_PAUSE_TRACKING), Context.RECEIVER_NOT_EXPORTED);
+            registerReceiver(mStopTrackingReceiver, new IntentFilter(TrainingApplication.REQUEST_STOP_TRACKING), Context.RECEIVER_NOT_EXPORTED);
+        }
 
         upgradeDropboxV2();
     }
@@ -336,6 +323,7 @@ public class MainActivityWithNavigation
     // method to verify the preferences
     // when we shall upload to a platform there must be a token.
     // TODO: inform user when the settings are not valid?
+    @SuppressLint("LongLogTag")
     protected void checkPreferences() {
         // BUT not Dropbox since this case is part of the Auth procedure...
         // if (TrainingApplication.uploadToDropbox() && TrainingApplication.getDropboxToken() == null) {
@@ -372,27 +360,16 @@ public class MainActivityWithNavigation
                 if (mAlreadyTriedToRequestDropboxToken) {
                     TrainingApplication.deleteDropboxToken();
                 } else {
-                    new AlertDialog.Builder(this)
-                            .setTitle(R.string.title_request_dropbox_token)
-                            .setIcon(R.drawable.dropbox_logo_blue)
-                            .setMessage(R.string.message_request_dropbox_token)
-                            .setPositiveButton(android.R.string.yes, new DialogInterface.OnClickListener() {
-                                public void onClick(DialogInterface dialog, int which) {
-                                    mAlreadyTriedToRequestDropboxToken = true;
-                                    Auth.startOAuth2Authentication(MainActivityWithNavigation.this, TrainingApplication.getDropboxAppKey());
-                                }
-                            })
-                            .setNegativeButton(android.R.string.no, new DialogInterface.OnClickListener() {
-                                public void onClick(DialogInterface dialog, int which) {
-                                    TrainingApplication.deleteDropboxToken();
-                                }
-                            })
-                            .show();
+                    new AlertDialog.Builder(this).setTitle(R.string.title_request_dropbox_token).setIcon(R.drawable.dropbox_logo_blue).setMessage(R.string.message_request_dropbox_token).setPositiveButton(android.R.string.yes, (dialog, which) -> {
+                        mAlreadyTriedToRequestDropboxToken = true;
+                        Auth.startOAuth2Authentication(MainActivityWithNavigation.this, TrainingApplication.getDropboxAppKey());
+                    }).setNegativeButton(android.R.string.no, (dialog, which) -> TrainingApplication.deleteDropboxToken()).show();
                 }
             }
         }
     }
 
+    @SuppressLint("LongLogTag")
     @Override
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
         if (DEBUG)
@@ -430,8 +407,9 @@ public class MainActivityWithNavigation
         }
     }
 
+    @SuppressLint("LongLogTag")
     @Override
-    public void onSaveInstanceState(Bundle savedInstanceState) {
+    public void onSaveInstanceState(@NonNull Bundle savedInstanceState) {
         if (DEBUG) Log.i(TAG, "onSaveInstanceState");
 
         //Save the fragment's instance
@@ -444,6 +422,7 @@ public class MainActivityWithNavigation
         super.onSaveInstanceState(savedInstanceState);
     }
 
+    @SuppressLint("LongLogTag")
     @Override
     protected void onPause() {
         super.onPause();
@@ -452,20 +431,24 @@ public class MainActivityWithNavigation
         try {
             unregisterReceiver(mStartTrackingReceiver);
         } catch (IllegalArgumentException e) {
+            throw new RuntimeException(e);
         }
         try {
             unregisterReceiver(mPauseTrackingReceiver);
         } catch (IllegalArgumentException e) {
+            throw new RuntimeException(e);
         }
         try {
             unregisterReceiver(mStopTrackingReceiver);
         } catch (IllegalArgumentException e) {
+            throw new RuntimeException(e);
         }
 
 
         mHandler.postDelayed(mDisconnectFromBANALServiceRunnable, WAITING_TIME_BEFORE_DISCONNECTING);
     }
 
+    @SuppressLint("LongLogTag")
     @Override
     protected void onDestroy() {
         super.onDestroy();
@@ -474,8 +457,9 @@ public class MainActivityWithNavigation
         disconnectFromBANALService();
     }
 
+    @SuppressLint({"LongLogTag", "NonConstantResourceId"})
     @Override
-    public boolean onNavigationItemSelected(MenuItem menuItem) {
+    public boolean onNavigationItemSelected(@NonNull MenuItem menuItem) {
         if (DEBUG) Log.i(TAG, "onNavigationItemSelected");
 
         if (menuItem == null) {
@@ -573,7 +557,7 @@ public class MainActivityWithNavigation
 
             default:
                 Log.d(TAG, "setting a new content fragment not yet implemented");
-                Toast.makeText(this, "setting a new content fragment not yet implemented", Toast.LENGTH_SHORT);
+                Toast.makeText(this, "setting a new content fragment not yet implemented", Toast.LENGTH_SHORT).show();
         }
 
         if (mFragment != null) {
@@ -592,8 +576,7 @@ public class MainActivityWithNavigation
         // TODO: optimize: when showing "deeper fragments", we only want to go back one step and not completely to the start_tracking fragment
         if (mDrawerLayout.isDrawerOpen(GravityCompat.START)) {
             mDrawerLayout.closeDrawer(GravityCompat.START);
-        } else if (getSupportFragmentManager().getBackStackEntryCount() == 0
-                && mSelectedFragmentId != R.id.drawer_start_tracking) {
+        } else if (getSupportFragmentManager().getBackStackEntryCount() == 0 && mSelectedFragmentId != R.id.drawer_start_tracking) {
             onNavigationItemSelected(mNavigationView.getMenu().findItem(R.id.drawer_start_tracking));
         } else {
             super.onBackPressed();
@@ -601,8 +584,9 @@ public class MainActivityWithNavigation
     }
 
     /* Called when an options item is clicked */
+    @SuppressLint({"LongLogTag", "NonConstantResourceId"})
     @Override
-    public boolean onOptionsItemSelected(MenuItem item) {
+    public boolean onOptionsItemSelected(@NonNull MenuItem item) {
         if (DEBUG) Log.i(TAG, "onOptionsItemSelected");
 
         // Log.d(TAG, "onOptionsItemSelected");
@@ -638,6 +622,7 @@ public class MainActivityWithNavigation
         fragmentTransaction.commit();
     }
 
+    @SuppressLint("LongLogTag")
     @Override
     public void enableBluetoothRequest() {
         if (DEBUG) Log.i(TAG, "enableBluetoothRequest");
@@ -651,6 +636,7 @@ public class MainActivityWithNavigation
 
     }
 
+    @SuppressLint("LongLogTag")
     @Override
     public void startPairing(Protocol protocol) {
         if (DEBUG) Log.d(TAG, "startPairingActivity: " + protocol);
@@ -684,29 +670,26 @@ public class MainActivityWithNavigation
 
     protected void checkBatteryStatus() {
         final List<DevicesDatabaseManager.NameAndBatteryPercentage> criticalBatteryDevices = DevicesDatabaseManager.getCriticalBatteryDevices(CRITICAL_BATTERY_LEVEL);
-        if (criticalBatteryDevices.size() > 0) {
+        if (!criticalBatteryDevices.isEmpty()) {
 
             final List<String> stringList = new LinkedList<>();
             for (DevicesDatabaseManager.NameAndBatteryPercentage device : criticalBatteryDevices) {
-                stringList.add(getString(R.string.critical_battery_message_format,
-                        device.name, getString(BatteryStatusHelper.getBatteryStatusNameId(device.batteryPercentage))));
+                stringList.add(getString(R.string.critical_battery_message_format, device.name, getString(BatteryStatusHelper.getBatteryStatusNameId(device.batteryPercentage))));
             }
 
             AlertDialog.Builder builder = new AlertDialog.Builder(this);
             builder.setTitle(criticalBatteryDevices.size() == 1 ? R.string.check_battery_status_title_1 : R.string.check_battery_status_title_many);
-            builder.setItems(stringList.toArray(new String[stringList.size()]), new DialogInterface.OnClickListener() {
-                @Override
-                public void onClick(DialogInterface dialog, int which) {
-                    EditDeviceDialogFragment editDeviceDialogFragment = EditDeviceDialogFragment.newInstance(criticalBatteryDevices.get(which).deviceId);
-                    editDeviceDialogFragment.show(getSupportFragmentManager(), EditDeviceDialogFragment.TAG);
-                }
+            builder.setItems(stringList.toArray(new String[0]), (dialog, which) -> {
+                EditDeviceDialogFragment editDeviceDialogFragment = EditDeviceDialogFragment.newInstance(criticalBatteryDevices.get(which).deviceId);
+                editDeviceDialogFragment.show(getSupportFragmentManager(), EditDeviceDialogFragment.TAG);
             });
             builder.create().show();
         }
     }
 
+    @SuppressLint("LongLogTag")
     @Override
-    public void startSegmentDetailsActivity(int segmentId, SegmentDetailsActivity.SelectedFragment selectedFragment) {
+    public void startSegmentDetailsActivity(int segmentId, @SuppressLint("LongLogTag") SegmentDetailsActivity.SelectedFragment selectedFragment) {
         if (DEBUG) Log.i(TAG, "startSegmentDetailsActivity: segmentId=" + segmentId);
 
         Bundle bundle = new Bundle();
@@ -717,6 +700,7 @@ public class MainActivityWithNavigation
         startActivity(segmentDetailsIntent);
     }
 
+    @SuppressLint("LongLogTag")
     @Override
     public void exportWorkout(long id, FileFormat fileFormat) {
         if (DEBUG) Log.i(TAG, "exportWorkout");
@@ -728,6 +712,7 @@ public class MainActivityWithNavigation
         startService(new Intent(this, ExportWorkoutIntentService.class));
     }
 
+    @SuppressLint("LongLogTag")
     @Override
     public void showExportStatusDialog(long workoutId) {
         if (DEBUG) Log.i(TAG, "startExportDetailsActivity");
@@ -747,6 +732,7 @@ public class MainActivityWithNavigation
         (new DeleteWorkoutTask(this)).execute(workoutId);
     }
 
+    @SuppressLint("LongLogTag")
     public void deleteOldWorkouts() {
         if (DEBUG) Log.i(TAG, "deleteOldWorkouts");
 
@@ -754,6 +740,7 @@ public class MainActivityWithNavigation
         deleteOldWorkoutsDialog.show(getSupportFragmentManager(), DeleteOldWorkoutsDialog.TAG);
     }
 
+    @SuppressLint("LongLogTag")
     @Override
     public void onDeviceTypeSelected(DeviceType deviceType, Protocol protocol) {
         if (DEBUG)
@@ -777,8 +764,9 @@ public class MainActivityWithNavigation
     ////////////////////////////////////////////////////////////////////////////////////////////////
 
     // stolen from http://stackoverflow.com/questions/32487206/inner-preferencescreen-not-opens-with-preferencefragmentcompat
+    @SuppressLint("LongLogTag")
     @Override
-    public boolean onPreferenceStartScreen(PreferenceFragmentCompat preferenceFragmentCompat, PreferenceScreen preferenceScreen) {
+    public boolean onPreferenceStartScreen(@NonNull PreferenceFragmentCompat preferenceFragmentCompat, @NonNull PreferenceScreen preferenceScreen) {
         if (DEBUG) Log.i(TAG, "onPreferenceStartScreen: " + preferenceScreen.getKey());
         String key = preferenceScreen.getKey();
         PreferenceFragmentCompat fragment = null;
@@ -828,7 +816,6 @@ public class MainActivityWithNavigation
             Log.d(TAG, "WTF: unknown key");
         }
 
-
         if (fragment != null) {
             Bundle args = new Bundle();
             args.putString(PreferenceFragmentCompat.ARG_PREFERENCE_ROOT, preferenceScreen.getKey());
@@ -854,6 +841,7 @@ public class MainActivityWithNavigation
         return mBanalServiceComm;
     }
 
+    @SuppressLint("LongLogTag")
     private void disconnectFromBANALService() {
         if (DEBUG) Log.i(TAG, "disconnectFromBANALService");
 

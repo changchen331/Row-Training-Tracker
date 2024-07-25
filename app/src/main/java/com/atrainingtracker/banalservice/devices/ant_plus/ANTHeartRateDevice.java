@@ -10,8 +10,6 @@ import com.atrainingtracker.banalservice.sensor.MySensorManager;
 import com.atrainingtracker.banalservice.sensor.SensorType;
 import com.dsi.ant.plugins.antplus.pcc.AntPlusHeartRatePcc;
 import com.dsi.ant.plugins.antplus.pcc.AntPlusHeartRatePcc.DataState;
-import com.dsi.ant.plugins.antplus.pcc.AntPlusHeartRatePcc.IHeartRateDataReceiver;
-import com.dsi.ant.plugins.antplus.pcc.defines.EventFlag;
 import com.dsi.ant.plugins.antplus.pccbase.AntPluginPcc;
 import com.dsi.ant.plugins.antplus.pccbase.PccReleaseHandle;
 
@@ -21,7 +19,6 @@ public class ANTHeartRateDevice extends MyANTDevice {
 
     protected MySensor<Number> mHeartRateSensor;
     private String TAG = "ANTHeartRateDevice";
-
 
     /**
      * constructor
@@ -35,8 +32,7 @@ public class ANTHeartRateDevice extends MyANTDevice {
 
     @Override
     protected void addSensors() {
-        mHeartRateSensor = new MySensor<Number>(this, SensorType.HR);
-
+        mHeartRateSensor = new MySensor<>(this, SensorType.HR);
         addSensor(mHeartRateSensor);
     }
 
@@ -47,7 +43,7 @@ public class ANTHeartRateDevice extends MyANTDevice {
             Log.d(TAG, "requestAccess(" + getANTDeviceNumber() + ")");
         }
 
-        return AntPlusHeartRatePcc.requestAccess(mContext, getANTDeviceNumber(), 0, new MyResultReceiver<AntPlusHeartRatePcc>(), new MyDeviceStateChangeReceiver());
+        return AntPlusHeartRatePcc.requestAccess(mContext, getANTDeviceNumber(), 0, new MyResultReceiver<>(), new MyDeviceStateChangeReceiver());
     }
 
 
@@ -60,25 +56,16 @@ public class ANTHeartRateDevice extends MyANTDevice {
     @Override
     protected void subscribeSpecificEvents() {
         if (hrPcc != null) {
-            hrPcc.subscribeHeartRateDataEvent(new IHeartRateDataReceiver() {
-                @Override
-                public void onNewHeartRateData(long estTimestamp,
-                                               java.util.EnumSet<EventFlag> eventFlags,
-                                               int computedHeartRate,
-                                               long heartBeatCount,
-                                               java.math.BigDecimal heartBeatEventTime,
-                                               AntPlusHeartRatePcc.DataState dataState) {
-                    if (DEBUG) {
-                        Log.d(TAG, "got new HR value: " + computedHeartRate);
-                    }
-
-                    if (dataState == DataState.LIVE_DATA) {
-                        mHeartRateSensor.newValue(computedHeartRate);
-                    } else if (dataState == DataState.ZERO_DETECTED) {
-                        mHeartRateSensor.newValue(null);
-                    }
+            hrPcc.subscribeHeartRateDataEvent((estTimestamp, eventFlags, computedHeartRate, heartBeatCount, heartBeatEventTime, dataState) -> {
+                if (DEBUG) {
+                    Log.d(TAG, "got new HR value: " + computedHeartRate);
                 }
 
+                if (dataState == DataState.LIVE_DATA) {
+                    mHeartRateSensor.newValue(computedHeartRate);
+                } else if (dataState == DataState.ZERO_DETECTED) {
+                    mHeartRateSensor.newValue(null);
+                }
             });
         }
     }

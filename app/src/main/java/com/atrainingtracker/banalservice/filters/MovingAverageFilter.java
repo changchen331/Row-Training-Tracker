@@ -7,5 +7,4 @@ public abstract class MovingAverageFilter extends MyFilter<Number> {
     public MovingAverageFilter(String deviceName, SensorType sensorType) {
         super(deviceName, sensorType);
     }
-
 }

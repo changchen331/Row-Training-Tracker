@@ -2,7 +2,6 @@ package com.atrainingtracker.trainingtracker.interfaces;
 
 import com.atrainingtracker.trainingtracker.exporter.FileFormat;
 
-
 public interface ShowWorkoutDetailsInterface {
     void exportWorkout(long id, FileFormat fileFormat);
 

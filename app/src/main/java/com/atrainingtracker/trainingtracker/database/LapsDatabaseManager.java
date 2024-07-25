@@ -22,8 +22,7 @@ public class LapsDatabaseManager {
 
     public static synchronized LapsDatabaseManager getInstance() {
         if (cInstance == null) {
-            throw new IllegalStateException(LapsDatabaseManager.class.getSimpleName() +
-                    " is not initialized, call initializeInstance(..) method first.");
+            throw new IllegalStateException(LapsDatabaseManager.class.getSimpleName() + " is not initialized, call initializeInstance(..) method first.");
         }
 
         return cInstance;
@@ -63,14 +62,7 @@ public class LapsDatabaseManager {
     public static class LapsDbHelper extends SQLiteOpenHelper {
         public static final String DB_NAME = "Laps.db";
         public static final int DB_VERSION = 1;
-        protected static final String CREATE_TABLE = "create table " + Laps.TABLE + " ("
-                + Laps.C_ID + " INTEGER PRIMARY KEY AUTOINCREMENT, "
-                + Laps.WORKOUT_ID + " int,"
-                + Laps.LAP_NR + " int,"
-                + Laps.TIME_START + " DATETIME DEFAULT CURRENT_TIMESTAMP,"
-                + Laps.TIME_TOTAL_s + " int,"
-                + Laps.DISTANCE_TOTAL_m + " real,"
-                + Laps.SPEED_AVERAGE_mps + " real)";
+        protected static final String CREATE_TABLE = "create table " + Laps.TABLE + " (" + Laps.C_ID + " INTEGER PRIMARY KEY AUTOINCREMENT, " + Laps.WORKOUT_ID + " int," + Laps.LAP_NR + " int," + Laps.TIME_START + " DATETIME DEFAULT CURRENT_TIMESTAMP," + Laps.TIME_TOTAL_s + " int," + Laps.DISTANCE_TOTAL_m + " real," + Laps.SPEED_AVERAGE_mps + " real)";
         private static final String TAG = "LapsDbHelper";
         private static final boolean DEBUG = false;
 

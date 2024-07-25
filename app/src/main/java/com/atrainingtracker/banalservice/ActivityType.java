@@ -9,7 +9,7 @@ import com.atrainingtracker.banalservice.sensor.SensorType;
 import java.util.Arrays;
 
 public enum ActivityType {
-    //                                                                                                                                              power  HR     cadence
+    // power  HR     cadence
     GENERIC(BSportType.UNKNOWN, R.string.activity_type_multisport, R.string.activity_type_short_multisport, false, false, false), GENERIC_HR(BSportType.UNKNOWN, R.string.activity_type_multisport_with_hr, R.string.activity_type_short_multisport_with_hr, false, true, false), RUN_SPEED(BSportType.RUN, R.string.activity_type_run_speed, R.string.activity_type_short_run_speed, false, true, false), RUN_SPEED_AND_CADENCE(BSportType.RUN, R.string.activity_type_run_speed_and_cadence, R.string.activity_type_short_run_speed_and_cadence, false, true, true), ROWING_SPEED(BSportType.ROWING, R.string.activity_type_row_speed, R.string.activity_type_short_row_speed, false, true, false), ROWING_SPEED_AND_CADENCE(BSportType.ROWING, R.string.activity_type_row_speed_and_cadence, R.string.activity_type_short_row_speed_and_cadence, false, true, true), ROWING_POWER(BSportType.ROWING, R.string.activity_type_row_power, R.string.activity_type_short_row_power, true, true, true);
 
     private final BSportType sportType;

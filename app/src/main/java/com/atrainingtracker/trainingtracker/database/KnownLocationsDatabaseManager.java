@@ -1,5 +1,6 @@
 package com.atrainingtracker.trainingtracker.database;
 
+import android.annotation.SuppressLint;
 import android.content.ContentValues;
 import android.content.Context;
 import android.database.Cursor;
@@ -35,8 +36,7 @@ public class KnownLocationsDatabaseManager {
 
     public static synchronized KnownLocationsDatabaseManager getInstance() {
         if (cInstance == null) {
-            throw new IllegalStateException(KnownLocationsDatabaseManager.class.getSimpleName() +
-                    " is not initialized, call initializeInstance(..) method first.");
+            throw new IllegalStateException(KnownLocationsDatabaseManager.class.getSimpleName() + " is not initialized, call initializeInstance(..) method first.");
         }
 
         return cInstance;
@@ -59,7 +59,7 @@ public class KnownLocationsDatabaseManager {
         try {
             db.insert(KnownLocationsDbHelper.TABLE, null, values);
         } catch (SQLException e) {
-            Log.e(TAG, "Error while writing" + e.toString());
+            Log.e(TAG, "Error while writing" + e);
         }
         getInstance().closeDatabase();
     }
@@ -83,7 +83,7 @@ public class KnownLocationsDatabaseManager {
             long id = db.insert(KnownLocationsDbHelper.TABLE, null, values);
             myLocation = new MyLocation(id, latitude, longitude, name, altitude, radius);
         } catch (SQLException e) {
-            Log.e(TAG, "Error while writing" + e.toString());
+            Log.e(TAG, "Error while writing" + e);
         }
         getInstance().closeDatabase();
 
@@ -91,6 +91,7 @@ public class KnownLocationsDatabaseManager {
     }
 
     // public static Integer getStartAltitude(Context context, double latitude, double longitude)
+    @SuppressLint("Range")
     public static MyLocation getMyLocation(LatLng latLng) {
         MyLocation myLocation = null;
 
@@ -99,18 +100,12 @@ public class KnownLocationsDatabaseManager {
         currentLocation.setLongitude(latLng.longitude);
 
         SQLiteDatabase db = getInstance().getOpenDatabase();
-        Cursor cursor = db.query(KnownLocationsDbHelper.TABLE,
-                null,
-                null,
-                null,
-                null,
-                null,
-                null);  // sorting
+        Cursor cursor = db.query(KnownLocationsDbHelper.TABLE, null, null, null, null, null, null);  // sorting
 
         Location startLocation = new Location("");
         double minDistance = Double.MAX_VALUE;
         while (cursor.moveToNext()) {
-            int radius = cursor.getInt(cursor.getColumnIndex(KnownLocationsDbHelper.RADIUS));
+            @SuppressLint("Range") int radius = cursor.getInt(cursor.getColumnIndex(KnownLocationsDbHelper.RADIUS));
 
             startLocation.setLatitude(cursor.getDouble(cursor.getColumnIndex(KnownLocationsDbHelper.LATITUDE)));
             startLocation.setLongitude(cursor.getDouble(cursor.getColumnIndex(KnownLocationsDbHelper.LONGITUDE)));
@@ -121,12 +116,7 @@ public class KnownLocationsDatabaseManager {
                 if (distance < minDistance) {
                     minDistance = distance;
 
-                    myLocation = new MyLocation(cursor.getLong(cursor.getColumnIndex(KnownLocationsDbHelper.C_ID)),
-                            cursor.getDouble(cursor.getColumnIndex(KnownLocationsDbHelper.LATITUDE)),
-                            cursor.getDouble(cursor.getColumnIndex(KnownLocationsDbHelper.LONGITUDE)),
-                            cursor.getString(cursor.getColumnIndex(KnownLocationsDbHelper.NAME)),
-                            cursor.getInt(cursor.getColumnIndex(KnownLocationsDbHelper.ALTITUDE)),
-                            cursor.getInt(cursor.getColumnIndex(KnownLocationsDbHelper.RADIUS)));
+                    myLocation = new MyLocation(cursor.getLong(cursor.getColumnIndex(KnownLocationsDbHelper.C_ID)), cursor.getDouble(cursor.getColumnIndex(KnownLocationsDbHelper.LATITUDE)), cursor.getDouble(cursor.getColumnIndex(KnownLocationsDbHelper.LONGITUDE)), cursor.getString(cursor.getColumnIndex(KnownLocationsDbHelper.NAME)), cursor.getInt(cursor.getColumnIndex(KnownLocationsDbHelper.ALTITUDE)), cursor.getInt(cursor.getColumnIndex(KnownLocationsDbHelper.RADIUS)));
                 }
             }
         }
@@ -140,9 +130,7 @@ public class KnownLocationsDatabaseManager {
     public static void deleteId(long id) {
         SQLiteDatabase db = getInstance().getOpenDatabase();
 
-        db.delete(KnownLocationsDbHelper.TABLE,
-                KnownLocationsDbHelper.C_ID + "=?",
-                new String[]{id + ""});
+        db.delete(KnownLocationsDbHelper.TABLE, KnownLocationsDbHelper.C_ID + "=?", new String[]{id + ""});
 
         getInstance().closeDatabase();
     }
@@ -170,34 +158,20 @@ public class KnownLocationsDatabaseManager {
     public static void updateId(long id, ContentValues contentValues) {
         SQLiteDatabase db = getInstance().getOpenDatabase();
 
-        db.update(KnownLocationsDbHelper.TABLE,
-                contentValues,
-                KnownLocationsDbHelper.C_ID + "=?",
-                new String[]{id + ""});
+        db.update(KnownLocationsDbHelper.TABLE, contentValues, KnownLocationsDbHelper.C_ID + "=?", new String[]{id + ""});
 
         getInstance().closeDatabase();
     }
 
+    @SuppressLint("Range")
     public static MyLocation getMyLocation(long myLocationId) {
         MyLocation myLocation = null;
 
         SQLiteDatabase db = getInstance().getOpenDatabase();
-        Cursor cursor = db.query(KnownLocationsDbHelper.TABLE,
-                null,
-                KnownLocationsDbHelper.C_ID + "=?",
-                new String[]{Long.toString(myLocationId)},
-                null,
-                null,
-                null,
-                null);  // sorting
+        Cursor cursor = db.query(KnownLocationsDbHelper.TABLE, null, KnownLocationsDbHelper.C_ID + "=?", new String[]{Long.toString(myLocationId)}, null, null, null, null);  // sorting
 
         if (cursor.moveToFirst()) {
-            myLocation = new MyLocation(myLocationId,
-                    cursor.getDouble(cursor.getColumnIndex(KnownLocationsDbHelper.LATITUDE)),
-                    cursor.getDouble(cursor.getColumnIndex(KnownLocationsDbHelper.LONGITUDE)),
-                    cursor.getString(cursor.getColumnIndex(KnownLocationsDbHelper.NAME)),
-                    cursor.getInt(cursor.getColumnIndex(KnownLocationsDbHelper.ALTITUDE)),
-                    cursor.getInt(cursor.getColumnIndex(KnownLocationsDbHelper.RADIUS)));
+            myLocation = new MyLocation(myLocationId, cursor.getDouble(cursor.getColumnIndex(KnownLocationsDbHelper.LATITUDE)), cursor.getDouble(cursor.getColumnIndex(KnownLocationsDbHelper.LONGITUDE)), cursor.getString(cursor.getColumnIndex(KnownLocationsDbHelper.NAME)), cursor.getInt(cursor.getColumnIndex(KnownLocationsDbHelper.ALTITUDE)), cursor.getInt(cursor.getColumnIndex(KnownLocationsDbHelper.RADIUS)));
 
         }
 
@@ -207,18 +181,12 @@ public class KnownLocationsDatabaseManager {
         return myLocation;
     }
 
+    @SuppressLint("Range")
     public static List<String> getMyLocationNameList() {
         List<String> result = new LinkedList<>();
 
         SQLiteDatabase db = getInstance().getOpenDatabase();
-        Cursor cursor = db.query(KnownLocationsDbHelper.TABLE,
-                null,
-                null,
-                null,
-                null,
-                null,
-                null,
-                null);
+        Cursor cursor = db.query(KnownLocationsDbHelper.TABLE, null, null, null, null, null, null, null);
 
         while (cursor.moveToNext()) {
             result.add(cursor.getString(cursor.getColumnIndex(KnownLocationsDbHelper.NAME)));
@@ -234,19 +202,12 @@ public class KnownLocationsDatabaseManager {
         List<NamedLatLng> startLocations = new LinkedList<>();
 
         SQLiteDatabase db = getInstance().getOpenDatabase();
-        Cursor cursor = db.query(KnownLocationsDbHelper.TABLE,
-                null,
-                KnownLocationsDbHelper.EXTREMA_TYPE + "=?",
-                new String[]{extremaType.name()},
-                null,
-                null,
-                null,
-                null);  // sorting
+        Cursor cursor = db.query(KnownLocationsDbHelper.TABLE, null, KnownLocationsDbHelper.EXTREMA_TYPE + "=?", new String[]{extremaType.name()}, null, null, null, null);  // sorting
 
         while (cursor.moveToNext()) {
-            double latitude = cursor.getDouble(cursor.getColumnIndex(KnownLocationsDbHelper.LATITUDE));
-            double longitude = cursor.getDouble(cursor.getColumnIndex(KnownLocationsDbHelper.LONGITUDE));
-            String name = cursor.getString(cursor.getColumnIndex(KnownLocationsDbHelper.NAME));
+            @SuppressLint("Range") double latitude = cursor.getDouble(cursor.getColumnIndex(KnownLocationsDbHelper.LATITUDE));
+            @SuppressLint("Range") double longitude = cursor.getDouble(cursor.getColumnIndex(KnownLocationsDbHelper.LONGITUDE));
+            @SuppressLint("Range") String name = cursor.getString(cursor.getColumnIndex(KnownLocationsDbHelper.NAME));
 
             startLocations.add(new NamedLatLng(new LatLng(latitude, longitude), name));
         }
@@ -319,29 +280,12 @@ public class KnownLocationsDatabaseManager {
         public static final String RADIUS = "radius";
         protected static final String TAG = KnownLocationsDbHelper.class.getName();
         protected static final boolean DEBUG = BANALService.DEBUG & false;
-        protected static final String CREATE_TABLE_V1 = "create table " + TABLE + " ("
-                + C_ID + " INTEGER PRIMARY KEY AUTOINCREMENT, "
-                + NAME + " text,"
-                + ALTITUDE + " int,"
-                + LONGITUDE + " real,"
-                + LATITUDE + " real)";
+        protected static final String CREATE_TABLE_V1 = "create table " + TABLE + " (" + C_ID + " INTEGER PRIMARY KEY AUTOINCREMENT, " + NAME + " text," + ALTITUDE + " int," + LONGITUDE + " real," + LATITUDE + " real)";
 
-        protected static final String CREATE_TABLE_V2 = "create table " + TABLE + " ("
-                + C_ID + " INTEGER PRIMARY KEY AUTOINCREMENT, "
-                + NAME + " text,"
-                + ALTITUDE + " int,"
-                + LONGITUDE + " real,"
-                + LATITUDE + " real,"
-                + RADIUS + " int)";               // new in version 2
+        protected static final String CREATE_TABLE_V2 = "create table " + TABLE + " (" + C_ID + " INTEGER PRIMARY KEY AUTOINCREMENT, " + NAME + " text," + ALTITUDE + " int," + LONGITUDE + " real," + LATITUDE + " real," + RADIUS + " int)";               // new in version 2
 
-        protected static final String CREATE_TABLE_V3 = "create table " + TABLE + " ("
-                + C_ID + " INTEGER PRIMARY KEY AUTOINCREMENT, "
-                + NAME + " text,"
-                + EXTREMA_TYPE + " text,"          // new in version 3 but not yet used!
-                + ALTITUDE + " int,"
-                + LONGITUDE + " real,"
-                + LATITUDE + " real,"
-                + RADIUS + " int)";
+        protected static final String CREATE_TABLE_V3 = "create table " + TABLE + " (" + C_ID + " INTEGER PRIMARY KEY AUTOINCREMENT, " + NAME + " text," + EXTREMA_TYPE + " text,"          // new in version 3 but not yet used!
+                + ALTITUDE + " int," + LONGITUDE + " real," + LATITUDE + " real," + RADIUS + " int)";
 
         // Constructor
         public KnownLocationsDbHelper(Context context) {
@@ -371,7 +315,7 @@ public class KnownLocationsDatabaseManager {
             }
         }
 
-        private final void addColumn(SQLiteDatabase db, String column, String type) {
+        private void addColumn(SQLiteDatabase db, String column, String type) {
             db.execSQL("ALTER TABLE " + TABLE + " ADD COLUMN " + column + " " + type + ";");
         }
 

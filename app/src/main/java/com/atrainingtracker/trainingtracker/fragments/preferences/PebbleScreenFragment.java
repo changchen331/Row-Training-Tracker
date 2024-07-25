@@ -1,7 +1,6 @@
 package com.atrainingtracker.trainingtracker.fragments.preferences;
 
 import android.content.ActivityNotFoundException;
-import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.net.Uri;
@@ -20,9 +19,7 @@ import com.atrainingtracker.R;
 import com.atrainingtracker.trainingtracker.TrainingApplication;
 import com.atrainingtracker.trainingtracker.smartwatch.pebble.Watchapp;
 
-
-public class PebbleScreenFragment extends androidx.preference.PreferenceFragmentCompat
-        implements SharedPreferences.OnSharedPreferenceChangeListener {
+public class PebbleScreenFragment extends androidx.preference.PreferenceFragmentCompat implements SharedPreferences.OnSharedPreferenceChangeListener {
     private static final boolean DEBUG = TrainingApplication.DEBUG;
     private static final String TAG = PebbleScreenFragment.class.getName();
 
@@ -37,7 +34,7 @@ public class PebbleScreenFragment extends androidx.preference.PreferenceFragment
 
         setPreferencesFromResource(R.xml.prefs, rootKey);
 
-        mPebbleWatchappPref = (ListPreference) getPreferenceScreen().findPreference(TrainingApplication.SP_PEBBLE_WATCHAPP);
+        mPebbleWatchappPref = getPreferenceScreen().findPreference(TrainingApplication.SP_PEBBLE_WATCHAPP);
         mConfigurePebbleDisplays = getPreferenceScreen().findPreference(TrainingApplication.SP_CONFIGURE_PEBBLE_DISPLAY);
 
     }
@@ -49,30 +46,21 @@ public class PebbleScreenFragment extends androidx.preference.PreferenceFragment
 
         mPebbleWatchappPref.setSummary(TrainingApplication.getPebbleWatchapp().getUiId());
 
+        mPebbleWatchappPref.setOnPreferenceChangeListener((preference, newValue) -> {
 
-        mPebbleWatchappPref.setOnPreferenceChangeListener(new Preference.OnPreferenceChangeListener() {
-            @Override
-            public boolean onPreferenceChange(Preference preference, Object newValue) {
+            if (DEBUG)
+                Log.d(TAG, "onPreferenceChange: key=" + preference.getKey() + ", newValue=" + newValue);
 
-                if (DEBUG)
-                    Log.d(TAG, "onPreferenceChange: key=" + preference.getKey() + ", newValue=" + newValue);
-
-                if (Watchapp.TRAINING_TRACKER.name().equals(newValue)
-                        && TrainingApplication.showPebbleInstallDialog()) {
-                    showInstallPebbleWatchappDialog();
-                }
-
-                return true;
+            if (Watchapp.TRAINING_TRACKER.name().equals(newValue) && TrainingApplication.showPebbleInstallDialog()) {
+                showInstallPebbleWatchappDialog();
             }
+
+            return true;
         });
 
-        if (TrainingApplication.pebbleSupport() && TrainingApplication.getPebbleWatchapp() == Watchapp.TRAINING_TRACKER) {
-            mConfigurePebbleDisplays.setEnabled(true);
-        } else {
-            mConfigurePebbleDisplays.setEnabled(false);
-        }
+        mConfigurePebbleDisplays.setEnabled(TrainingApplication.pebbleSupport() && TrainingApplication.getPebbleWatchapp() == Watchapp.TRAINING_TRACKER);
 
-        mSharedPreferences = PreferenceManager.getDefaultSharedPreferences(getActivity());
+        mSharedPreferences = PreferenceManager.getDefaultSharedPreferences(requireActivity());
         mSharedPreferences.registerOnSharedPreferenceChangeListener(this);
     }
 
@@ -88,28 +76,19 @@ public class PebbleScreenFragment extends androidx.preference.PreferenceFragment
     public void onSharedPreferenceChanged(SharedPreferences sharedPreferences, String key) {
         if (TrainingApplication.SP_PEBBLE_WATCHAPP.equals(key)) {
             mPebbleWatchappPref.setSummary(TrainingApplication.getPebbleWatchapp().getUiId());
-            if (TrainingApplication.getPebbleWatchapp() == Watchapp.TRAINING_TRACKER) {
-                mConfigurePebbleDisplays.setEnabled(true);
-            } else {
-                mConfigurePebbleDisplays.setEnabled(false);
-            }
+            mConfigurePebbleDisplays.setEnabled(TrainingApplication.getPebbleWatchapp() == Watchapp.TRAINING_TRACKER);
         }
 
         if (TrainingApplication.SP_PEBBLE_SUPPORT.equals(key)) {
-            if (TrainingApplication.pebbleSupport() && TrainingApplication.getPebbleWatchapp() == Watchapp.TRAINING_TRACKER) {
-                mConfigurePebbleDisplays.setEnabled(true);
-            } else {
-                mConfigurePebbleDisplays.setEnabled(false);
-            }
+            mConfigurePebbleDisplays.setEnabled(TrainingApplication.pebbleSupport() && TrainingApplication.getPebbleWatchapp() == Watchapp.TRAINING_TRACKER);
         }
     }
-
 
     // simple helper method
     protected void showInstallPebbleWatchappDialog() {
         if (DEBUG) Log.d(TAG, "showInstallPebbleWatchappDialog");
 
-        AlertDialog.Builder adb = new AlertDialog.Builder(getActivity());
+        AlertDialog.Builder adb = new AlertDialog.Builder(requireActivity());
         LayoutInflater adbInflater = LayoutInflater.from(getActivity());
         View eulaLayout = adbInflater.inflate(R.layout.checkbox_dialog, null);
         final CheckBox doNotShowAgain = eulaLayout.findViewById(R.id.cbSkip);
@@ -117,29 +96,18 @@ public class PebbleScreenFragment extends androidx.preference.PreferenceFragment
         adb.setTitle(R.string.install_pebble_watchapp_title);
         adb.setMessage(R.string.install_pebble_watchapp_text);
 
-        adb.setPositiveButton(R.string.install_pebble_watchapp_now, new DialogInterface.OnClickListener() {
-            public void onClick(DialogInterface dialog, int which) {
-                TrainingApplication.setShowPebbleInstallDialog(!doNotShowAgain.isChecked());
+        adb.setPositiveButton(R.string.install_pebble_watchapp_now, (dialog, which) -> {
+            TrainingApplication.setShowPebbleInstallDialog(!doNotShowAgain.isChecked());
 
-                try { // try to use the deep link, this should work when the pebble app is installed
-                    startActivity(new Intent(Intent.ACTION_VIEW, Uri.parse("pebble://appstore/537516d64385b82a3b00009b")));
-                } catch (ActivityNotFoundException e) {  // if this fails, we open the website
-                    startActivity(new Intent(Intent.ACTION_VIEW, Uri.parse("https://apps.getpebble.com/applications/537516d64385b82a3b00009b")));
-                }
-
-                return;
+            try { // try to use the deep link, this should work when the pebble app is installed
+                startActivity(new Intent(Intent.ACTION_VIEW, Uri.parse("pebble://appstore/537516d64385b82a3b00009b")));
+            } catch (ActivityNotFoundException e) {  // if this fails, we open the website
+                startActivity(new Intent(Intent.ACTION_VIEW, Uri.parse("https://apps.getpebble.com/applications/537516d64385b82a3b00009b")));
             }
         });
 
-        adb.setNegativeButton(R.string.Cancel, new DialogInterface.OnClickListener() {
-            public void onClick(DialogInterface dialog, int which) {
-                TrainingApplication.setShowPebbleInstallDialog(!doNotShowAgain.isChecked());
-
-                return;
-            }
-        });
+        adb.setNegativeButton(R.string.Cancel, (dialog, which) -> TrainingApplication.setShowPebbleInstallDialog(!doNotShowAgain.isChecked()));
 
         adb.show();
-
     }
 }

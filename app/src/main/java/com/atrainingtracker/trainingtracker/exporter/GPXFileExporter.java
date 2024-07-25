@@ -1,5 +1,6 @@
 package com.atrainingtracker.trainingtracker.exporter;
 
+import android.annotation.SuppressLint;
 import android.content.Context;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
@@ -18,13 +19,14 @@ import java.io.IOException;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 
-
 public class GPXFileExporter extends BaseFileExporter {
     protected static final boolean WRITE_ONLY_ON_NEW_GEO_DATA = true;
     private static final String TAG = "GPXFileExporter";
     private static final boolean DEBUG = false;
     // DateFormats to convert from Db style dates to XML style dates
+    @SuppressLint("SimpleDateFormat")
     protected static SimpleDateFormat msdfFromDb = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+    @SuppressLint("SimpleDateFormat")
     protected static SimpleDateFormat msdfToXML = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss");
 
     public GPXFileExporter(Context context) {
@@ -37,14 +39,12 @@ public class GPXFileExporter extends BaseFileExporter {
     }
 
     @Override
-    protected ExportResult doExport(ExportInfo exportInfo)
-            throws IOException, ParseException {
+    protected ExportResult doExport(ExportInfo exportInfo) throws IOException, ParseException {
         if (DEBUG) Log.d(TAG, "exportToFile");
 
         getHeaderData(exportInfo);
 
         BufferedWriter bufferedWriter = getBufferedWriter(exportInfo);
-
 
         // write the header data to the file
         bufferedWriter.write("<?xml version=\"1.0\"?>\n");
@@ -52,9 +52,7 @@ public class GPXFileExporter extends BaseFileExporter {
         if (HavePressureSensor.havePressureSensor(mContext)) {
             name += " with barometer";
         } // add "with barometer" when a barometer was/is available, see Strava API Documentations
-        bufferedWriter.write("<gpx xmlns=\"http://www.topografix.com/GPX/1/1\" creator=\"" + name + "\" version=\"1.1\" "
-                + "xmlns:xsi=\"http://www.w3.org/2001/XMLSchema-instance\" "
-                + "xsi:schemaLocation=\"http://www.topografix.com/GPX/1/1 http://www.topografix.com/GPX/1/1/gpx.xsd\"> \n");
+        bufferedWriter.write("<gpx xmlns=\"http://www.topografix.com/GPX/1/1\" creator=\"" + name + "\" version=\"1.1\" " + "xmlns:xsi=\"http://www.w3.org/2001/XMLSchema-instance\" " + "xsi:schemaLocation=\"http://www.topografix.com/GPX/1/1 http://www.topografix.com/GPX/1/1/gpx.xsd\"> \n");
 
         bufferedWriter.write(" <metadata>\n");
         bufferedWriter.write("  <time>" + dbTime2XMLTime(startTime) + "</time>\n");
@@ -64,13 +62,7 @@ public class GPXFileExporter extends BaseFileExporter {
 
         WorkoutSamplesDatabaseManager databaseManager = WorkoutSamplesDatabaseManager.getInstance();
         SQLiteDatabase db = databaseManager.getOpenDatabase();
-        Cursor cursor = db.query(WorkoutSamplesDatabaseManager.getTableName(exportInfo.getFileBaseName()),
-                null,
-                null,
-                null,
-                null,
-                null,
-                null);
+        Cursor cursor = db.query(WorkoutSamplesDatabaseManager.getTableName(exportInfo.getFileBaseName()), null, null, null, null, null, null);
 
         double altitude;
         double latitude = 0.0;
@@ -95,16 +87,9 @@ public class GPXFileExporter extends BaseFileExporter {
                 // get the lap data
                 SQLiteDatabase lapDb = LapsDatabaseManager.getInstance().getOpenDatabase();
 
-                Cursor lapCursor = lapDb.query(LapsDatabaseManager.Laps.TABLE,
-                        null,
-                        LapsDatabaseManager.Laps.WORKOUT_ID + "=? AND " + LapsDatabaseManager.Laps.LAP_NR + "=?",
-                        new String[]{workoutID + "", lap + ""},
-                        null,
-                        null,
-                        null);
+                Cursor lapCursor = lapDb.query(LapsDatabaseManager.Laps.TABLE, null, LapsDatabaseManager.Laps.WORKOUT_ID + "=? AND " + LapsDatabaseManager.Laps.LAP_NR + "=?", new String[]{workoutID + "", lap + ""}, null, null, null);
                 if (DEBUG)
-                    Log.d(TAG, "getting lap data: workoutID: " + workoutID + ", lapNr: " + lap + " found: "
-                            + lapCursor.getCount() + ", " + lapCursor.getColumnCount());
+                    Log.d(TAG, "getting lap data: workoutID: " + workoutID + ", lapNr: " + lap + " found: " + lapCursor.getCount() + ", " + lapCursor.getColumnCount());
 
                 lapCursor.moveToFirst();
 
@@ -138,9 +123,7 @@ public class GPXFileExporter extends BaseFileExporter {
                         bufferedWriter.write("    <ele>" + altitude + "</ele>\n");
                     }
 
-                    bufferedWriter.write("    <time>"
-                            + dbTime2XMLTime(cursor.getString(cursor.getColumnIndexOrThrow(WorkoutSamplesDbHelper.TIME)))
-                            + "</time>\n");
+                    bufferedWriter.write("    <time>" + dbTime2XMLTime(cursor.getString(cursor.getColumnIndexOrThrow(WorkoutSamplesDbHelper.TIME))) + "</time>\n");
 
                     bufferedWriter.write("   </trkpt>\n");
                 }

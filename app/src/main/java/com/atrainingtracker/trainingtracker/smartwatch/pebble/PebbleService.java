@@ -1,5 +1,6 @@
 package com.atrainingtracker.trainingtracker.smartwatch.pebble;
 
+import android.annotation.SuppressLint;
 import android.app.Service;
 import android.content.BroadcastReceiver;
 import android.content.ComponentName;
@@ -9,8 +10,11 @@ import android.content.IntentFilter;
 import android.content.ServiceConnection;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
+import android.os.Build;
 import android.os.IBinder;
 import android.util.Log;
+
+import androidx.annotation.RequiresApi;
 
 import com.atrainingtracker.R;
 import com.atrainingtracker.banalservice.ActivityType;
@@ -30,6 +34,7 @@ import com.getpebble.android.kit.util.PebbleDictionary;
 
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Objects;
 import java.util.UUID;
 
 // import com.getpebble.android.kit.Constants;
@@ -140,8 +145,8 @@ public class PebbleService extends Service {
 
             PebbleDictionary data = new PebbleDictionary();
             data.addString(0, cutString(getString(R.string.Lap_NR, intent.getIntExtra(BANALService.PREV_LAP_NR, 0))));
-            data.addString(1, cutString(intent.getStringExtra(BANALService.PREV_LAP_TIME_STRING)));
-            data.addString(2, cutString(intent.getStringExtra(BANALService.PREV_LAP_DISTANCE_STRING)));
+            data.addString(1, cutString(Objects.requireNonNull(intent.getStringExtra(BANALService.PREV_LAP_TIME_STRING))));
+            data.addString(2, cutString(Objects.requireNonNull(intent.getStringExtra(BANALService.PREV_LAP_DISTANCE_STRING))));
 
             data.addInt32(MESSAGE_TYPE, LAP_SUMMARY_MESSAGE);
             data.addInt32(NUMBER_OF_FIELDS, 3);
@@ -155,7 +160,7 @@ public class PebbleService extends Service {
     protected Number prevLapDistance = 0;
     protected DistanceFormatter distanceFormatter = new DistanceFormatter();
     private BANALServiceComm banalService;
-    private List<SensorType> mSensorTypeList = new LinkedList<SensorType>();
+    private List<SensorType> mSensorTypeList = new LinkedList<>();
     private final BroadcastReceiver mConfigurePebbleWatchAppReceiver = new BroadcastReceiver() {
         @Override
         public void onReceive(Context context, Intent intent) {
@@ -263,7 +268,7 @@ public class PebbleService extends Service {
 //        }
 //    };
 
-    private static final String cutString(String inputString) {
+    private static String cutString(String inputString) {
         if (inputString.length() < MAX_STRING_SIZE) {
             return inputString;
         } else {
@@ -271,19 +276,14 @@ public class PebbleService extends Service {
         }
     }
 
+    @SuppressLint("Range")
     protected void updateSensorTypeList() {
         if (DEBUG) Log.d(TAG, "updateSensorTypeList");
 
-        List<SensorType> result = new LinkedList<SensorType>();
+        List<SensorType> result = new LinkedList<>();
 
         SQLiteDatabase db = (new PebbleDbHelper(this)).getReadableDatabase();
-        Cursor cursor = db.query(PebbleDbHelper.ROWS_TABLE,
-                null,
-                PebbleDbHelper.VIEW_ID + "=?",
-                new String[]{mViewId + ""},
-                null,
-                null,
-                PebbleDbHelper.ROW_NR + " ASC"); // sorting
+        Cursor cursor = db.query(PebbleDbHelper.ROWS_TABLE, null, PebbleDbHelper.VIEW_ID + "=?", new String[]{mViewId + ""}, null, null, PebbleDbHelper.ROW_NR + " ASC"); // sorting
 
         mRows = cursor.getCount();
 
@@ -305,6 +305,7 @@ public class PebbleService extends Service {
         }
     }
 
+    @RequiresApi(api = Build.VERSION_CODES.TIRAMISU)
     @Override
     public void onCreate() {
         super.onCreate();
@@ -320,13 +321,13 @@ public class PebbleService extends Service {
 
         //registerReceiver(mSearchingFinishedReceiver, mSearchingFinishedFilter);
         registerReceiver(mConfigurePebbleWatchAppReceiver, mConfigurePebbleWatchAppFilter);
-        registerReceiver(mUpdatePebbleReceiver, mUpdatePebbleFilter);
-        registerReceiver(mPebbleConnectedReceiver, mPebbleConnectedFilter);
-        registerReceiver(mPauseReceiver, mPauseFilter);
-        registerReceiver(mResumeReceiver, mResumeFilter);
-        registerReceiver(mLapSummaryReceiver, mLapSummaryFilter);
-        registerReceiver(mStartSearchingReceiver, mStartSearchingFilter);
-        registerReceiver(mEndSearchingReceiver, mEndSearchingFilter);
+        registerReceiver(mUpdatePebbleReceiver, mUpdatePebbleFilter, Context.RECEIVER_EXPORTED);
+        registerReceiver(mPebbleConnectedReceiver, mPebbleConnectedFilter, Context.RECEIVER_EXPORTED);
+        registerReceiver(mPauseReceiver, mPauseFilter, Context.RECEIVER_EXPORTED);
+        registerReceiver(mResumeReceiver, mResumeFilter, Context.RECEIVER_EXPORTED);
+        registerReceiver(mLapSummaryReceiver, mLapSummaryFilter, Context.RECEIVER_EXPORTED);
+        registerReceiver(mStartSearchingReceiver, mStartSearchingFilter, android.content.Context.RECEIVER_EXPORTED);
+        registerReceiver(mEndSearchingReceiver, mEndSearchingFilter, android.content.Context.RECEIVER_EXPORTED);
     }
 
     @Override
@@ -398,7 +399,7 @@ public class PebbleService extends Service {
         updateSensorTypeList();
 
         // and then update the pebble display
-        PebbleDictionary data = new PebbleDictionary();
+        PebbleDictionary data;
 
         if (TrainingApplication.isPaused()) {
             data = new PebbleDictionary();
@@ -436,10 +437,7 @@ public class PebbleService extends Service {
     private int getTextSize(SensorType sensorType) {
         int textSize = TEXT_SIZE_LARGE;
 
-        if ((sensorType == SensorType.PACE_spm && TrainingApplication.getUnit() == MyUnits.IMPERIAL)
-                || sensorType == SensorType.TIME_ACTIVE
-                || sensorType == SensorType.TIME_LAP
-                || sensorType == SensorType.TIME_TOTAL) {
+        if ((sensorType == SensorType.PACE_spm && TrainingApplication.getUnit() == MyUnits.IMPERIAL) || sensorType == SensorType.TIME_ACTIVE || sensorType == SensorType.TIME_LAP || sensorType == SensorType.TIME_TOTAL) {
             textSize = TEXT_SIZE_SMALL;
         }
 
@@ -526,5 +524,4 @@ public class PebbleService extends Service {
             }
         }
     }
-
 }

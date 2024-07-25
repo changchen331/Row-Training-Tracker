@@ -2,7 +2,6 @@ package com.atrainingtracker.banalservice.sensor;
 
 import com.atrainingtracker.banalservice.devices.MyDevice;
 
-
 public class ThresholdSensor<T> extends MySensor<T> {
     private static final String TAG = "ThresholdSensor";
 

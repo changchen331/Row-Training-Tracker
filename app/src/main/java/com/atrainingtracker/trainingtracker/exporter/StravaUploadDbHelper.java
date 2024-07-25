@@ -1,5 +1,6 @@
 package com.atrainingtracker.trainingtracker.exporter;
 
+import android.annotation.SuppressLint;
 import android.content.ContentValues;
 import android.content.Context;
 import android.database.Cursor;
@@ -10,6 +11,8 @@ import android.provider.BaseColumns;
 import android.util.Log;
 
 import com.atrainingtracker.trainingtracker.database.WorkoutSummariesDatabaseManager.WorkoutSummaries;
+
+import java.util.Objects;
 
 public class StravaUploadDbHelper extends SQLiteOpenHelper {
     // The different tables
@@ -23,12 +26,8 @@ public class StravaUploadDbHelper extends SQLiteOpenHelper {
     static final int DB_VERSION = 3;
     private static final String TAG = "StravaUploadDbHelper";
     private static final boolean DEBUG = false;
-    private static final String CREATE_TABLE = "create table " + TABLE + " ("
-            + C_ID + " INTEGER PRIMARY KEY AUTOINCREMENT, "
-            + WorkoutSummaries.FILE_BASE_NAME + " text,"    // forms as a key
-            + UPLOAD_ID + " text,"
-            + ACTIVITY_ID + " text,"
-            + STATUS + " text)";
+    private static final String CREATE_TABLE = "create table " + TABLE + " (" + C_ID + " INTEGER PRIMARY KEY AUTOINCREMENT, " + WorkoutSummaries.FILE_BASE_NAME + " text,"    // forms as a key
+            + UPLOAD_ID + " text," + ACTIVITY_ID + " text," + STATUS + " text)";
 
     // Constructor
     public StravaUploadDbHelper(Context context) {
@@ -58,13 +57,10 @@ public class StravaUploadDbHelper extends SQLiteOpenHelper {
 
         int updates = 0;
         try {
-            updates = db.update(TABLE,
-                    values,
-                    WorkoutSummaries.FILE_BASE_NAME + "=?",
-                    new String[]{fileBaseName});
+            updates = db.update(TABLE, values, WorkoutSummaries.FILE_BASE_NAME + "=?", new String[]{fileBaseName});
             if (DEBUG) Log.d(TAG, "updated " + fileBaseName);
         } catch (SQLException e) {
-            Log.e(TAG, e.getMessage());
+            Log.e(TAG, Objects.requireNonNull(e.getMessage()));
             if (DEBUG) Log.d(TAG, "Exception! for " + fileBaseName);
         }
         if (updates < 1) {  // if nothing is updated, we create the entry
@@ -115,6 +111,7 @@ public class StravaUploadDbHelper extends SQLiteOpenHelper {
         updateOrInsert(fileBaseName, values);
     }
 
+    @SuppressLint("Range")
     public String getActivityId(String fileBaseName) {
         if (DEBUG) Log.d(TAG, "getActivityId: " + fileBaseName);
 

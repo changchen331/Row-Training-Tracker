@@ -1,9 +1,12 @@
 package com.atrainingtracker.trainingtracker.fragments.mapFragments;
 
+import android.annotation.SuppressLint;
 import android.content.Context;
 import android.location.Location;
 import android.os.Bundle;
 import android.util.Log;
+
+import androidx.annotation.NonNull;
 
 import com.atrainingtracker.trainingtracker.TrainingApplication;
 import com.google.android.gms.common.ConnectionResult;
@@ -17,9 +20,7 @@ import com.google.android.gms.maps.LocationSource;
 import com.google.android.gms.maps.model.CameraPosition;
 import com.google.android.gms.maps.model.LatLng;
 
-
-public class TrackOnMapTrackingAndFollowingFragment2
-        extends TrackOnMapTrackingFragment {
+public class TrackOnMapTrackingAndFollowingFragment2 extends TrackOnMapTrackingFragment {
     public static final String TAG = TrackOnMapTrackingAndFollowingFragment2.class.getName();
     private static final boolean DEBUG = TrainingApplication.DEBUG && false;
 
@@ -38,18 +39,16 @@ public class TrackOnMapTrackingAndFollowingFragment2
     private static final float ZOOM_MAX = 21;
     private static final float ZOOM_GAIN = 3.6f / 20;
 
-
     private GoogleApiClient mGoogleApiClient;
     private Location mLastLocation;
 
     private FollowMeLocationSource mFollowMeLocationSource;
 
     // TODO: does this really make sense when we try to get the workoutId during onResume???
+    @NonNull
     public static TrackOnMapTrackingAndFollowingFragment2 newInstance() {
         if (DEBUG) Log.i(TAG, "newInstance");
-        TrackOnMapTrackingAndFollowingFragment2 trackOnMapTrackingFragment = new TrackOnMapTrackingAndFollowingFragment2();
-
-        return trackOnMapTrackingFragment;
+        return new TrackOnMapTrackingAndFollowingFragment2();
     }
 
     ////////////////////////////////////////////////////////////////////////////////////////////////
@@ -66,11 +65,7 @@ public class TrackOnMapTrackingAndFollowingFragment2
     }
 
     synchronized void buildGoogleApiClient(Context context) {
-        mGoogleApiClient = new GoogleApiClient.Builder(context)
-                .addConnectionCallbacks(mFollowMeLocationSource)
-                .addOnConnectionFailedListener(mFollowMeLocationSource)
-                .addApi(LocationServices.API)
-                .build();
+        mGoogleApiClient = new GoogleApiClient.Builder(context).addConnectionCallbacks(mFollowMeLocationSource).addOnConnectionFailedListener(mFollowMeLocationSource).addApi(LocationServices.API).build();
     }
 
     @Override
@@ -89,23 +84,20 @@ public class TrackOnMapTrackingAndFollowingFragment2
     public void onResume() {
         super.onResume();
         if (DEBUG) Log.i(TAG, "onResume()");
-
     }
 
     @Override
     public void onPause() {
         super.onPause();
         if (DEBUG) Log.i(TAG, "onPause()");
-
     }
-
 
     ////////////////////////////////////////////////////////////////////////////////////////////////
     // map methods
     ////////////////////////////////////////////////////////////////////////////////////////////////
 
     @Override
-    public void onMapReady(final GoogleMap map) {
+    public void onMapReady(@NonNull final GoogleMap map) {
         if (DEBUG) Log.i(TAG, "onMapReady");
         super.onMapReady(map);
 
@@ -118,15 +110,10 @@ public class TrackOnMapTrackingAndFollowingFragment2
         mMap.setLocationSource(mFollowMeLocationSource);
     }
 
-
     /* Our custom LocationSource.
      * We register this class to receive location updates from the Location Manager
      * and for that reason we need to also implement the LocationListener interface. */
-    private class FollowMeLocationSource implements
-            GoogleApiClient.ConnectionCallbacks,
-            GoogleApiClient.OnConnectionFailedListener,
-            LocationSource,
-            LocationListener {
+    private class FollowMeLocationSource implements GoogleApiClient.ConnectionCallbacks, GoogleApiClient.OnConnectionFailedListener, LocationSource, LocationListener {
 
         private OnLocationChangedListener mListener;
         private LocationRequest mLocationRequest;
@@ -134,17 +121,15 @@ public class TrackOnMapTrackingAndFollowingFragment2
         private float mBearingFiltered, mSpeedFiltered;
         private CameraPosition.Builder mCameraPositionBuilder = new CameraPosition.Builder();
 
-
         private FollowMeLocationSource() {
-
             mLocationRequest = LocationRequest.create();
             mLocationRequest.setPriority(LocationRequest.PRIORITY_HIGH_ACCURACY);
             mLocationRequest.setInterval(500); // Update location every half second
         }
 
+        @SuppressLint("MissingPermission")
         @Override
         public void onConnected(Bundle bundle) {
-
             // LocationServices.FusedLocationApi.requestLocationUpdates(mGoogleApiClient, locationRequest, this);
 
             mLastLocation = LocationServices.FusedLocationApi.getLastLocation(mGoogleApiClient);
@@ -161,15 +146,16 @@ public class TrackOnMapTrackingAndFollowingFragment2
         }
 
         @Override
-        public void onConnectionFailed(ConnectionResult connectionResult) {
+        public void onConnectionFailed(@NonNull ConnectionResult connectionResult) {
 
         }
 
         /* Activates this provider. This provider will notify the supplied listener
          * periodically, until you call deactivate().
          * This method is automatically invoked by enabling my-location layer. */
+        @SuppressLint("MissingPermission")
         @Override
-        public void activate(OnLocationChangedListener listener) {
+        public void activate(@NonNull OnLocationChangedListener listener) {
             // We need to keep a reference to my-location layer's listener so we can push forward
             // location updates to it when we receive them from Location Manager.
             mListener = listener;
@@ -190,7 +176,7 @@ public class TrackOnMapTrackingAndFollowingFragment2
         }
 
         @Override
-        public void onLocationChanged(Location location) {
+        public void onLocationChanged(@NonNull Location location) {
             /* Push location updates to the registered listener..
              * (this ensures that my-location layer will set the blue dot at the new/received location) */
             if (mListener != null) {
@@ -211,14 +197,9 @@ public class TrackOnMapTrackingAndFollowingFragment2
             mBearingFiltered = (mBearingFiltered + location.getBearing()) / 2;
             mSpeedFiltered = (mSpeedFiltered + location.getSpeed()) / 2;
 
-            return mCameraPositionBuilder
-                    .target(new LatLng(mLatitudeFiltered, mLongitudeFiltered))
-                    .bearing(mBearingFiltered)
-                    .tilt(90)  //  always the highest possible tilt // mMap.getCameraPosition().tilt)
-                    .zoom(speed2zoom(mSpeedFiltered, mMap.getCameraPosition().zoom))
-                    .build();                   // Creates a CameraPosition from the builder
+            return mCameraPositionBuilder.target(new LatLng(mLatitudeFiltered, mLongitudeFiltered)).bearing(mBearingFiltered).tilt(90)  //  always the highest possible tilt // mMap.getCameraPosition().tilt)
+                    .zoom(speed2zoom(mSpeedFiltered, mMap.getCameraPosition().zoom)).build();                   // Creates a CameraPosition from the builder
         }
-
 
         protected float speed2zoom(float speed, float currentZoom) {
             if (DEBUG) Log.i(TAG, "speed2zoom(" + speed + ")");
@@ -253,5 +234,4 @@ public class TrackOnMapTrackingAndFollowingFragment2
         */
         }
     }
-
 }

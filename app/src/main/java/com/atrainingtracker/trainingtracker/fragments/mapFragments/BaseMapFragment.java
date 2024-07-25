@@ -1,6 +1,7 @@
 package com.atrainingtracker.trainingtracker.fragments.mapFragments;
 
 import android.Manifest;
+import android.annotation.SuppressLint;
 import android.content.Context;
 import android.graphics.Bitmap;
 import android.graphics.drawable.BitmapDrawable;
@@ -11,6 +12,8 @@ import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+
+import androidx.annotation.NonNull;
 
 import com.atrainingtracker.trainingtracker.TrainingApplication;
 import com.google.android.gms.maps.CameraUpdateFactory;
@@ -33,9 +36,7 @@ import java.util.List;
 // TrackOnMapTrackingFragment: tracking map, with location and track and updates and start marker,listen to newWorkoutIdIntent...
 // TrackOnMapAftermathFragment: aftermath map,without location,with track,without updates,with all markers
 
-public abstract class BaseMapFragment
-        extends SupportMapFragment
-        implements OnMapReadyCallback {
+public abstract class BaseMapFragment extends SupportMapFragment implements OnMapReadyCallback {
     public static final String TAG = BaseMapFragment.class.getName();
     private static final boolean DEBUG = TrainingApplication.DEBUG && false;
 
@@ -58,8 +59,9 @@ public abstract class BaseMapFragment
         this.getMapAsync(this);
     }
 
+    @NonNull
     @Override
-    public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
+    public View onCreateView(@NonNull LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
         if (DEBUG) Log.d(TAG, "onCreateView");
         setHasOptionsMenu(true);
 
@@ -71,7 +73,7 @@ public abstract class BaseMapFragment
     ////////////////////////////////////////////////////////////////////////////////////////////////
 
     @Override
-    public void onMapReady(final GoogleMap map) {
+    public void onMapReady(@NonNull final GoogleMap map) {
         if (DEBUG) Log.i(TAG, "onMapReady");
 
         if (mMap != null) {
@@ -87,16 +89,15 @@ public abstract class BaseMapFragment
         mMap.getUiSettings().setZoomControlsEnabled(!TrainingApplication.zoomDependsOnSpeed());
     }
 
-
+    @SuppressLint("MissingPermission")
     protected void centerMapOnMyLocation(int zoomLevel, int tilt) {
-
         long gpsTime = 1;
         long networkTime = 0;
 
         Location locationGPS = null;
         Location locationNetwork = null;
 
-        LocationManager locationManager = (LocationManager) getActivity().getSystemService(Context.LOCATION_SERVICE);
+        LocationManager locationManager = (LocationManager) requireActivity().getSystemService(Context.LOCATION_SERVICE);
 
         if (TrainingApplication.havePermission(Manifest.permission.ACCESS_FINE_LOCATION)) {
             locationGPS = locationManager.getLastKnownLocation(LocationManager.GPS_PROVIDER);
@@ -123,11 +124,8 @@ public abstract class BaseMapFragment
     protected void centerMapAt(Location location, int zoomLevel, int tilt) {
         if (location != null) {
             // mMap.moveCamera(CameraUpdateFactory.newLatLngZoom(new LatLng(locationBest.getLatitude(), locationBest.getLongitude()), zoomLevel));
-            CameraPosition cameraPosition = new CameraPosition.Builder()
-                    .target(new LatLng(location.getLatitude(), location.getLongitude()))
-                    .tilt(tilt)                   // Sets the tilt of the camera to tilt degrees
-                    .zoom(zoomLevel)
-                    .build();                   // Creates a CameraPosition from the builder
+            CameraPosition cameraPosition = new CameraPosition.Builder().target(new LatLng(location.getLatitude(), location.getLongitude())).tilt(tilt)                   // Sets the tilt of the camera to tilt degrees
+                    .zoom(zoomLevel).build();                   // Creates a CameraPosition from the builder
             mMap.moveCamera(CameraUpdateFactory.newCameraPosition(cameraPosition));
         }
     }
@@ -138,12 +136,9 @@ public abstract class BaseMapFragment
     protected Marker addMarker(LatLng position, int drawableId, String title) {
         if (position == null) return null;
 
-        Bitmap marker = ((BitmapDrawable) getResources().getDrawable(drawableId)).getBitmap();
+        @SuppressLint("UseCompatLoadingForDrawables") Bitmap marker = ((BitmapDrawable) getResources().getDrawable(drawableId)).getBitmap();
 
-        return mMap.addMarker(new MarkerOptions()
-                .position(position)
-                .title(title)
-                .icon(BitmapDescriptorFactory.fromBitmap(marker)));
+        return mMap.addMarker(new MarkerOptions().position(position).title(title).icon(BitmapDescriptorFactory.fromBitmap(marker)));
     }
 
     protected Marker addScaledMarker(LatLng position, int drawableId, double scale) {
@@ -153,12 +148,10 @@ public abstract class BaseMapFragment
             return null;
         }
 
-        Bitmap marker = ((BitmapDrawable) getResources().getDrawable(drawableId)).getBitmap();
+        @SuppressLint("UseCompatLoadingForDrawables") Bitmap marker = ((BitmapDrawable) getResources().getDrawable(drawableId)).getBitmap();
         Bitmap scaledMarker = Bitmap.createScaledBitmap(marker, (int) (marker.getWidth() * scale), (int) (marker.getHeight() * scale), false);
 
-        return mMap.addMarker(new MarkerOptions()
-                .position(position)
-                .icon(BitmapDescriptorFactory.fromBitmap(scaledMarker)));
+        return mMap.addMarker(new MarkerOptions().position(position).icon(BitmapDescriptorFactory.fromBitmap(scaledMarker)));
     }
 
     protected Polyline addPolyline(List<LatLng> latLngs, int color) {
@@ -169,6 +162,4 @@ public abstract class BaseMapFragment
 
         return mMap.addPolyline(polylineOptions);
     }
-
-
 }

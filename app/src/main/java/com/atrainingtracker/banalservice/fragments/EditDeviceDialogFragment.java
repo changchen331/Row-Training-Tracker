@@ -1,8 +1,8 @@
 package com.atrainingtracker.banalservice.fragments;
 
+import android.annotation.SuppressLint;
 import android.app.Dialog;
 import android.content.ContentValues;
-import android.content.DialogInterface;
 import android.content.Intent;
 import android.database.Cursor;
 import android.database.SQLException;
@@ -10,7 +10,6 @@ import android.database.sqlite.SQLiteDatabase;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.View;
-import android.view.View.OnClickListener;
 import android.widget.AdapterView;
 import android.widget.AdapterView.OnItemSelectedListener;
 import android.widget.ArrayAdapter;
@@ -22,6 +21,7 @@ import android.widget.LinearLayout;
 import android.widget.Spinner;
 import android.widget.TextView;
 
+import androidx.annotation.NonNull;
 import androidx.appcompat.app.AlertDialog;
 import androidx.fragment.app.DialogFragment;
 
@@ -38,9 +38,9 @@ import com.atrainingtracker.trainingtracker.database.EquipmentDbHelper;
 import com.atrainingtracker.trainingtracker.views.MultiSelectionSpinner;
 
 import java.util.List;
+import java.util.Objects;
 
-public class EditDeviceDialogFragment
-        extends DialogFragment {
+public class EditDeviceDialogFragment extends DialogFragment {
     public static final String TAG = "EditDeviceDialogFragment";
     private static final boolean DEBUG = BANALService.DEBUG & false;
 
@@ -96,32 +96,29 @@ public class EditDeviceDialogFragment
     //    }
     //}
 
+    @SuppressLint("LongLogTag")
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         if (DEBUG) Log.i(TAG, "onCreate()");
 
-        mDeviceID = getArguments().getLong(DevicesDbHelper.C_ID);
+        mDeviceID = requireArguments().getLong(DevicesDbHelper.C_ID);
     }
 
+    @NonNull
+    @SuppressLint({"Range", "LongLogTag"})
     @Override
     public Dialog onCreateDialog(Bundle savedInstanceState) {
 
-        AlertDialog.Builder builder = new AlertDialog.Builder(getActivity());
+        AlertDialog.Builder builder = new AlertDialog.Builder(requireActivity());
 
 
-        CIRCUMFERENCE_ARRAY_ADAPTER = new ArrayAdapter<String>(getActivity(), android.R.layout.simple_spinner_item, CIRCUMFERENCE_TEXT);
+        CIRCUMFERENCE_ARRAY_ADAPTER = new ArrayAdapter<>(requireActivity(), android.R.layout.simple_spinner_item, CIRCUMFERENCE_TEXT);
 
         // get the data
         DevicesDatabaseManager databaseManager = DevicesDatabaseManager.getInstance();
         SQLiteDatabase db = databaseManager.getOpenDatabase();
-        Cursor cursor = db.query(DevicesDbHelper.DEVICES,
-                null,
-                DevicesDbHelper.C_ID + "=?",
-                new String[]{Long.toString(mDeviceID)},
-                null,
-                null,
-                null);
+        Cursor cursor = db.query(DevicesDbHelper.DEVICES, null, DevicesDbHelper.C_ID + "=?", new String[]{Long.toString(mDeviceID)}, null, null, null);
         cursor.moveToFirst();
         mDeviceType = DeviceType.valueOf(cursor.getString(cursor.getColumnIndex(DevicesDbHelper.DEVICE_TYPE)));
         Protocol protocol = Protocol.valueOf(cursor.getString(cursor.getColumnIndex(DevicesDbHelper.PROTOCOL)));
@@ -130,7 +127,7 @@ public class EditDeviceDialogFragment
         builder.setIcon(UIHelper.getIconId(mDeviceType, protocol));
 
         // create the view
-        final View mainDialog = getActivity().getLayoutInflater().inflate(getLayout(protocol, mDeviceType), null);
+        final View mainDialog = requireActivity().getLayoutInflater().inflate(getLayout(protocol, mDeviceType), null);
         builder.setView(mainDialog);
 
         // find views
@@ -157,9 +154,7 @@ public class EditDeviceDialogFragment
         if (mDeviceType == DeviceType.ROWING_POWER) {
             mBikePowerSensorFlags = DevicesDatabaseManager.getBikePowerSensorFlags(mDeviceID);
 
-            if (!BikePowerSensorsHelper.isWheelRevolutionDataSupported(mBikePowerSensorFlags)
-                    && !BikePowerSensorsHelper.isWheelDistanceDataSupported(mBikePowerSensorFlags)
-                    && !BikePowerSensorsHelper.isWheelSpeedDataSupported(mBikePowerSensorFlags)) {
+            if (!BikePowerSensorsHelper.isWheelRevolutionDataSupported(mBikePowerSensorFlags) && !BikePowerSensorsHelper.isWheelDistanceDataSupported(mBikePowerSensorFlags) && !BikePowerSensorsHelper.isWheelSpeedDataSupported(mBikePowerSensorFlags)) {
                 // there is no wheel speed or distance sensor, so we do not need the calibration factor stuff
                 llWheelCircumference.setVisibility(View.GONE);
                 etCalibrationFactor = null;
@@ -289,10 +284,10 @@ public class EditDeviceDialogFragment
         cbPaired.setChecked(cursor.getInt(cursor.getColumnIndexOrThrow(DevicesDbHelper.PAIRED)) > 0);
 
         String manufacturer = cursor.getString(cursor.getColumnIndexOrThrow(DevicesDbHelper.MANUFACTURER_NAME));
-        tvManufacturer.setText(manufacturer == null ? getActivity().getString(R.string.unknown_manufacturer) : manufacturer);
+        tvManufacturer.setText(manufacturer == null ? requireActivity().getString(R.string.unknown_manufacturer) : manufacturer);
 
         String lastSeen = cursor.getString(cursor.getColumnIndexOrThrow(DevicesDbHelper.LAST_ACTIVE));
-        tvLastSeen.setText(lastSeen == null ? getActivity().getString(R.string.unknown_last_seen_date) : lastSeen);
+        tvLastSeen.setText(lastSeen == null ? requireActivity().getString(R.string.unknown_last_seen_date) : lastSeen);
 
         int batteryPercentage = cursor.getInt(cursor.getColumnIndex(DevicesDbHelper.LAST_BATTERY_PERCENTAGE));
         if (DEBUG) Log.i(TAG, "batteryPercentage=" + batteryPercentage);
@@ -341,7 +336,7 @@ public class EditDeviceDialogFragment
         List<String> linkedEquipmentList = equipmentDbHelper.getLinkedEquipmentFromDeviceId((int) mDeviceID);
 
         if (spinnerEquipment != null) {
-            if (equipmentList != null && equipmentList.size() >= 1) {
+            if (equipmentList != null && !equipmentList.isEmpty()) {
                 mHaveEquipmentList = true;
                 spinnerEquipment.setItems(equipmentList);
                 spinnerEquipment.setSelection(linkedEquipmentList);
@@ -351,38 +346,22 @@ public class EditDeviceDialogFragment
         }
 
         if (bEditCalibrationFactor != null) {
-            bEditCalibrationFactor.setOnClickListener(new OnClickListener() {
-                @Override
-                public void onClick(View v) {
-                    // Create an instance of the dialog fragment and show it
-                    SetCalibrationFactorDialogFragment dialog = SetCalibrationFactorDialogFragment.newInstance(etCalibrationFactor.getText().toString(), mCalibrationFactorTitle, mCalibrationFactorName);
-                    dialog.setNewCalibrationFactorListener(new SetCalibrationFactorDialogFragment.NewCalibrationFactorListener() {
-                        @Override
-                        public void newCalibrationFactor(String calibrationFactor) {
-                            setCalibrationFactor(calibrationFactor);
-                        }
-                    });
-                    dialog.show(getFragmentManager(), SetCalibrationFactorDialogFragment.TAG);
-                }
+            bEditCalibrationFactor.setOnClickListener(v -> {
+                // Create an instance of the dialog fragment and show it
+                SetCalibrationFactorDialogFragment dialog = SetCalibrationFactorDialogFragment.newInstance(etCalibrationFactor.getText().toString(), mCalibrationFactorTitle, mCalibrationFactorName);
+                dialog.setNewCalibrationFactorListener(this::setCalibrationFactor);
+                dialog.show(requireFragmentManager(), SetCalibrationFactorDialogFragment.TAG);
             });
         }
 
         // finally, add the action buttons
-        builder.setPositiveButton(getString(R.string.OK), new DialogInterface.OnClickListener() {
-            @Override
-            public void onClick(DialogInterface dialog, int id) {
-                saveEverything();
-            }
-        });
-        builder.setNegativeButton(getString(R.string.Cancel), new DialogInterface.OnClickListener() {
-            public void onClick(DialogInterface dialog, int id) {
-                EditDeviceDialogFragment.this.getDialog().cancel();
-            }
-        });
+        builder.setPositiveButton(getString(R.string.OK), (dialog, id) -> saveEverything());
+        builder.setNegativeButton(getString(R.string.Cancel), (dialog, id) -> Objects.requireNonNull(EditDeviceDialogFragment.this.getDialog()).cancel());
         return builder.create();
 
     }
 
+    @SuppressLint("LongLogTag")
     protected void saveEverything() {
         if (DEBUG) Log.d(TAG, "saveEverything");
 
@@ -406,13 +385,10 @@ public class EditDeviceDialogFragment
         DevicesDatabaseManager databaseManager = DevicesDatabaseManager.getInstance();
         SQLiteDatabase db = databaseManager.getOpenDatabase();
         try {
-            db.update(DevicesDbHelper.DEVICES,
-                    values,
-                    DevicesDbHelper.C_ID + "=" + mDeviceID,
-                    null);
+            db.update(DevicesDbHelper.DEVICES, values, DevicesDbHelper.C_ID + "=" + mDeviceID, null);
         } catch (SQLException e) {
             // TODO: use Toast?
-            Log.e(TAG, "Error while writing" + e.toString());
+            Log.e(TAG, "Error while writing" + e);
         }
         databaseManager.closeDatabase(); // db.close();
 
@@ -433,13 +409,13 @@ public class EditDeviceDialogFragment
         Intent intent = new Intent(BANALService.PAIRING_CHANGED);
         intent.putExtra(BANALService.DEVICE_ID, mDeviceID);
         intent.putExtra(BANALService.PAIRED, cbPaired.isChecked());
-        getActivity().sendBroadcast(intent);
+        requireActivity().sendBroadcast(intent);
 
         if (mCalibrationFactorChanged) {
             intent = new Intent(BANALService.CALIBRATION_FACTOR_CHANGED);
             intent.putExtra(BANALService.DEVICE_ID, mDeviceID);
             intent.putExtra(BANALService.CALIBRATION_FACTOR, newCalibrationFactor);
-            getActivity().sendBroadcast(intent);
+            requireActivity().sendBroadcast(intent);
         }
 
         // mOnEditDeviceFinishedListener.onEditDeviceFinished();

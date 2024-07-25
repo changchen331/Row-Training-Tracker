@@ -17,5 +17,4 @@ public class DefaultNumberFormatter implements MyFormatter<Number> {
             return format.format(value);
         }
     }
-
 }

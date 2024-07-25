@@ -8,13 +8,8 @@ import com.atrainingtracker.banalservice.sensor.MySensor;
 import com.atrainingtracker.banalservice.sensor.MySensorManager;
 import com.atrainingtracker.banalservice.sensor.SensorType;
 import com.dsi.ant.plugins.antplus.pcc.AntPlusEnvironmentPcc;
-import com.dsi.ant.plugins.antplus.pcc.AntPlusEnvironmentPcc.ITemperatureDataReceiver;
-import com.dsi.ant.plugins.antplus.pcc.defines.EventFlag;
 import com.dsi.ant.plugins.antplus.pccbase.AntPluginPcc;
 import com.dsi.ant.plugins.antplus.pccbase.PccReleaseHandle;
-
-import java.math.BigDecimal;
-import java.util.EnumSet;
 
 /**
  * A Bike Cadence ManagedSensor
@@ -57,19 +52,10 @@ public class ANTEnvironmentDevice extends MyANTDevice {
     @Override
     protected void subscribeSpecificEvents() {
         if (mEnvironmentPcc != null) {
-            mEnvironmentPcc.subscribeTemperatureDataEvent(new ITemperatureDataReceiver() {
-
-                @Override
-                public void onNewTemperatureData(long estTimestamp,
-                                                 EnumSet<EventFlag> eventFlags,
-                                                 BigDecimal currentTemperature,
-                                                 long eventCount,
-                                                 BigDecimal lowLast24Hours,
-                                                 BigDecimal highLast24Hours) {
-                    mTemperatureSensor.newValue(currentTemperature);
-                    mMinTemperatureSensor.newValue(lowLast24Hours);
-                    mMaxTemperatureSensor.newValue(highLast24Hours);
-                }
+            mEnvironmentPcc.subscribeTemperatureDataEvent((estTimestamp, eventFlags, currentTemperature, eventCount, lowLast24Hours, highLast24Hours) -> {
+                mTemperatureSensor.newValue(currentTemperature);
+                mMinTemperatureSensor.newValue(lowLast24Hours);
+                mMaxTemperatureSensor.newValue(highLast24Hours);
             });
         }
     }
@@ -83,7 +69,7 @@ public class ANTEnvironmentDevice extends MyANTDevice {
 
     @Override
     protected PccReleaseHandle requestAccess() {
-        return AntPlusEnvironmentPcc.requestAccess(mContext, getANTDeviceNumber(), 0, new MyResultReceiver<AntPlusEnvironmentPcc>(), new MyDeviceStateChangeReceiver());
+        return AntPlusEnvironmentPcc.requestAccess(mContext, getANTDeviceNumber(), 0, new MyResultReceiver<>(), new MyDeviceStateChangeReceiver());
     }
 
 }

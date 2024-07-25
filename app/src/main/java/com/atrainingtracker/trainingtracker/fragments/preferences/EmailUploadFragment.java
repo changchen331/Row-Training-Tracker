@@ -10,9 +10,7 @@ import androidx.preference.PreferenceManager;
 import com.atrainingtracker.R;
 import com.atrainingtracker.trainingtracker.TrainingApplication;
 
-
-public class EmailUploadFragment extends androidx.preference.PreferenceFragmentCompat
-        implements SharedPreferences.OnSharedPreferenceChangeListener {
+public class EmailUploadFragment extends androidx.preference.PreferenceFragmentCompat implements SharedPreferences.OnSharedPreferenceChangeListener {
     private static final boolean DEBUG = TrainingApplication.DEBUG;
     private static final String TAG = EmailUploadFragment.class.getName();
 
@@ -26,8 +24,8 @@ public class EmailUploadFragment extends androidx.preference.PreferenceFragmentC
 
         setPreferencesFromResource(R.xml.prefs, rootKey);
 
-        etpAddress = (EditTextPreference) this.getPreferenceScreen().findPreference(TrainingApplication.SP_EMAIL_ADDRESS);
-        etpSubject = (EditTextPreference) this.getPreferenceScreen().findPreference(TrainingApplication.SP_EMAIL_SUBJECT);
+        etpAddress = this.getPreferenceScreen().findPreference(TrainingApplication.SP_EMAIL_ADDRESS);
+        etpSubject = this.getPreferenceScreen().findPreference(TrainingApplication.SP_EMAIL_SUBJECT);
     }
 
     @Override
@@ -38,7 +36,7 @@ public class EmailUploadFragment extends androidx.preference.PreferenceFragmentC
         etpAddress.setSummary(TrainingApplication.getSpEmailAddress());
         etpSubject.setSummary(TrainingApplication.getSpEmailSubject());
 
-        mSharedPreferences = PreferenceManager.getDefaultSharedPreferences(getActivity());
+        mSharedPreferences = PreferenceManager.getDefaultSharedPreferences(requireActivity());
         mSharedPreferences.registerOnSharedPreferenceChangeListener(this);
     }
 

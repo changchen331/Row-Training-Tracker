@@ -1,5 +1,6 @@
 package com.atrainingtracker.trainingtracker.smartwatch.pebble;
 
+import android.annotation.SuppressLint;
 import android.content.ContentValues;
 import android.content.Context;
 import android.database.Cursor;
@@ -15,11 +16,11 @@ import com.atrainingtracker.trainingtracker.TrainingApplication;
 
 import java.util.LinkedList;
 
-
 public class PebbleDatabaseManager {
     private static final String TAG = PebbleDatabaseManager.class.getName();
     private static final boolean DEBUG = TrainingApplication.DEBUG && true;
     private static PebbleDatabaseManager cInstance;
+    @SuppressLint("StaticFieldLeak")
     private static PebbleDbHelper cPebbleDbHelper;
     private int mOpenCounter;
     private SQLiteDatabase mDatabase;
@@ -33,23 +34,17 @@ public class PebbleDatabaseManager {
 
     public static synchronized PebbleDatabaseManager getInstance() {
         if (cInstance == null) {
-            throw new IllegalStateException(PebbleDatabaseManager.class.getSimpleName() +
-                    " is not initialized, call initializeInstance(..) method first.");
+            throw new IllegalStateException(PebbleDatabaseManager.class.getSimpleName() + " is not initialized, call initializeInstance(..) method first.");
         }
 
         return cInstance;
     }
 
     private static Cursor getViewsCursor(SQLiteDatabase db, long viewId) {
-        return db.query(PebbleDbHelper.VIEWS_TABLE,
-                null,
-                PebbleDbHelper.C_ID + "=?",
-                new String[]{viewId + ""},
-                null,
-                null,
-                null);
+        return db.query(PebbleDbHelper.VIEWS_TABLE, null, PebbleDbHelper.C_ID + "=?", new String[]{viewId + ""}, null, null, null);
     }
 
+    @SuppressLint("Range")
     public static ActivityType getActivityType(long viewId) {
 
         ActivityType activityType = ActivityType.getDefaultActivityType();
@@ -71,6 +66,7 @@ public class PebbleDatabaseManager {
     // some helper methods
     ////////////////////////////////////////////////////////////////////////////////////////////////
 
+    @SuppressLint("Range")
     public static String getName(long viewId) {
         String name = null;
 
@@ -91,10 +87,7 @@ public class PebbleDatabaseManager {
         values.put(PebbleDbHelper.SENSOR_TYPE, sensorType.name());
 
         SQLiteDatabase db = getInstance().getOpenDatabase();
-        db.update(PebbleDbHelper.ROWS_TABLE,
-                values,
-                PebbleDbHelper.ROW_NR + "=? AND " + PebbleDbHelper.VIEW_ID + "=?",
-                new String[]{rowNr + "", viewId + ""});
+        db.update(PebbleDbHelper.ROWS_TABLE, values, PebbleDbHelper.ROW_NR + "=? AND " + PebbleDbHelper.VIEW_ID + "=?", new String[]{rowNr + "", viewId + ""});
         getInstance().closeDatabase();
     }
 
@@ -104,23 +97,17 @@ public class PebbleDatabaseManager {
         values.put(PebbleDbHelper.NAME, name);
 
         SQLiteDatabase db = getInstance().getOpenDatabase();
-        db.update(PebbleDbHelper.VIEWS_TABLE,
-                values,
-                PebbleDbHelper.C_ID + "=?",
-                new String[]{viewId + ""});
+        db.update(PebbleDbHelper.VIEWS_TABLE, values, PebbleDbHelper.C_ID + "=?", new String[]{viewId + ""});
         getInstance().closeDatabase();
     }
 
+    @SuppressLint("Range")
     public static long getFirstViewId(ActivityType activityType) // the first view is the one with a negative value for PREV_VIEW_ID
     {
         long viewId = -1;
 
         SQLiteDatabase db = getInstance().getOpenDatabase();
-        Cursor cursor = db.query(PebbleDbHelper.VIEWS_TABLE,
-                null,
-                PebbleDbHelper.ACTIVITY_TYPE + "=? AND " + PebbleDbHelper.PREV_VIEW_ID + "<0",
-                new String[]{activityType.name()},
-                null, null, null);
+        Cursor cursor = db.query(PebbleDbHelper.VIEWS_TABLE, null, PebbleDbHelper.ACTIVITY_TYPE + "=? AND " + PebbleDbHelper.PREV_VIEW_ID + "<0", new String[]{activityType.name()}, null, null, null);
 
         if (cursor.moveToFirst()) {
             viewId = cursor.getInt(cursor.getColumnIndex(PebbleDbHelper.C_ID));
@@ -131,6 +118,7 @@ public class PebbleDatabaseManager {
         return viewId;
     }
 
+    @SuppressLint("Range")
     public static long getNextViewId(long viewId) {
         long nextViewId = -1;
 
@@ -147,6 +135,7 @@ public class PebbleDatabaseManager {
         return nextViewId;
     }
 
+    @SuppressLint("Range")
     public static long getPrevViewId(long viewId) {
         long nextViewId = -1;
 
@@ -194,17 +183,12 @@ public class PebbleDatabaseManager {
         return result;
     }
 
+    @SuppressLint("Range")
     public static LinkedList<SensorType> getSensorTypeList(long viewId) {
         LinkedList<SensorType> result = new LinkedList<>();
 
         SQLiteDatabase db = getInstance().getOpenDatabase();
-        Cursor cursor = db.query(PebbleDbHelper.ROWS_TABLE,
-                null,
-                PebbleDbHelper.VIEW_ID + "=?",
-                new String[]{viewId + ""},
-                null,
-                null,
-                PebbleDbHelper.ROW_NR + " ASC");
+        Cursor cursor = db.query(PebbleDbHelper.ROWS_TABLE, null, PebbleDbHelper.VIEW_ID + "=?", new String[]{viewId + ""}, null, null, PebbleDbHelper.ROW_NR + " ASC");
 
         while (cursor.moveToNext()) {
             result.add(SensorType.valueOf(cursor.getString(cursor.getColumnIndex(PebbleDbHelper.SENSOR_TYPE))));
@@ -230,21 +214,19 @@ public class PebbleDatabaseManager {
         if (prevViewId >= 0) {
             ContentValues values = new ContentValues();
             values.put(PebbleDbHelper.NEXT_VIEW_ID, nextViewId);
-            db.update(PebbleDbHelper.VIEWS_TABLE, values,
-                    PebbleDbHelper.C_ID + "=?", new String[]{prevViewId + ""});
+            db.update(PebbleDbHelper.VIEWS_TABLE, values, PebbleDbHelper.C_ID + "=?", new String[]{prevViewId + ""});
         }
         if (nextViewId >= 0) {
             ContentValues values = new ContentValues();
             values.put(PebbleDbHelper.PREV_VIEW_ID, prevViewId);
-            db.update(PebbleDbHelper.VIEWS_TABLE, values,
-                    PebbleDbHelper.C_ID + "=?", new String[]{nextViewId + ""});
+            db.update(PebbleDbHelper.VIEWS_TABLE, values, PebbleDbHelper.C_ID + "=?", new String[]{nextViewId + ""});
         }
 
         getInstance().closeDatabase();
     }
 
     public static long addDefaultView(Context context, long viewId, boolean addAfterCurrentLayout) {
-        long newViewId = -1;
+        long newViewId;
 
         SQLiteDatabase db = getInstance().getOpenDatabase();
 
@@ -255,14 +237,12 @@ public class PebbleDatabaseManager {
             // update next of current
             ContentValues values = new ContentValues();
             values.put(PebbleDbHelper.NEXT_VIEW_ID, newViewId);
-            db.update(PebbleDbHelper.VIEWS_TABLE, values,
-                    PebbleDbHelper.C_ID + "=?", new String[]{viewId + ""});
+            db.update(PebbleDbHelper.VIEWS_TABLE, values, PebbleDbHelper.C_ID + "=?", new String[]{viewId + ""});
 
             // update prev of old next
             values.clear();
             values.put(PebbleDbHelper.PREV_VIEW_ID, newViewId);
-            db.update(PebbleDbHelper.VIEWS_TABLE, values,
-                    PebbleDbHelper.C_ID + "=?", new String[]{nextViewId + ""});
+            db.update(PebbleDbHelper.VIEWS_TABLE, values, PebbleDbHelper.C_ID + "=?", new String[]{nextViewId + ""});
 
         } else {
             long prevViewId = getPrevViewId(viewId);
@@ -271,14 +251,12 @@ public class PebbleDatabaseManager {
             // update prev of current
             ContentValues values = new ContentValues();
             values.put(PebbleDbHelper.PREV_VIEW_ID, newViewId);
-            db.update(PebbleDbHelper.VIEWS_TABLE, values,
-                    PebbleDbHelper.C_ID + "=?", new String[]{viewId + ""});
+            db.update(PebbleDbHelper.VIEWS_TABLE, values, PebbleDbHelper.C_ID + "=?", new String[]{viewId + ""});
 
             // update next of old prev
             values.clear();
             values.put(PebbleDbHelper.NEXT_VIEW_ID, newViewId);
-            db.update(PebbleDbHelper.VIEWS_TABLE, values,
-                    PebbleDbHelper.C_ID + "=?", new String[]{prevViewId + ""});
+            db.update(PebbleDbHelper.VIEWS_TABLE, values, PebbleDbHelper.C_ID + "=?", new String[]{prevViewId + ""});
 
         }
 
@@ -292,9 +270,7 @@ public class PebbleDatabaseManager {
 
         SQLiteDatabase db = getInstance().getOpenDatabase();
 
-        db.delete(PebbleDbHelper.ROWS_TABLE,
-                PebbleDbHelper.VIEW_ID + "=? AND " + PebbleDbHelper.ROW_NR + "=?",
-                new String[]{viewId + "", rowNr + ""});
+        db.delete(PebbleDbHelper.ROWS_TABLE, PebbleDbHelper.VIEW_ID + "=? AND " + PebbleDbHelper.ROW_NR + "=?", new String[]{viewId + "", rowNr + ""});
 
         getInstance().closeDatabase();
     }
@@ -310,9 +286,7 @@ public class PebbleDatabaseManager {
         SQLiteDatabase db = getInstance().getOpenDatabase();
 
         // first delete the corresponding rowNr
-        db.delete(PebbleDbHelper.ROWS_TABLE,
-                PebbleDbHelper.VIEW_ID + "=? AND " + PebbleDbHelper.ROW_NR + "=?",
-                new String[]{viewId + "", rowNr + ""});
+        db.delete(PebbleDbHelper.ROWS_TABLE, PebbleDbHelper.VIEW_ID + "=? AND " + PebbleDbHelper.ROW_NR + "=?", new String[]{viewId + "", rowNr + ""});
         // then insert the new values
         db.insert(PebbleDbHelper.ROWS_TABLE, null, values);
         getInstance().closeDatabase();
@@ -358,31 +332,21 @@ public class PebbleDatabaseManager {
         // public static final String VIEW_ID       = "ViewID";
         public static final String SENSOR_TYPE = "SensorType";
         @Deprecated
-        protected static final String CREATE_LAYOUTS_TABLE_V2 = "create table " + ROWS_TABLE + " ("
-                + ROW_NR + " int, "
-                + VIEW_ID + " int, "   // corresponds to C_ID of VIEWS_TABLE
+        protected static final String CREATE_LAYOUTS_TABLE_V2 = "create table " + ROWS_TABLE + " (" + ROW_NR + " int, " + VIEW_ID + " int, "   // corresponds to C_ID of VIEWS_TABLE
                 + SENSOR_TYPE + " text)";
-        protected static final String CREATE_VIEWS_TABLE_V3 = "create table " + VIEWS_TABLE + " ("
-                + C_ID + " INTEGER PRIMARY KEY AUTOINCREMENT, "
+        protected static final String CREATE_VIEWS_TABLE_V3 = "create table " + VIEWS_TABLE + " (" + C_ID + " INTEGER PRIMARY KEY AUTOINCREMENT, "
                 // + VIEW_ID       + " INTEGER PRIMARY KEY AUTOINCREMENT, "
-                + ACTIVITY_TYPE + " text, "
-                + NAME + " text, "
+                + ACTIVITY_TYPE + " text, " + NAME + " text, "
 //            + LAYOUT_NR     + " int, " // since layouts might be deleted, this makes no longer sense => this field is replaced by prev and next view id
-                + PREV_VIEW_ID + " int, "
-                + NEXT_VIEW_ID + " int)";
-        protected static final String CREATE_LAYOUTS_TABLE_V3 = "create table " + ROWS_TABLE + " ("
-                + ROW_NR + " int, "
-                + VIEW_ID + " int, "   // corresponds to C_ID of VIEWS_TABLE
+                + PREV_VIEW_ID + " int, " + NEXT_VIEW_ID + " int)";
+        protected static final String CREATE_LAYOUTS_TABLE_V3 = "create table " + ROWS_TABLE + " (" + ROW_NR + " int, " + VIEW_ID + " int, "   // corresponds to C_ID of VIEWS_TABLE
                 + SENSOR_TYPE + " text)";
         @Deprecated
         static final String LAYOUT_NR = "LayoutNr";       // for each ActivityType, we might have different views/activities/layouts
         @Deprecated
-        protected static final String CREATE_VIEWS_TABLE_V2 = "create table " + VIEWS_TABLE + " ("
-                + C_ID + " INTEGER PRIMARY KEY AUTOINCREMENT, "
+        protected static final String CREATE_VIEWS_TABLE_V2 = "create table " + VIEWS_TABLE + " (" + C_ID + " INTEGER PRIMARY KEY AUTOINCREMENT, "
                 // + VIEW_ID       + " INTEGER PRIMARY KEY AUTOINCREMENT, "
-                + ACTIVITY_TYPE + " text, "
-                + NAME + " text, "
-                + LAYOUT_NR + " int)";  // since layouts might be deleted, this makes no longer sense?
+                + ACTIVITY_TYPE + " text, " + NAME + " text, " + LAYOUT_NR + " int)";  // since layouts might be deleted, this makes no longer sense?
         private static final String TAG = PebbleDbHelper.class.getName();
         private static final boolean DEBUG = TrainingApplication.DEBUG & true;
         private Context mContext;
@@ -397,13 +361,7 @@ public class PebbleDatabaseManager {
         public static long insertDefaultViewToDb(Context context, SQLiteDatabase db, ActivityType activityType, long prevViewId, long nextViewId) {
             String name = context.getString(R.string.text_default);
 
-            Cursor cursor = db.query(VIEWS_TABLE,
-                    null,
-                    ACTIVITY_TYPE + "=?",
-                    new String[]{activityType.name()},
-                    null,
-                    null,
-                    null);
+            @SuppressLint("Recycle") Cursor cursor = db.query(VIEWS_TABLE, null, ACTIVITY_TYPE + "=?", new String[]{activityType.name()}, null, null, null);
             int numberOfDefaults = cursor.getCount();
             if (numberOfDefaults > 0) {
                 name = context.getString(R.string.string_and_number_format, name, numberOfDefaults + 1);
@@ -430,12 +388,12 @@ public class PebbleDatabaseManager {
             return viewID;
         }
 
-        private static final void addColumn(SQLiteDatabase db, String table, String column, String type) {
+        private static void addColumn(SQLiteDatabase db, String table, String column, String type) {
             db.execSQL("ALTER TABLE " + table + " ADD COLUMN " + column + " " + type + ";");
         }
 
         public static LinkedList<SensorType> getDefaultSensorList(ActivityType activityType) {
-            LinkedList<SensorType> result = new LinkedList<SensorType>();
+            LinkedList<SensorType> result = new LinkedList<>();
 
             switch (activityType) {
                 case ROWING_POWER:
@@ -510,6 +468,7 @@ public class PebbleDatabaseManager {
         }
 
         // Called whenever newVersion != oldVersion
+        @SuppressLint({"Recycle", "Range"})
         @Override
         public void onUpgrade(SQLiteDatabase db, int oldVersion, int newVersion) {
 
@@ -524,10 +483,7 @@ public class PebbleDatabaseManager {
                     ContentValues values = new ContentValues();
 
                     // reconstruct and insert prev view ids
-                    cursor = db.query(VIEWS_TABLE, null,
-                            ACTIVITY_TYPE + "=?", new String[]{activityType.name()},
-                            null, null,
-                            LAYOUT_NR + " ASC"); // order by
+                    cursor = db.query(VIEWS_TABLE, null, ACTIVITY_TYPE + "=?", new String[]{activityType.name()}, null, null, LAYOUT_NR + " ASC"); // order by
 
                     while (cursor.moveToNext()) {
                         viewId = cursor.getInt(cursor.getColumnIndex(C_ID));
@@ -538,10 +494,7 @@ public class PebbleDatabaseManager {
                     }
 
                     // reconstruct and insert next view ids
-                    cursor = db.query(VIEWS_TABLE, null,
-                            ACTIVITY_TYPE + "=?", new String[]{activityType.name()},
-                            null, null,
-                            LAYOUT_NR + " DESC"); // order by
+                    cursor = db.query(VIEWS_TABLE, null, ACTIVITY_TYPE + "=?", new String[]{activityType.name()}, null, null, LAYOUT_NR + " DESC"); // order by
 
                     while (cursor.moveToNext()) {
                         viewId = cursor.getInt(cursor.getColumnIndex(C_ID));

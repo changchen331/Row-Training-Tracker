@@ -4,6 +4,7 @@ import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
+import android.os.Build;
 import android.util.Log;
 
 import com.atrainingtracker.banalservice.BANALService;
@@ -16,13 +17,12 @@ import java.util.Collection;
 import java.util.EnumMap;
 import java.util.List;
 
-
 public abstract class MyDevice {
     private static final boolean DEBUG = BANALService.DEBUG & false;
     private final IntentFilter resetAccumulatorsFilter = new IntentFilter(BANALService.RESET_ACCUMULATORS_INTENT);
     protected Context mContext;
     protected DeviceType mDeviceType;
-    protected EnumMap<SensorType, MySensor> mSensorMap = new EnumMap<SensorType, MySensor>(SensorType.class);
+    protected EnumMap<SensorType, MySensor> mSensorMap = new EnumMap<>(SensorType.class);
     protected MySensorManager mMySensorManager;
     private String TAG = "MyDevice";
     private boolean mSensorsRegistered = false;
@@ -44,7 +44,9 @@ public abstract class MyDevice {
         mMySensorManager = mySensorManager;
         mDeviceType = deviceType;
 
-        mContext.registerReceiver(resetAccumulatorsReceiver, resetAccumulatorsFilter);
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+            mContext.registerReceiver(resetAccumulatorsReceiver, resetAccumulatorsFilter, Context.RECEIVER_NOT_EXPORTED);
+        }
 
         addSensors();
     }

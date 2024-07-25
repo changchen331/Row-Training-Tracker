@@ -1,5 +1,6 @@
 package com.atrainingtracker.banalservice.devices.bluetooth_le;
 
+import android.annotation.SuppressLint;
 import android.content.Context;
 import android.util.Log;
 
@@ -14,11 +15,13 @@ public class BTLEBikeSpeedAndCadenceDevice extends BTLEBikeDevice {
     /**
      * constructor
      **/
+    @SuppressLint("LongLogTag")
     public BTLEBikeSpeedAndCadenceDevice(Context context, MySensorManager mySensorManager, long deviceID, String address) {
         super(context, mySensorManager, DeviceType.ROWING_SPEED_AND_CADENCE, deviceID, address);
         if (DEBUG) Log.i(TAG, "created device");
     }
 
+    @SuppressLint("LongLogTag")
     @Override
     protected void addSensors() {
         if (DEBUG) Log.i(TAG, "addSensors()");

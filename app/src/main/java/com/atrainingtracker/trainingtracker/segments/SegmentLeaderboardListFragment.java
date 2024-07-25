@@ -11,15 +11,14 @@ import android.util.Log;
 import android.view.View;
 import android.widget.Toast;
 
+import androidx.annotation.NonNull;
 import androidx.cursoradapter.widget.CursorAdapter;
-import androidx.swiperefreshlayout.widget.SwipeRefreshLayout;
 
 import com.atrainingtracker.R;
 import com.atrainingtracker.trainingtracker.TrainingApplication;
 import com.atrainingtracker.trainingtracker.onlinecommunities.strava.StravaSegmentsHelper;
 import com.atrainingtracker.trainingtracker.onlinecommunities.strava.StravaSegmentsIntentService;
 import com.atrainingtracker.trainingtracker.segments.SegmentsDatabaseManager.Segments;
-
 
 public class SegmentLeaderboardListFragment extends SwipeRefreshListFragment {
 
@@ -42,12 +41,9 @@ public class SegmentLeaderboardListFragment extends SwipeRefreshListFragment {
         public void onReceive(Context context, Intent intent) {
             long segmentId = intent.getLongExtra(Segments.SEGMENT_ID, -1);
             if (segmentId == mSegmentId) {
-                if (isRefreshing()
-                        && intent.hasExtra(StravaSegmentsIntentService.RESULT_MESSAGE)
-                        && intent.getStringExtra(StravaSegmentsIntentService.RESULT_MESSAGE) != null) {
+                if (isRefreshing() && intent.hasExtra(StravaSegmentsIntentService.RESULT_MESSAGE) && intent.getStringExtra(StravaSegmentsIntentService.RESULT_MESSAGE) != null) {
                     Toast.makeText(context, context.getString(R.string.updating_starred_segments_failed) + intent.getStringExtra(StravaSegmentsIntentService.RESULT_MESSAGE), Toast.LENGTH_LONG).show();
                 }
-
                 onRefreshComplete();
             }
         }
@@ -57,8 +53,7 @@ public class SegmentLeaderboardListFragment extends SwipeRefreshListFragment {
         public void onReceive(Context context, Intent intent) {
             if (DEBUG) Log.i(TAG, "newLeaderboardEntry");
 
-            if (intent.hasExtra(Segments.SEGMENT_ID)
-                    && mSegmentId == intent.getLongExtra(Segments.SEGMENT_ID, -1)) {
+            if (intent.hasExtra(Segments.SEGMENT_ID) && mSegmentId == intent.getLongExtra(Segments.SEGMENT_ID, -1)) {
                 updateCursor();
             }
         }
@@ -84,25 +79,24 @@ public class SegmentLeaderboardListFragment extends SwipeRefreshListFragment {
         super.onCreate(savedInstanceState);
         if (DEBUG) Log.i(TAG, "onCreate");
 
-        mSegmentId = getArguments().getLong(SEGMENT_ID);
+        if (getArguments() != null) {
+            mSegmentId = getArguments().getLong(SEGMENT_ID);
+        }
         mStravaSegmentsHelper = new StravaSegmentsHelper(getContext());
     }
 
     // BEGIN_INCLUDE (setup_views)
     @Override
-    public void onViewCreated(View view, Bundle savedInstanceState) {
+    public void onViewCreated(@NonNull View view, Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
 
         mCursorAdapter = new SegmentLeaderboardCursorAdapter(getActivity(), mCursor);
         setListAdapter(mCursorAdapter);
 
-        setOnRefreshListener(new SwipeRefreshLayout.OnRefreshListener() {
-            @Override
-            public void onRefresh() {
-                if (DEBUG) Log.i(TAG, "onRefresh called from SwipeRefreshLayout");
+        setOnRefreshListener(() -> {
+            if (DEBUG) Log.i(TAG, "onRefresh called from SwipeRefreshLayout");
 
-                initiateRefresh();
-            }
+            initiateRefresh();
         });
     }
 
@@ -118,9 +112,8 @@ public class SegmentLeaderboardListFragment extends SwipeRefreshListFragment {
         mDb = SegmentsDatabaseManager.getInstance().getOpenDatabase();
         updateCursor();
 
-        getContext().registerReceiver(mLeaderboardUpdateCompleteReceiver, mLeaderboardUpdateCompleteFilter);
-        getContext().registerReceiver(mNewLeaderboardEntryReceiver, mNewLeaderboardEntryFilter);
-
+        requireContext().registerReceiver(mLeaderboardUpdateCompleteReceiver, mLeaderboardUpdateCompleteFilter);
+        requireContext().registerReceiver(mNewLeaderboardEntryReceiver, mNewLeaderboardEntryFilter);
     }
 
     @Override
@@ -130,26 +123,23 @@ public class SegmentLeaderboardListFragment extends SwipeRefreshListFragment {
 
         SegmentsDatabaseManager.getInstance().closeDatabase();
 
-        getContext().unregisterReceiver(mLeaderboardUpdateCompleteReceiver);
-        getContext().unregisterReceiver(mNewLeaderboardEntryReceiver);
+        requireContext().unregisterReceiver(mLeaderboardUpdateCompleteReceiver);
+        requireContext().unregisterReceiver(mNewLeaderboardEntryReceiver);
     }
 
     protected void updateCursor() {
         if (DEBUG) Log.i(TAG, "updateCursor, segmentId=" + mSegmentId);
 
-        mCursor = mDb.query(Segments.TABLE_SEGMENT_LEADERBOARD,
-                SegmentLeaderboardCursorAdapter.FROM,           // columns
+        mCursor = mDb.query(Segments.TABLE_SEGMENT_LEADERBOARD, SegmentLeaderboardCursorAdapter.FROM,           // columns
                 Segments.SEGMENT_ID + "=?",               // selection
                 new String[]{mSegmentId + ""},  // selectionArgs
-                null, null,
-                Segments.RANK + " ASC");
+                null, null, Segments.RANK + " ASC");
 
         if (DEBUG) Log.i(TAG, "got new cursor with " + mCursor.getCount() + " entries");
 
         mCursorAdapter.changeCursor(mCursor);
         mCursorAdapter.notifyDataSetChanged();
     }
-
 
     private void initiateRefresh() {
         Log.i(TAG, "initiateRefresh");

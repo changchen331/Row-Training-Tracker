@@ -1,5 +1,6 @@
 package com.atrainingtracker.banalservice.fragments;
 
+import android.annotation.SuppressLint;
 import android.app.Activity;
 import android.content.Context;
 import android.view.LayoutInflater;
@@ -9,12 +10,15 @@ import android.widget.ArrayAdapter;
 import android.widget.ImageView;
 import android.widget.TextView;
 
+import androidx.annotation.NonNull;
+
 import com.atrainingtracker.R;
 import com.atrainingtracker.banalservice.Protocol;
 import com.atrainingtracker.banalservice.devices.DeviceType;
 import com.atrainingtracker.banalservice.helpers.UIHelper;
 
 import java.util.List;
+import java.util.Objects;
 
 public class DeviceChoiceArrayAdapter extends ArrayAdapter<DeviceType> {
     Context mContext;
@@ -26,8 +30,10 @@ public class DeviceChoiceArrayAdapter extends ArrayAdapter<DeviceType> {
         mProtocol = protocol;
     }
 
-    public View getView(int position, View convertView, ViewGroup parent) {
-        ViewHolder holder = null;
+    @SuppressLint("InflateParams")
+    @NonNull
+    public View getView(int position, View convertView, @NonNull ViewGroup parent) {
+        ViewHolder holder;
         DeviceType deviceType = getItem(position);
 
         LayoutInflater mInflater = (LayoutInflater) mContext.getSystemService(Activity.LAYOUT_INFLATER_SERVICE);
@@ -41,7 +47,7 @@ public class DeviceChoiceArrayAdapter extends ArrayAdapter<DeviceType> {
             holder = (ViewHolder) convertView.getTag();
         }
 
-        holder.txtTitle.setText(UIHelper.getNameId(deviceType));
+        holder.txtTitle.setText(UIHelper.getNameId(Objects.requireNonNull(deviceType)));
 
         // TODO use this (one text view with compound drawable instead of this complex fucking stuff)
         // holder.txtTitle.setCompoundDrawablesWithIntrinsicBounds(antDeviceType.getImageId(), 0, 0, 0);
@@ -51,7 +57,7 @@ public class DeviceChoiceArrayAdapter extends ArrayAdapter<DeviceType> {
     }
 
     /*private view holder class*/
-    private class ViewHolder {
+    private static class ViewHolder {
         ImageView imageView;
         TextView txtTitle;
     }

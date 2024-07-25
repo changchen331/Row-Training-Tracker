@@ -4,7 +4,6 @@ import com.atrainingtracker.banalservice.sensor.SensorData;
 import com.atrainingtracker.banalservice.sensor.SensorType;
 
 public class FilteredSensorData<T> extends SensorData<T> {
-
     protected FilterType mFilterType;
     protected double mFilterConstant;
 

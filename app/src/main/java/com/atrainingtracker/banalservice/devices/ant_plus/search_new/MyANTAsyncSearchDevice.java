@@ -8,24 +8,16 @@ import com.atrainingtracker.banalservice.devices.DeviceType;
 import com.atrainingtracker.banalservice.devices.Manufacturer;
 import com.atrainingtracker.banalservice.devices.ant_plus.search_new.ANTSearchForNewDevicesEngineMultiDeviceSearch.IANTAsyncSearchEngineInterface;
 import com.atrainingtracker.banalservice.helpers.BatteryStatusHelper;
-import com.dsi.ant.plugins.antplus.pcc.defines.BatteryStatus;
 import com.dsi.ant.plugins.antplus.pcc.defines.DeviceState;
-import com.dsi.ant.plugins.antplus.pcc.defines.EventFlag;
 import com.dsi.ant.plugins.antplus.pcc.defines.RequestAccessResult;
 import com.dsi.ant.plugins.antplus.pccbase.AntPluginPcc;
 import com.dsi.ant.plugins.antplus.pccbase.AntPluginPcc.IDeviceStateChangeReceiver;
 import com.dsi.ant.plugins.antplus.pccbase.AntPluginPcc.IPluginAccessResultReceiver;
 import com.dsi.ant.plugins.antplus.pccbase.AntPlusBikeSpdCadCommonPcc;
 import com.dsi.ant.plugins.antplus.pccbase.AntPlusCommonPcc;
-import com.dsi.ant.plugins.antplus.pccbase.AntPlusCommonPcc.IBatteryStatusReceiver;
-import com.dsi.ant.plugins.antplus.pccbase.AntPlusCommonPcc.IManufacturerIdentificationReceiver;
 import com.dsi.ant.plugins.antplus.pccbase.AntPlusLegacyCommonPcc;
-import com.dsi.ant.plugins.antplus.pccbase.AntPlusLegacyCommonPcc.IManufacturerAndSerialReceiver;
 import com.dsi.ant.plugins.antplus.pccbase.MultiDeviceSearch.MultiDeviceSearchResult;
 import com.dsi.ant.plugins.antplus.pccbase.PccReleaseHandle;
-
-import java.math.BigDecimal;
-import java.util.EnumSet;
 
 //import de.rainerblind.MyAntPlusApp;
 
@@ -90,26 +82,16 @@ public abstract class MyANTAsyncSearchDevice {
 
         mLegacyCommonPcc = legacyCommonPcc;
 
-        legacyCommonPcc.subscribeManufacturerAndSerialEvent(new IManufacturerAndSerialReceiver() {
-
-            @Override
-            public void onNewManufacturerAndSerial(long estTimestamp, java.util.EnumSet<EventFlag> eventFlags, int manufacturerID, int serialNumber) {
-                gotManufacturer(Manufacturer.getName(manufacturerID));
-            }
-        });
+        legacyCommonPcc.subscribeManufacturerAndSerialEvent((estTimestamp, eventFlags, manufacturerID, serialNumber) -> gotManufacturer(Manufacturer.getName(manufacturerID)));
     }
 
     protected void onNewBikeSpdCadCommonPccFound(AntPlusBikeSpdCadCommonPcc rowSpdCadCommonPcc) {
         // first of all, handle super class
         onNewLegacyCommonPccFound(rowSpdCadCommonPcc);
 
-        rowSpdCadCommonPcc.subscribeBatteryStatusEvent(new AntPlusBikeSpdCadCommonPcc.IBatteryStatusReceiver() {
-
-            @Override
-            public void onNewBatteryStatus(long estTimestamp, EnumSet<EventFlag> eventFlags, BigDecimal batteryVoltage, BatteryStatus batteryStatus) {
-                if (DEBUG) Log.i(TAG, "got new battery status: " + batteryStatus);
-                gotBatteryPercentage(BatteryStatusHelper.getBatterPercentage(batteryStatus));
-            }
+        rowSpdCadCommonPcc.subscribeBatteryStatusEvent((estTimestamp, eventFlags, batteryVoltage, batteryStatus) -> {
+            if (DEBUG) Log.i(TAG, "got new battery status: " + batteryStatus);
+            gotBatteryPercentage(BatteryStatusHelper.getBatterPercentage(batteryStatus));
         });
 
     }
@@ -120,27 +102,9 @@ public abstract class MyANTAsyncSearchDevice {
 
         mCommonPcc = commonPcc;
 
-        commonPcc.subscribeManufacturerIdentificationEvent(new IManufacturerIdentificationReceiver() {
+        commonPcc.subscribeManufacturerIdentificationEvent((estTimestamp, eventFlags, hardwareRevision, manufacturerID, modelNumber) -> gotManufacturer(Manufacturer.getName(manufacturerID)));
 
-            @Override
-            public void onNewManufacturerIdentification(long estTimestamp, java.util.EnumSet<EventFlag> eventFlags, int hardwareRevision, int manufacturerID, int modelNumber) {
-                gotManufacturer(Manufacturer.getName(manufacturerID));
-            }
-        });
-
-        commonPcc.subscribeBatteryStatusEvent(new IBatteryStatusReceiver() {
-            @Override
-            public void onNewBatteryStatus(long estTimestamp,
-                                           java.util.EnumSet<EventFlag> eventFlags,
-                                           long cumulativeOperatingTime,
-                                           java.math.BigDecimal batteryVoltage,
-                                           BatteryStatus batteryStatus,
-                                           int cumulativeOperatingTimeResolution,
-                                           int numberOfBatteries,
-                                           int batteryIdentifier) {
-                gotBatteryPercentage(BatteryStatusHelper.getBatterPercentage(batteryStatus));
-            }
-        });
+        commonPcc.subscribeBatteryStatusEvent((estTimestamp, eventFlags, cumulativeOperatingTime, batteryVoltage, batteryStatus, cumulativeOperatingTimeResolution, numberOfBatteries, batteryIdentifier) -> gotBatteryPercentage(BatteryStatusHelper.getBatterPercentage(batteryStatus)));
     }
 
     protected abstract void subscribeCommonEvents(AntPluginPcc antPluginPcc);

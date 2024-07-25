@@ -6,6 +6,7 @@ import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
+import android.os.Build;
 import android.util.Log;
 
 import com.atrainingtracker.banalservice.BANALService;
@@ -18,6 +19,7 @@ import com.atrainingtracker.trainingtracker.database.TrackingViewsDatabaseManage
 import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Objects;
 
 public class FilterManager {
     private static final String TAG = FilterType.class.getSimpleName();
@@ -60,8 +62,10 @@ public class FilterManager {
         mMySensorManager = mySensorManager;
         mContext = context;
 
-        mContext.registerReceiver(mSensorsChangedReceiver, mSensorsChangedFilter);
-        mContext.registerReceiver(mFiltersChangedReceiver, mFiltersChangedFilter);
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+            mContext.registerReceiver(mSensorsChangedReceiver, mSensorsChangedFilter, Context.RECEIVER_NOT_EXPORTED);
+            mContext.registerReceiver(mFiltersChangedReceiver, mFiltersChangedFilter, Context.RECEIVER_NOT_EXPORTED);
+        }
     }
 
     public void createFilter(FilterData filterData) {
@@ -138,7 +142,7 @@ public class FilterManager {
 
     public void shutDown() {
         for (MyFilter myFilter : myFilterMap.values()) {
-            mMapFilter2Sensor.get(myFilter).removeSensorListener(myFilter);
+            Objects.requireNonNull(mMapFilter2Sensor.get(myFilter)).removeSensorListener(myFilter);
         }
 
         mContext.unregisterReceiver(mSensorsChangedReceiver);
@@ -149,7 +153,7 @@ public class FilterManager {
     public FilteredSensorData getFilteredSensorData(FilterData filterData) {
         String key = filterData.getHashKey();
         if (myFilterMap.containsKey(key)) {
-            return myFilterMap.get(key).getFilteredSensorData();
+            return Objects.requireNonNull(myFilterMap.get(key)).getFilteredSensorData();
         } else {
             return null;
         }

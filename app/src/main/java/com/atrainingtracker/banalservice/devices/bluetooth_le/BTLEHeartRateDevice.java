@@ -1,10 +1,8 @@
 package com.atrainingtracker.banalservice.devices.bluetooth_le;
 
-import android.annotation.TargetApi;
 import android.bluetooth.BluetoothGatt;
 import android.bluetooth.BluetoothGattCharacteristic;
 import android.content.Context;
-import android.os.Build;
 import android.util.Log;
 
 import com.atrainingtracker.banalservice.BANALService;
@@ -13,12 +11,10 @@ import com.atrainingtracker.banalservice.sensor.MySensor;
 import com.atrainingtracker.banalservice.sensor.MySensorManager;
 import com.atrainingtracker.banalservice.sensor.SensorType;
 
-@TargetApi(Build.VERSION_CODES.JELLY_BEAN_MR2)
 public class BTLEHeartRateDevice extends MyBTLEDevice {
     private static final boolean DEBUG = BANALService.DEBUG & false;
     protected MySensor<Integer> mHeartRateSensor;
     private String TAG = "ANTHeartRateDevice";
-
 
     /**
      * constructor
@@ -32,7 +28,7 @@ public class BTLEHeartRateDevice extends MyBTLEDevice {
 
     @Override
     protected void addSensors() {
-        mHeartRateSensor = new MySensor<Integer>(this, SensorType.HR);
+        mHeartRateSensor = new MySensor<>(this, SensorType.HR);
 
         addSensor(mHeartRateSensor);
     }
@@ -41,7 +37,7 @@ public class BTLEHeartRateDevice extends MyBTLEDevice {
     protected void measurementCharacteristicUpdate(BluetoothGatt gatt, BluetoothGattCharacteristic characteristic) {
         int flag = characteristic.getIntValue(BluetoothGattCharacteristic.FORMAT_UINT8, 0);
 
-        int format = -1;
+        int format;
         if ((flag & 0x01) != 0) {
             format = BluetoothGattCharacteristic.FORMAT_UINT16;
             // Log.i(TAG, "Heart rate format UINT16.");

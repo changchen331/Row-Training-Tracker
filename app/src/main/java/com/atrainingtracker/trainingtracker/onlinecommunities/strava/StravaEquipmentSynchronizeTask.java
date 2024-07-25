@@ -1,5 +1,6 @@
 package com.atrainingtracker.trainingtracker.onlinecommunities.strava;
 
+import android.annotation.SuppressLint;
 import android.app.ProgressDialog;
 import android.content.ContentValues;
 import android.content.Context;
@@ -16,7 +17,6 @@ import com.atrainingtracker.trainingtracker.database.EquipmentDbHelper;
 
 import org.apache.http.HttpResponse;
 import org.apache.http.ParseException;
-import org.apache.http.client.ClientProtocolException;
 import org.apache.http.client.HttpClient;
 import org.apache.http.client.methods.HttpGet;
 import org.apache.http.impl.client.DefaultHttpClient;
@@ -28,6 +28,7 @@ import org.json.JSONObject;
 import java.io.IOException;
 import java.text.DateFormat;
 import java.util.Date;
+import java.util.Objects;
 
 public class StravaEquipmentSynchronizeTask extends AsyncTask<String, String, String> {
     public static final String SYNCHRONIZE_EQUIPMENT_STRAVA_START = "de.rainerblind.trainingtracker.equipment.StravaEquipmentHelper.SYNCHRONIZE_EQUIPMENT_STRAVA_START";
@@ -45,6 +46,7 @@ public class StravaEquipmentSynchronizeTask extends AsyncTask<String, String, St
     protected static final String FRAME_TYPE = "frame_type";
     private static final String TAG = "StravaEquipmentHelperTask";
     private static final boolean DEBUG = false;
+    @SuppressLint("StaticFieldLeak")
     protected Context mContext;
     private ProgressDialog mProgressDialog;
 
@@ -52,7 +54,6 @@ public class StravaEquipmentSynchronizeTask extends AsyncTask<String, String, St
         mContext = context;
         mProgressDialog = new ProgressDialog(context);
     }
-
 
     @Override
     protected void onPreExecute() {
@@ -72,7 +73,7 @@ public class StravaEquipmentSynchronizeTask extends AsyncTask<String, String, St
         mProgressDialog.setMessage(progress[0]);
     }
 
-
+    @SuppressLint("LongLogTag")
     @Override
     protected void onPostExecute(String result) {
         if (DEBUG) Log.d(TAG, "updated Strava equipment");
@@ -94,7 +95,7 @@ public class StravaEquipmentSynchronizeTask extends AsyncTask<String, String, St
         mContext.sendBroadcast(new Intent(SYNCHRONIZE_EQUIPMENT_STRAVA_FINISHED));
     }
 
-
+    @SuppressLint("LongLogTag")
     private String getStravaEquipment() {
         if (DEBUG) Log.d(TAG, "getStravaEquipment");
 
@@ -121,22 +122,14 @@ public class StravaEquipmentSynchronizeTask extends AsyncTask<String, String, St
 
             return fillDbFromJsonObject(responseJson);
 
-        } catch (ClientProtocolException e) {
+        } catch (IOException | JSONException e) {
             // TODO Auto-generated catch block
             Log.e(TAG, e.toString());
-            e.printStackTrace();
-        } catch (IOException e) {
-            // TODO Auto-generated catch block
-            Log.e(TAG, e.toString());
-            e.printStackTrace();
-        } catch (JSONException e) {
-            // TODO Auto-generated catch block
-            Log.e(TAG, e.toString());
-            e.printStackTrace();
+            throw new RuntimeException(e);
         }
-        return ("updating failed");
     }
 
+    @SuppressLint("LongLogTag")
     public String fillDbFromJsonObject(JSONObject jsonObject) {
         SQLiteDatabase equipmentDb = new EquipmentDbHelper(mContext).getWritableDatabase();
         ContentValues values = new ContentValues();
@@ -163,13 +156,10 @@ public class StravaEquipmentSynchronizeTask extends AsyncTask<String, String, St
 
                 int updates = 0;
                 try {
-                    updates = equipmentDb.update(EquipmentDbHelper.EQUIPMENT,
-                            values,
-                            EquipmentDbHelper.STRAVA_ID + "=?",
-                            new String[]{id});
+                    updates = equipmentDb.update(EquipmentDbHelper.EQUIPMENT, values, EquipmentDbHelper.STRAVA_ID + "=?", new String[]{id});
                     if (DEBUG) Log.d(TAG, "updated shoe " + name + " id: " + id);
                 } catch (SQLException e) {
-                    if (DEBUG) Log.d(TAG, e.getMessage());
+                    if (DEBUG) Log.d(TAG, Objects.requireNonNull(e.getMessage()));
                     if (DEBUG) Log.d(TAG, "Exception! for shoe " + name + " id: " + id);
                 }
                 if (updates < 1) {  // if nothing is updated, we create the entry
@@ -179,9 +169,9 @@ public class StravaEquipmentSynchronizeTask extends AsyncTask<String, String, St
                     equipmentDb.insert(EquipmentDbHelper.EQUIPMENT, null, values);
                 }
             }
-        } catch (JSONException e1) {
+        } catch (JSONException e) {
             // TODO Auto-generated catch block
-            e1.printStackTrace();
+            throw new RuntimeException(e);
         }
 
         if (DEBUG) Log.d(TAG, "checking strava rows");
@@ -204,10 +194,7 @@ public class StravaEquipmentSynchronizeTask extends AsyncTask<String, String, St
 
                 int updates = 0;
                 try {
-                    updates = equipmentDb.update(EquipmentDbHelper.EQUIPMENT,
-                            values,
-                            EquipmentDbHelper.STRAVA_ID + "=?",
-                            new String[]{id});
+                    updates = equipmentDb.update(EquipmentDbHelper.EQUIPMENT, values, EquipmentDbHelper.STRAVA_ID + "=?", new String[]{id});
                 } catch (SQLException e) {
                     // do nothing?
                 }
@@ -218,17 +205,16 @@ public class StravaEquipmentSynchronizeTask extends AsyncTask<String, String, St
                     equipmentDb.insert(EquipmentDbHelper.EQUIPMENT, null, values);
                 }
             }
-        } catch (JSONException e1) {
+        } catch (JSONException e) {
             // TODO Auto-generated catch block
-            e1.printStackTrace();
+            throw new RuntimeException(e);
         }
-
         equipmentDb.close();
 
         return DateFormat.getDateTimeInstance().format(new Date());
     }
 
-
+    @SuppressLint("LongLogTag")
     protected int getStravaFrameType(String rowId) {
 
         HttpClient httpClient = new DefaultHttpClient();
@@ -245,20 +231,10 @@ public class StravaEquipmentSynchronizeTask extends AsyncTask<String, String, St
             JSONObject responseJson = new JSONObject(response);
             return responseJson.getInt(FRAME_TYPE);
 
-        } catch (JSONException e) {
+        } catch (JSONException | IOException | ParseException e) {
             // TODO Auto-generated catch block
             Log.e(TAG, e.toString());
-            e.printStackTrace();
-        } catch (ParseException e) {
-            // TODO Auto-generated catch block
-            Log.e(TAG, e.toString());
-            e.printStackTrace();
-        } catch (IOException e) {
-            // TODO Auto-generated catch block
-            Log.e(TAG, e.toString());
-            e.printStackTrace();
+            throw new RuntimeException(e);
         }
-
-        return 0;
     }
 }

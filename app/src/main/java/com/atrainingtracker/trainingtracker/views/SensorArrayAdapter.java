@@ -7,6 +7,8 @@ import android.view.ViewGroup;
 import android.widget.ArrayAdapter;
 import android.widget.TextView;
 
+import androidx.annotation.NonNull;
+
 import com.atrainingtracker.banalservice.sensor.SensorType;
 
 // TODO: show an image that represents the SensorType
@@ -24,8 +26,9 @@ public class SensorArrayAdapter extends ArrayAdapter<SensorType> {
     }
 
     // This is for the "passive" state of the spinner
+    @NonNull
     @Override
-    public View getView(int position, View convertView, ViewGroup parent) {
+    public View getView(int position, View convertView, @NonNull ViewGroup parent) {
         if (convertView == null) {
             LayoutInflater inflater = LayoutInflater.from(mContext);
             convertView = inflater.inflate(android.R.layout.simple_spinner_item, parent, false);
@@ -43,7 +46,7 @@ public class SensorArrayAdapter extends ArrayAdapter<SensorType> {
 
     // And here is when the "chooser" is popped up
     @Override
-    public View getDropDownView(int position, View convertView, ViewGroup parent) {
+    public View getDropDownView(int position, View convertView, @NonNull ViewGroup parent) {
         if (convertView == null) {
             LayoutInflater inflater = LayoutInflater.from(mContext);
             convertView = inflater.inflate(android.R.layout.simple_spinner_item, parent, false);

@@ -25,5 +25,4 @@ public class BTLEBikeSpeedDevice extends BTLEBikeDevice {
 
         addSpeedAndDistanceSensors();
     }
-
 }

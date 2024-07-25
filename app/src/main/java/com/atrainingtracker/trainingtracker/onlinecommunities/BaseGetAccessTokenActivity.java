@@ -1,5 +1,6 @@
 package com.atrainingtracker.trainingtracker.onlinecommunities;
 
+import android.annotation.SuppressLint;
 import android.app.Activity;
 import android.app.ProgressDialog;
 import android.content.Intent;
@@ -15,7 +16,6 @@ import com.atrainingtracker.R;
 import com.atrainingtracker.trainingtracker.TrainingApplication;
 
 import org.apache.http.HttpResponse;
-import org.apache.http.client.ClientProtocolException;
 import org.apache.http.client.HttpClient;
 import org.apache.http.client.entity.UrlEncodedFormEntity;
 import org.apache.http.client.methods.HttpPost;
@@ -34,9 +34,7 @@ import java.io.IOException;
 // import org.apache.http.impl.client.DefaultHttpClient;
 // import org.apache.http.util.EntityUtils;
 
-
-public abstract class BaseGetAccessTokenActivity
-        extends Activity {
+public abstract class BaseGetAccessTokenActivity extends Activity {
     public static final String ACCESS_TOKEN = "access_token";
     public static final String HTTPS = "https";
     public static final String TOKEN = "token";
@@ -86,6 +84,7 @@ public abstract class BaseGetAccessTokenActivity
     /**
      * Called when the activity is first created.
      */
+    @SuppressLint({"LongLogTag", "SetJavaScriptEnabled"})
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -133,7 +132,6 @@ public abstract class BaseGetAccessTokenActivity
                     }
                 }
             }
-
         });
 
         webview.setWebChromeClient(new WebChromeClient() {
@@ -157,6 +155,7 @@ public abstract class BaseGetAccessTokenActivity
     protected void onJsonResponse(JSONObject jsonObject) {
     }
 
+    @SuppressLint("StaticFieldLeak")
     class GetAccessTokenTask extends AsyncTask<String, String, String> {
 
 //    	@Override
@@ -185,6 +184,7 @@ public abstract class BaseGetAccessTokenActivity
             finish();
         }
 
+        @SuppressLint("LongLogTag")
         @Override
         protected String doInBackground(String... params) {
 
@@ -196,7 +196,6 @@ public abstract class BaseGetAccessTokenActivity
             if (urlEncodedFormEntity != null) {
                 httpPost.setEntity(urlEncodedFormEntity);
             }
-
 
             HttpClient httpClient = new DefaultHttpClient();
             try {
@@ -213,23 +212,12 @@ public abstract class BaseGetAccessTokenActivity
                     // String tokenType   = responseJson.getString(TOKEN_TYPE);
                     return responseJson.getString(ACCESS_TOKEN);
                 }
-            } catch (ClientProtocolException e) {
+            } catch (IOException | JSONException e) {
                 // TODO Auto-generated catch block
                 Log.e(TAG, e.toString());
-                e.printStackTrace();
-            } catch (IOException e) {
-                // TODO Auto-generated catch block
-                Log.e(TAG, e.toString());
-                e.printStackTrace();
-            } catch (JSONException e) {
-                // TODO Auto-generated catch block
-                Log.e(TAG, e.toString());
-                e.printStackTrace();
+                throw new RuntimeException(e);
             }
-
             return null;
         }
     }
-
-
 }

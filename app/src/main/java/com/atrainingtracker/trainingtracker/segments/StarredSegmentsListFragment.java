@@ -1,5 +1,6 @@
 package com.atrainingtracker.trainingtracker.segments;
 
+import android.annotation.SuppressLint;
 import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
@@ -16,8 +17,8 @@ import android.widget.AbsListView;
 import android.widget.ListView;
 import android.widget.Toast;
 
+import androidx.annotation.NonNull;
 import androidx.cursoradapter.widget.CursorAdapter;
-import androidx.swiperefreshlayout.widget.SwipeRefreshLayout;
 
 import com.atrainingtracker.R;
 import com.atrainingtracker.banalservice.database.SportTypeDatabaseManager;
@@ -27,7 +28,6 @@ import com.atrainingtracker.trainingtracker.onlinecommunities.strava.StravaSegme
 import com.atrainingtracker.trainingtracker.onlinecommunities.strava.StravaSegmentsIntentService;
 import com.atrainingtracker.trainingtracker.segments.SegmentsDatabaseManager.Segments;
 import com.google.android.gms.maps.GoogleMap;
-
 
 public class StarredSegmentsListFragment extends SwipeRefreshListFragment {
 
@@ -50,8 +50,7 @@ public class StarredSegmentsListFragment extends SwipeRefreshListFragment {
     BroadcastReceiver mSegmentUpdateStartedReceiver = new BroadcastReceiver() {
         @Override
         public void onReceive(Context context, Intent intent) {
-            if (intent.hasExtra(StravaSegmentsIntentService.SPORT_TYPE_ID)
-                    && mSportTypeId == intent.getLongExtra(StravaSegmentsIntentService.SPORT_TYPE_ID, -1)) {
+            if (intent.hasExtra(StravaSegmentsIntentService.SPORT_TYPE_ID) && mSportTypeId == intent.getLongExtra(StravaSegmentsIntentService.SPORT_TYPE_ID, -1)) {
                 setRefreshing(true);
             }
         }
@@ -61,8 +60,7 @@ public class StarredSegmentsListFragment extends SwipeRefreshListFragment {
         public void onReceive(Context context, Intent intent) {
             if (DEBUG) Log.i(TAG, "update segment list");
 
-            if (intent.hasExtra(StravaSegmentsIntentService.SPORT_TYPE_ID)
-                    && mSportTypeId == intent.getLongExtra(StravaSegmentsIntentService.SPORT_TYPE_ID, -1)) {
+            if (intent.hasExtra(StravaSegmentsIntentService.SPORT_TYPE_ID) && mSportTypeId == intent.getLongExtra(StravaSegmentsIntentService.SPORT_TYPE_ID, -1)) {
                 updateCursor();
             }
         }
@@ -75,9 +73,7 @@ public class StarredSegmentsListFragment extends SwipeRefreshListFragment {
             long sportTypeId = intent.getLongExtra(StravaSegmentsIntentService.SPORT_TYPE_ID, -1);
             if (mSportTypeId == sportTypeId) {
 
-                if (isRefreshing()
-                        && intent.hasExtra(StravaSegmentsIntentService.RESULT_MESSAGE)
-                        && intent.getStringExtra(StravaSegmentsIntentService.RESULT_MESSAGE) != null) {
+                if (isRefreshing() && intent.hasExtra(StravaSegmentsIntentService.RESULT_MESSAGE) && intent.getStringExtra(StravaSegmentsIntentService.RESULT_MESSAGE) != null) {
                     Toast.makeText(context, context.getString(R.string.updating_starred_segments_failed) + intent.getStringExtra(StravaSegmentsIntentService.RESULT_MESSAGE), Toast.LENGTH_LONG).show();
                 }
 
@@ -85,18 +81,14 @@ public class StarredSegmentsListFragment extends SwipeRefreshListFragment {
             }
         }
     };
-    private AbsListView.RecyclerListener mRecycleListener = new AbsListView.RecyclerListener() {
-
-        @Override
-        public void onMovedToScrapHeap(View view) {
-            StarredSegmentsCursorAdapter.ViewHolder holder = (StarredSegmentsCursorAdapter.ViewHolder) view.getTag();
-            if (holder != null && holder.map != null) {
-                // Clear the map and free up resources by changing the map type to none
-                holder.map.clear();
-                holder.map.setMapType(GoogleMap.MAP_TYPE_NONE);
-            }
-
+    private AbsListView.RecyclerListener mRecycleListener = view -> {
+        StarredSegmentsCursorAdapter.ViewHolder holder = (StarredSegmentsCursorAdapter.ViewHolder) view.getTag();
+        if (holder != null && holder.map != null) {
+            // Clear the map and free up resources by changing the map type to none
+            holder.map.clear();
+            holder.map.setMapType(GoogleMap.MAP_TYPE_NONE);
         }
+
     };
 
     public static StarredSegmentsListFragment newInstance(long sportTypeId) {
@@ -112,14 +104,14 @@ public class StarredSegmentsListFragment extends SwipeRefreshListFragment {
     }
 
     @Override
-    public void onAttach(Context context) {
+    public void onAttach(@NonNull Context context) {
         super.onAttach(context);
         if (DEBUG) Log.i(TAG, "onAttach");
 
         try {
             startSegmentDetailsActivityInterface = (StartSegmentDetailsActivityInterface) context;
         } catch (ClassCastException e) {
-            throw new ClassCastException(context.toString() + " must implement StartSegmentDetailsActivityInterface");
+            throw new ClassCastException(context + " must implement StartSegmentDetailsActivityInterface");
         }
     }
 
@@ -140,41 +132,37 @@ public class StarredSegmentsListFragment extends SwipeRefreshListFragment {
 
         mUpdatingSegmentsCompleteFilter.addAction(StravaSegmentsIntentService.SEGMENTS_UPDATE_COMPLETE_INTENT);
 
-        mSportTypeId = getArguments().getLong(SPORT_TYPE_ID);
+        if (getArguments() != null) {
+            mSportTypeId = getArguments().getLong(SPORT_TYPE_ID);
+        }
 
         // setHasOptionsMenu(true);
     }
 
     // BEGIN_INCLUDE (setup_views)
     @Override
-    public void onViewCreated(View view, Bundle savedInstanceState) {
+    public void onViewCreated(@NonNull View view, Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
 
-        mStarredSegmentsCursorAdapter = new StarredSegmentsCursorAdapter(getActivity(), mStarredSegmentsCursor, mStravaSegmentsHelper, new StarredSegmentsCursorAdapter.ShowSegmentDetailsInterface() {
-            @Override
-            public void startSegmentDetailsActivity(long segmentId, SegmentDetailsActivity.SelectedFragment selectedFragment) {
-                if (DEBUG) Log.i(TAG, "startSegmentDetailsActivity(" + segmentId + ")");
+        mStarredSegmentsCursorAdapter = new StarredSegmentsCursorAdapter(getActivity(), mStarredSegmentsCursor, mStravaSegmentsHelper, (segmentId, selectedFragment) -> {
+            if (DEBUG) Log.i(TAG, "startSegmentDetailsActivity(" + segmentId + ")");
 
-                Bundle bundle = new Bundle();
-                bundle.putLong(Segments.SEGMENT_ID, segmentId);
-                bundle.putString(SegmentDetailsActivity.SELECTED_FRAGMENT, selectedFragment.name());
-                Intent segmentDetailsIntent = new Intent(getContext(), SegmentDetailsActivity.class);
-                segmentDetailsIntent.putExtras(bundle);
-                startActivity(segmentDetailsIntent);
-            }
+            Bundle bundle = new Bundle();
+            bundle.putLong(Segments.SEGMENT_ID, segmentId);
+            bundle.putString(SegmentDetailsActivity.SELECTED_FRAGMENT, selectedFragment.name());
+            Intent segmentDetailsIntent = new Intent(getContext(), SegmentDetailsActivity.class);
+            segmentDetailsIntent.putExtras(bundle);
+            startActivity(segmentDetailsIntent);
         });
         setListAdapter(mStarredSegmentsCursorAdapter);
 
         mListView = getListView();
         mListView.setRecyclerListener(mRecycleListener);
 
-        setOnRefreshListener(new SwipeRefreshLayout.OnRefreshListener() {
-            @Override
-            public void onRefresh() {
-                if (DEBUG) Log.i(TAG, "onRefresh called from SwipeRefreshLayout");
+        setOnRefreshListener(() -> {
+            if (DEBUG) Log.i(TAG, "onRefresh called from SwipeRefreshLayout");
 
-                initiateRefresh();
-            }
+            initiateRefresh();
         });
     }
 
@@ -192,9 +180,9 @@ public class StarredSegmentsListFragment extends SwipeRefreshListFragment {
         mDb = SegmentsDatabaseManager.getInstance().getOpenDatabase();
         updateCursor();
 
-        getContext().registerReceiver(mSegmentUpdateStartedReceiver, mSegmentUpdateStartedFilter);
-        getContext().registerReceiver(mUpdateSegmentsListReceiver, mUpdateSegmentsListFilter);
-        getContext().registerReceiver(mUpdatingSegmentsCompleteReceiver, mUpdatingSegmentsCompleteFilter);
+        requireContext().registerReceiver(mSegmentUpdateStartedReceiver, mSegmentUpdateStartedFilter);
+        requireContext().registerReceiver(mUpdateSegmentsListReceiver, mUpdateSegmentsListFilter);
+        requireContext().registerReceiver(mUpdatingSegmentsCompleteReceiver, mUpdatingSegmentsCompleteFilter);
     }
 
     @Override
@@ -204,16 +192,16 @@ public class StarredSegmentsListFragment extends SwipeRefreshListFragment {
 
         SegmentsDatabaseManager.getInstance().closeDatabase();
 
-        getContext().unregisterReceiver(mSegmentUpdateStartedReceiver);
-        getContext().unregisterReceiver(mUpdateSegmentsListReceiver);
-        getContext().unregisterReceiver(mUpdatingSegmentsCompleteReceiver);
+        requireContext().unregisterReceiver(mSegmentUpdateStartedReceiver);
+        requireContext().unregisterReceiver(mUpdateSegmentsListReceiver);
+        requireContext().unregisterReceiver(mUpdatingSegmentsCompleteReceiver);
     }
 
     /**
      * Called first time user clicks on the menu button
      */
     @Override
-    public void onCreateOptionsMenu(Menu menu, MenuInflater inflater) {
+    public void onCreateOptionsMenu(@NonNull Menu menu, @NonNull MenuInflater inflater) {
         super.onCreateOptionsMenu(menu, inflater);
         if (DEBUG) Log.d(TAG, "onCreateOptionsMenu");
 
@@ -221,31 +209,30 @@ public class StarredSegmentsListFragment extends SwipeRefreshListFragment {
     }
 
     /* Called when an options item is clicked */
+    @SuppressLint("NonConstantResourceId")
     @Override
-    public boolean onOptionsItemSelected(MenuItem item) {
+    public boolean onOptionsItemSelected(@NonNull MenuItem item) {
         if (DEBUG) Log.i(TAG, "onOptionsItemSelected");
 
         switch (item.getItemId()) {
             case R.id.itemDeleteAllSegments:
                 Log.i(TAG, "option delete all segments");
-                SegmentsDatabaseManager.deleteAllTables(getContext());
+                SegmentsDatabaseManager.deleteAllTables(requireContext());
 
                 updateCursor();
 
                 return true;
-
             default:
                 return super.onOptionsItemSelected(item);
-
         }
     }
 
     @Override
-    public void onListItemClick(ListView l, View v, int position, long id) {
+    public void onListItemClick(@NonNull ListView listView, @NonNull View view, int position, long id) {
         if (DEBUG) Log.i(TAG, "onListItemClick, position=" + position + ", id=" + id);
 
         mStarredSegmentsCursor.moveToPosition(position);
-        int segmentId = mStarredSegmentsCursor.getInt(mStarredSegmentsCursor.getColumnIndex(Segments.SEGMENT_ID));
+        @SuppressLint("Range") int segmentId = mStarredSegmentsCursor.getInt(mStarredSegmentsCursor.getColumnIndex(Segments.SEGMENT_ID));
         if (DEBUG) Log.i(TAG, "segmentId=" + segmentId);
 
         startSegmentDetailsActivityInterface.startSegmentDetailsActivity(segmentId, SegmentDetailsActivity.SelectedFragment.LEADERBOARD);
@@ -255,8 +242,7 @@ public class StarredSegmentsListFragment extends SwipeRefreshListFragment {
         if (DEBUG)
             Log.i(TAG, "updateCursor, activity_type=" + SportTypeDatabaseManager.getStravaName(mSportTypeId));
 
-        mStarredSegmentsCursor = mDb.query(Segments.TABLE_STARRED_SEGMENTS,
-                StarredSegmentsCursorAdapter.FROM,           // columns
+        mStarredSegmentsCursor = mDb.query(Segments.TABLE_STARRED_SEGMENTS, StarredSegmentsCursorAdapter.FROM,           // columns
                 Segments.ACTIVITY_TYPE + "=?",               // selection
                 new String[]{SportTypeDatabaseManager.getStravaName(mSportTypeId)},  // selectionArgs
                 null, null,                                  // groupBy, having

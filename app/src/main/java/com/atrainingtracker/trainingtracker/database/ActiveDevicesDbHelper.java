@@ -1,5 +1,6 @@
 package com.atrainingtracker.trainingtracker.database;
 
+import android.annotation.SuppressLint;
 import android.content.Context;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
@@ -25,7 +26,6 @@ public class ActiveDevicesDbHelper extends SQLiteOpenHelper {
     // Called only once, first time the DB is created
     @Override
     public void onCreate(SQLiteDatabase db) {
-
         db.execSQL(ActiveDevices.CREATE_TABLE);
 
         if (DEBUG) Log.d(TAG, "onCreated sql: " + ActiveDevices.CREATE_TABLE);
@@ -42,18 +42,13 @@ public class ActiveDevicesDbHelper extends SQLiteOpenHelper {
         onCreate(db);  // run onCreate to get new database
     }
 
+    @SuppressLint("Range")
     public List<Integer> getDatabaseIdsOfActiveDevices(int workoutId) {
         if (DEBUG) Log.d(TAG, "getDatabaseIdsOfActiveDevices workoutId=" + workoutId);
 
-        List<Integer> result = new LinkedList<Integer>();
+        List<Integer> result = new LinkedList<>();
         SQLiteDatabase db = getReadableDatabase();
-        Cursor cursor = db.query(ActiveDevices.TABLE,
-                null,
-                ActiveDevices.WORKOUT_ID + "=?",
-                new String[]{workoutId + ""},
-                null,
-                null,
-                null);
+        Cursor cursor = db.query(ActiveDevices.TABLE, null, ActiveDevices.WORKOUT_ID + "=?", new String[]{workoutId + ""}, null, null, null);
 
         if (cursor.moveToFirst()) {
             do {
@@ -77,11 +72,7 @@ public class ActiveDevicesDbHelper extends SQLiteOpenHelper {
         public static final String WORKOUT_ID = "workoutID";
         public static final String DEVICE_DB_ID = "deviceDbId";
 
-        protected static final String CREATE_TABLE = "create table " + TABLE + " ("
-                + C_ID + " INTEGER PRIMARY KEY AUTOINCREMENT, "
-                + WORKOUT_ID + " int,"
-                + DEVICE_DB_ID + " int)";
+        private static final String CREATE_TABLE = "create table " + TABLE + " (" + C_ID + " INTEGER PRIMARY KEY AUTOINCREMENT, " + WORKOUT_ID + " int," + DEVICE_DB_ID + " int)";
 
     }
-
 }

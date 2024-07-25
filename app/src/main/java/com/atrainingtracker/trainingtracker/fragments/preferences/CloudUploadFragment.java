@@ -15,9 +15,7 @@ import com.dropbox.core.android.Auth;
 import java.util.LinkedList;
 import java.util.List;
 
-
-public class CloudUploadFragment extends androidx.preference.PreferenceFragmentCompat
-        implements SharedPreferences.OnSharedPreferenceChangeListener {
+public class CloudUploadFragment extends androidx.preference.PreferenceFragmentCompat implements SharedPreferences.OnSharedPreferenceChangeListener {
     private static final boolean DEBUG = TrainingApplication.DEBUG && false;
     private static final String TAG = CloudUploadFragment.class.getName();
 
@@ -34,12 +32,12 @@ public class CloudUploadFragment extends androidx.preference.PreferenceFragmentC
 
         setPreferencesFromResource(R.xml.prefs, rootKey);
 
-        mDropboxUpload = (CheckBoxPreference) this.getPreferenceScreen().findPreference(TrainingApplication.SP_UPLOAD_TO_DROPBOX);
+        mDropboxUpload = this.getPreferenceScreen().findPreference(TrainingApplication.SP_UPLOAD_TO_DROPBOX);
 
-        mPSStrava = (PreferenceScreen) this.getPreferenceScreen().findPreference(TrainingApplication.PREFERENCE_SCREEN_STRAVA);
-        mPSRunkeeper = (PreferenceScreen) this.getPreferenceScreen().findPreference(TrainingApplication.PREFERENCE_SCREEN_RUNKEEPER);
-        mPSTrainingPeaks = (PreferenceScreen) this.getPreferenceScreen().findPreference(TrainingApplication.PREFERENCE_SCREEN_TRAINING_PEAKS);
-        mPSEmailUpload = (PreferenceScreen) this.getPreferenceScreen().findPreference(TrainingApplication.PREFERENCE_SCREEN_EMAIL_UPLOAD);
+        mPSStrava = this.getPreferenceScreen().findPreference(TrainingApplication.PREFERENCE_SCREEN_STRAVA);
+        mPSRunkeeper = this.getPreferenceScreen().findPreference(TrainingApplication.PREFERENCE_SCREEN_RUNKEEPER);
+        mPSTrainingPeaks = this.getPreferenceScreen().findPreference(TrainingApplication.PREFERENCE_SCREEN_TRAINING_PEAKS);
+        mPSEmailUpload = this.getPreferenceScreen().findPreference(TrainingApplication.PREFERENCE_SCREEN_EMAIL_UPLOAD);
     }
 
     @Override
@@ -61,10 +59,8 @@ public class CloudUploadFragment extends androidx.preference.PreferenceFragmentC
             }
         }
 
-
-        mSharedPreferences = PreferenceManager.getDefaultSharedPreferences(getActivity());
+        mSharedPreferences = PreferenceManager.getDefaultSharedPreferences(requireActivity());
         mSharedPreferences.registerOnSharedPreferenceChangeListener(this);
-
     }
 
     @Override
@@ -75,7 +71,6 @@ public class CloudUploadFragment extends androidx.preference.PreferenceFragmentC
         mSharedPreferences.unregisterOnSharedPreferenceChangeListener(this);
     }
 
-
     @Override
     public void onSharedPreferenceChanged(SharedPreferences sharedPreferences, String key) {
         if (DEBUG) Log.i(TAG, "onSharedPreferenceChanged: key=" + key);
@@ -84,7 +79,7 @@ public class CloudUploadFragment extends androidx.preference.PreferenceFragmentC
             if (!TrainingApplication.uploadToDropbox()) {
                 TrainingApplication.deleteDropboxToken();
             } else {
-                Auth.startOAuth2Authentication(getActivity(), TrainingApplication.getDropboxAppKey());
+                Auth.startOAuth2Authentication(requireActivity(), TrainingApplication.getDropboxAppKey());
             }
         }
     }
@@ -173,7 +168,7 @@ public class CloudUploadFragment extends androidx.preference.PreferenceFragmentC
                 list.add(getString(R.string.GC));
             }
 
-            if (list.size() == 0) {
+            if (list.isEmpty()) {
                 return getString(R.string.send_email_only_summary_format, TrainingApplication.getSpEmailAddress());
             } else if (list.size() == 1) {
                 return getString(R.string.send_email_format, list.get(0), TrainingApplication.getSpEmailAddress());
@@ -207,5 +202,4 @@ public class CloudUploadFragment extends androidx.preference.PreferenceFragmentC
             return getString(R.string.concatenate_last_format, firstPart, lastOne);
         }
     }
-
 }

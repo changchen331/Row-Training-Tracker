@@ -1,11 +1,13 @@
 package com.atrainingtracker.banalservice.devices;
 
-
 import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
+import android.os.Build;
 import android.util.Log;
+
+import androidx.annotation.NonNull;
 
 import com.atrainingtracker.banalservice.BANALService;
 import com.atrainingtracker.banalservice.Protocol;
@@ -20,8 +22,8 @@ import com.atrainingtracker.banalservice.sensor.MySensorManager;
 public abstract class MyRemoteDevice extends MyDevice {
     private static final boolean DEBUG = BANALService.DEBUG & false;
     protected final IntentFilter mCalibrationFactorChangedFilter = new IntentFilter(BANALService.CALIBRATION_FACTOR_CHANGED);
-    protected double mCalibrationFactor = 1;
-    long mDeviceId = -1;  // the id of the device within the database
+    protected double mCalibrationFactor;
+    long mDeviceId;  // the id of the device within the database
     private String TAG = "MyRemoteDevice";
     private final BroadcastReceiver mCalibrationFactorChangedReceiver = new BroadcastReceiver() {
         public void onReceive(Context context, Intent intent) {
@@ -39,10 +41,13 @@ public abstract class MyRemoteDevice extends MyDevice {
         super(context, mySensorManager, deviceType);
         if (DEBUG) Log.i(TAG, "MyRemoteDevice()");
 
+        mDeviceId = -1;
         mDeviceId = deviceId;
 
         mCalibrationFactor = DevicesDatabaseManager.getCalibrationFactor(deviceId);
-        context.registerReceiver(mCalibrationFactorChangedReceiver, mCalibrationFactorChangedFilter);
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+            context.registerReceiver(mCalibrationFactorChangedReceiver, mCalibrationFactorChangedFilter, Context.RECEIVER_NOT_EXPORTED);
+        }
     }
 
     @Override
@@ -75,8 +80,7 @@ public abstract class MyRemoteDevice extends MyDevice {
     protected void notifyStopSearching(boolean success) {
         myLog("notifyStopSearching(" + success + ")");
         mSearching = false;
-        mContext.sendBroadcast(addSearchDetails(new Intent(BANALService.SEARCHING_STOPPED_FOR_ONE_INTENT))
-                .putExtra(BANALService.SEARCHING_FINISHED_SUCCESS, success));
+        mContext.sendBroadcast(addSearchDetails(new Intent(BANALService.SEARCHING_STOPPED_FOR_ONE_INTENT)).putExtra(BANALService.SEARCHING_FINISHED_SUCCESS, success));
         // .putExtra(BANALService.DEVICE_ID, getDeviceId()));
     }
 
@@ -137,10 +141,10 @@ public abstract class MyRemoteDevice extends MyDevice {
         DevicesDatabaseManager.setBatteryPercentage(mDeviceId, percentage);
     }
 
+    @NonNull
     @Override
     public String toString() {
-        return mContext.getString(UIHelper.getNameId(getProtocol())) + " "
-                + mContext.getString(UIHelper.getNameId(getDeviceType()));
+        return mContext.getString(UIHelper.getNameId(getProtocol())) + " " + mContext.getString(UIHelper.getNameId(getDeviceType()));
     }
 
     protected void myLog(String logMessage) {

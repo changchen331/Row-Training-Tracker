@@ -3,6 +3,7 @@ package com.atrainingtracker.banalservice.devices;
 import static com.atrainingtracker.banalservice.BSportType.UNKNOWN;
 
 import android.Manifest;
+import android.annotation.SuppressLint;
 import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
@@ -11,6 +12,7 @@ import android.content.SharedPreferences;
 import android.content.SharedPreferences.OnSharedPreferenceChangeListener;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
+import android.os.Build;
 import android.preference.PreferenceManager;
 import android.util.Log;
 
@@ -53,13 +55,13 @@ import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Set;
 
-
-public class DeviceManager
-        implements OnSharedPreferenceChangeListener {
+public class DeviceManager implements OnSharedPreferenceChangeListener {
     private static final String TAG = "DeviceManager";
     private static final boolean DEBUG = BANALService.DEBUG & false;
+    @SuppressLint("StaticFieldLeak")
     protected static MyRemoteDevice cMyRemoteDeviceCurrentlySearchingFor = null;
     protected Context mContext;
     protected ClockDevice mClockDevice;
@@ -73,9 +75,9 @@ public class DeviceManager
     protected IntentFilter mStartSearchingForNewDevicesFilter = new IntentFilter(BANALService.START_SEARCHING_FOR_NEW_DEVICES_INTENT);
     protected IntentFilter mStopSearchingForNewDevicesFilter = new IntentFilter(BANALService.STOP_SEARCHING_FOR_NEW_DEVICES_INTENT);
     protected MySensorManager mSensorManager;
-    protected Map<Long, MyRemoteDevice> mMyRemoteDevices = new HashMap<Long, MyRemoteDevice>();
+    protected Map<Long, MyRemoteDevice> mMyRemoteDevices = new HashMap<>();
     protected Map<MyRemoteDevice, Integer> mMyRemoteDeviceTries = new HashMap<>();
-    protected LinkedList<MyRemoteDevice> mSearchQueue = new LinkedList<MyRemoteDevice>();
+    protected LinkedList<MyRemoteDevice> mSearchQueue = new LinkedList<>();
     protected LinkedList<Long> mFoundDevices = new LinkedList<>();
     protected ANTSearchForNewDevicesEngineMultiDeviceSearch mAntAsyncSearchEngine = null;
     protected BTSearchForNewDevicesEngine mBTSearchForNewDevicesEngine = null;
@@ -86,7 +88,7 @@ public class DeviceManager
             stopSearchForNewRemoteDevices();
         }
     };
-    BANALService mBanalService = null;
+    BANALService mBanalService;
     private final BroadcastReceiver mSearchingStoppedForOneReceiver = new BroadcastReceiver() {
         // it was observed that this might be called from Remote Devices that are currently tracking
         // => not only from the device we are currently searching for
@@ -96,8 +98,7 @@ public class DeviceManager
             long deviceID = intent.getLongExtra(BANALService.DEVICE_ID, -1);
             if (DEBUG)
                 Log.i(TAG, "finished searching for a remote device, success=" + success + ", deviceID=" + deviceID);
-            if (cMyRemoteDeviceCurrentlySearchingFor != null
-                    && cMyRemoteDeviceCurrentlySearchingFor.getDeviceId() == deviceID) {  // it is indeed the device that we are currently searching
+            if (cMyRemoteDeviceCurrentlySearchingFor != null && cMyRemoteDeviceCurrentlySearchingFor.getDeviceId() == deviceID) {  // it is indeed the device that we are currently searching
                 if (!success) {                                                     // it was not found
                     if (!mMyRemoteDeviceTries.containsKey(cMyRemoteDeviceCurrentlySearchingFor)        // device not in the list
                             || mMyRemoteDeviceTries.get(cMyRemoteDeviceCurrentlySearchingFor) <= 1) {  // no longer try to search for this device
@@ -144,7 +145,7 @@ public class DeviceManager
             if (DEBUG)
                 Log.d(TAG, "onNewANTDeviceFound: " + deviceType.name() + ", Ant Nr:" + deviceFound.getAntDeviceNumber());
 
-            long deviceId = -1;
+            long deviceId;
 
             // check whether this device is already in DB
             // ANTDeviceID antDeviceID = new ANTDeviceID(antDeviceType.getDeviceTypeByte(), deviceFound.getAntDeviceNumber());
@@ -185,15 +186,11 @@ public class DeviceManager
             // TODO:inform user with a toast?
         }
 
-        public void onNewDeviceFound(DeviceType deviceType,
-                                     String BluetoothMACAddress,
-                                     String name,
-                                     String manufacturer,
-                                     int batteryPercentage) {
+        public void onNewDeviceFound(DeviceType deviceType, String BluetoothMACAddress, String name, String manufacturer, int batteryPercentage) {
             if (DEBUG)
                 Log.d(TAG, "onNewBluetoothDeviceFound: " + deviceType.name() + ", BT address: " + BluetoothMACAddress);
 
-            long deviceId = -1;
+            long deviceId;
 
             // check whether this device is already in DB
             if (!DevicesDatabaseManager.isBluetoothDeviceInDB(deviceType, BluetoothMACAddress)) {
@@ -246,21 +243,17 @@ public class DeviceManager
         }
 
 
-        if (TrainingApplication.useLocationSourceGPS()
-                && TrainingApplication.havePermission(Manifest.permission.ACCESS_FINE_LOCATION)) {
+        if (TrainingApplication.useLocationSourceGPS() && TrainingApplication.havePermission(Manifest.permission.ACCESS_FINE_LOCATION)) {
             if (DEBUG) Log.i(TAG, "creating GPS location device");
             mSpeedAndLocationDevice_GPS = new SpeedAndLocationDevice_GPS(mContext, mSensorManager);
         }
 
-        if (TrainingApplication.useLocationSourceGoogleFused()
-                && TrainingApplication.havePermission(Manifest.permission.ACCESS_FINE_LOCATION)
-                && GooglePlayServicesUtil.isGooglePlayServicesAvailable(mContext) == ConnectionResult.SUCCESS) {
+        if (TrainingApplication.useLocationSourceGoogleFused() && TrainingApplication.havePermission(Manifest.permission.ACCESS_FINE_LOCATION) && GooglePlayServicesUtil.isGooglePlayServicesAvailable(mContext) == ConnectionResult.SUCCESS) {
             if (DEBUG) Log.i(TAG, "creating google fused location device");
             mSpeedAndLocationDevice_GoogleFused = new SpeedAndLocationDevice_GoogleFused(mContext, mSensorManager);
         }
 
-        if (TrainingApplication.useLocationSourceNetwork()
-                && TrainingApplication.havePermission(Manifest.permission.ACCESS_COARSE_LOCATION)) {
+        if (TrainingApplication.useLocationSourceNetwork() && TrainingApplication.havePermission(Manifest.permission.ACCESS_COARSE_LOCATION)) {
             if (DEBUG) Log.i(TAG, "creating network location device");
             mSpeedAndLocationDevice_Network = new SpeedAndLocationDevice_Network(mContext, mSensorManager);
         }
@@ -270,10 +263,12 @@ public class DeviceManager
             startSearchForPairedDevices();
         }
 
-        mContext.registerReceiver(mPairingChangedReceiver, mPairingChangedFilter);
-        mContext.registerReceiver(mSearchingStoppedForOneReceiver, mSearchingStoppedForOneFilter);
-        mContext.registerReceiver(mStartSearchingForNewDevicesReceiver, mStartSearchingForNewDevicesFilter);
-        mContext.registerReceiver(mStopSearchingForNewDevicesReceiver, mStopSearchingForNewDevicesFilter);
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+            mContext.registerReceiver(mPairingChangedReceiver, mPairingChangedFilter, Context.RECEIVER_NOT_EXPORTED);
+            mContext.registerReceiver(mSearchingStoppedForOneReceiver, mSearchingStoppedForOneFilter, Context.RECEIVER_NOT_EXPORTED);
+            mContext.registerReceiver(mStartSearchingForNewDevicesReceiver, mStartSearchingForNewDevicesFilter, android.content.Context.RECEIVER_NOT_EXPORTED);
+            mContext.registerReceiver(mStopSearchingForNewDevicesReceiver, mStopSearchingForNewDevicesFilter, android.content.Context.RECEIVER_NOT_EXPORTED);
+        }
     }
 
     public static boolean isSearchingForARemoteDevice() {
@@ -376,7 +371,7 @@ public class DeviceManager
             mContext.sendBroadcast(new Intent(BANALService.SEARCHING_FINISHED_FOR_ALL_INTENT));
         } else {
             cMyRemoteDeviceCurrentlySearchingFor = mSearchQueue.pollFirst();
-            if (cMyRemoteDeviceCurrentlySearchingFor.isSearching()) {
+            if (Objects.requireNonNull(cMyRemoteDeviceCurrentlySearchingFor).isSearching()) {
                 // the device is still searching => probably something went wrong
                 Log.d(TAG, "BUG: should start searching for an already searching device");
             } else if (cMyRemoteDeviceCurrentlySearchingFor.isReceivingData()) { // if the device is already receiving data, we do not have to search for it
@@ -481,7 +476,7 @@ public class DeviceManager
     }
 
     public List<Long> getDatabaseIdsOfActiveDevices() {
-        List<Long> result = new LinkedList<Long>();
+        List<Long> result = new LinkedList<>();
 
         for (MyRemoteDevice remoteDevice : getRemoteDeviceList()) {
             if (remoteDevice.isReceivingData()) {
@@ -499,16 +494,13 @@ public class DeviceManager
         List<Long> availableDevicesList = new LinkedList<>();
 
         for (MyRemoteDevice remoteDevice : getRemoteDeviceList()) {
-            if ((protocol == Protocol.ALL || remoteDevice.getProtocol() == protocol)
-                    && (deviceType == DeviceType.ALL || remoteDevice.getDeviceType() == deviceType)
-                    && remoteDevice.isReceivingData()) {
+            if ((protocol == Protocol.ALL || remoteDevice.getProtocol() == protocol) && (deviceType == DeviceType.ALL || remoteDevice.getDeviceType() == deviceType) && remoteDevice.isReceivingData()) {
                 if (DEBUG) Log.i(TAG, "adding " + remoteDevice.getDeviceName());
                 availableDevicesList.add(remoteDevice.getDeviceId());
             }
         }
 
-        Set<Long> availableDevicesSet = new HashSet<>();
-        availableDevicesSet.addAll(availableDevicesList);
+        Set<Long> availableDevicesSet = new HashSet<>(availableDevicesList);
 
         if (DEBUG) Log.i(TAG, "now, we add the found devices");
         for (long deviceId : mFoundDevices) {
@@ -524,8 +516,7 @@ public class DeviceManager
     public LinkedList<MyRemoteDevice> getRemoteDeviceList() {
         if (DEBUG) Log.d(TAG, "getRemoteDeviceList");
 
-        LinkedList<MyRemoteDevice> list = new LinkedList<MyRemoteDevice>();
-        list.addAll(mMyRemoteDevices.values());
+        LinkedList<MyRemoteDevice> list = new LinkedList<>(mMyRemoteDevices.values());
 
         return list;
     }
@@ -534,7 +525,7 @@ public class DeviceManager
     protected List<MyDevice> getMyDeviceList() {
         if (DEBUG) Log.d(TAG, "getMyDeviceList");
 
-        List<MyDevice> myDeviceList = new ArrayList<MyDevice>();
+        List<MyDevice> myDeviceList = new ArrayList<>();
 
         myDeviceList.add(mClockDevice);
         if (mSpeedAndLocationDevice_GPS != null) {
@@ -577,7 +568,7 @@ public class DeviceManager
     }
 
     public List<MySensor> getSensorList(SensorType sensorType) {
-        List<MySensor> mySensorList = new LinkedList<MySensor>();
+        List<MySensor> mySensorList = new LinkedList<>();
 
         for (MyDevice myDevice : getMyDeviceList()) {
             MySensor mySensor = myDevice.getSensor(sensorType);
@@ -590,11 +581,11 @@ public class DeviceManager
     }
 
     public List<MyAccumulatorSensor> getAccumulatorSensorList(SensorType sensorType) {
-        List<MyAccumulatorSensor> myAccumulatorSensorList = new LinkedList<MyAccumulatorSensor>();
+        List<MyAccumulatorSensor> myAccumulatorSensorList = new LinkedList<>();
 
         for (MyDevice myDevice : getMyDeviceList()) {
             MySensor mySensor = myDevice.getSensor(sensorType);
-            if (mySensor != null && mySensor instanceof MyAccumulatorSensor) {
+            if (mySensor instanceof MyAccumulatorSensor) {
                 myAccumulatorSensorList.add((MyAccumulatorSensor) mySensor);
             }
         }
@@ -612,7 +603,7 @@ public class DeviceManager
             searchForNextRemoteDevice();
         }
         mMyRemoteDevices.remove(deviceId);
-        myRemoteDevice.shutDown();
+        Objects.requireNonNull(myRemoteDevice).shutDown();
     }
 
     public MyRemoteDevice createNewANTDevice(long deviceID, DeviceType deviceType, int antDeviceNumber) {
@@ -741,34 +732,28 @@ public class DeviceManager
         SQLiteDatabase db = databaseManager.getOpenDatabase();
 
         // TODO: sort according to the LAST_ACTIVE field?
-        Cursor cursor = db.query(DevicesDbHelper.DEVICES,
-                new String[]{DevicesDbHelper.C_ID, DevicesDbHelper.PAIRED, DevicesDbHelper.DEVICE_TYPE, DevicesDbHelper.ANT_DEVICE_NUMBER, DevicesDbHelper.BT_ADDRESS},
-                DevicesDbHelper.PROTOCOL + "=?",
-                new String[]{protocol.name()},
-                null,
-                null,
-                null);
+        Cursor cursor = db.query(DevicesDbHelper.DEVICES, new String[]{DevicesDbHelper.C_ID, DevicesDbHelper.PAIRED, DevicesDbHelper.DEVICE_TYPE, DevicesDbHelper.ANT_DEVICE_NUMBER, DevicesDbHelper.BT_ADDRESS}, DevicesDbHelper.PROTOCOL + "=?", new String[]{protocol.name()}, null, null, null);
 
         while (cursor.moveToNext()) {
             if (cursor.getInt(cursor.getColumnIndexOrThrow(DevicesDbHelper.PAIRED)) > 0) {
 
-                long deviceID = cursor.getLong(cursor.getColumnIndex(DevicesDbHelper.C_ID));
+                @SuppressLint("Range") long deviceID = cursor.getLong(cursor.getColumnIndex(DevicesDbHelper.C_ID));
                 if (mMyRemoteDevices.containsKey(deviceID)) {
                     if (DEBUG) Log.i(TAG, "device with ID " + deviceID + " is already created");
                     continue;
                 }
                 if (DEBUG) Log.d(TAG, "create new device with ID: " + deviceID);
 
-                DeviceType deviceType = DeviceType.valueOf(cursor.getString(cursor.getColumnIndex(DevicesDbHelper.DEVICE_TYPE)));
+                @SuppressLint("Range") DeviceType deviceType = DeviceType.valueOf(cursor.getString(cursor.getColumnIndex(DevicesDbHelper.DEVICE_TYPE)));
 
                 switch (protocol) {
                     case ANT_PLUS:
-                        int antDeviceNumber = cursor.getInt(cursor.getColumnIndex(DevicesDbHelper.ANT_DEVICE_NUMBER));
+                        @SuppressLint("Range") int antDeviceNumber = cursor.getInt(cursor.getColumnIndex(DevicesDbHelper.ANT_DEVICE_NUMBER));
                         createNewANTDevice(deviceID, deviceType, antDeviceNumber);
                         break;
 
                     case BLUETOOTH_LE:
-                        String address = cursor.getString(cursor.getColumnIndex(DevicesDbHelper.BT_ADDRESS));
+                        @SuppressLint("Range") String address = cursor.getString(cursor.getColumnIndex(DevicesDbHelper.BT_ADDRESS));
                         createNewBluetoothLEDevice(deviceID, deviceType, address);
                         break;
                 }

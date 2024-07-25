@@ -11,7 +11,6 @@ public enum TrackingMode {
     TRACKING(R.string.tracking, R.string.tracking_run, R.string.tracking_row, R.string.tracking_other),
     PAUSED(R.string.paused, R.string.paused_run, R.string.paused_row, R.string.paused_other);
 
-
     private final int titleId;
     private final int runId;
     private final int rowId;

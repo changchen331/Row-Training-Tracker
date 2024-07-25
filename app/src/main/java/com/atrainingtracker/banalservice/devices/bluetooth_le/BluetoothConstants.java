@@ -6,8 +6,6 @@ import java.util.HashMap;
 import java.util.UUID;
 
 public class BluetoothConstants {
-
-
     private static final String SERVICE_HEART_RATE = "0000180d-0000-1000-8000-00805f9b34fb";
     private static final String SERVICE_RUNNING_SPEED_AND_CADENCE = "00001814-0000-1000-8000-00805f9b34fb";
     private static final String SERVICE_CYCLING_SPEED_AND_CADENCE = "00001816-0000-1000-8000-00805f9b34fb";
@@ -31,8 +29,8 @@ public class BluetoothConstants {
     public static final UUID UUID_CHARACTERISTIC_CYCLING_SPEED_AND_CADENCE_FEATURE = UUID.fromString(CHARACTERISTIC_CYCLING_SPEED_AND_CADENCE_FEATURE);
     private static final String CHARACTERISTIC_CYCLING_POWER_FEATURE = "00002a65-0000-1000-8000-00805f9b34fb";
     public static final UUID UUID_CHARACTERISTIC_CYCLING_POWER_FEATURE = UUID.fromString(CHARACTERISTIC_CYCLING_POWER_FEATURE);
-    private static HashMap<DeviceType, UUID> SERVICE_UUIDS = new HashMap<DeviceType, UUID>();
-    private static HashMap<DeviceType, UUID> CHARACTERISTIC_MEASUREMENT_UUIDS = new HashMap<DeviceType, UUID>();
+    private static HashMap<DeviceType, UUID> SERVICE_UUIDS = new HashMap<>();
+    private static HashMap<DeviceType, UUID> CHARACTERISTIC_MEASUREMENT_UUIDS = new HashMap<>();
 
     static {
         SERVICE_UUIDS.put(DeviceType.HRM, UUID.fromString(SERVICE_HEART_RATE));

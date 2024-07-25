@@ -9,7 +9,6 @@ import com.atrainingtracker.trainingtracker.onlinecommunities.BaseGetAccessToken
 
 import org.apache.http.HttpResponse;
 import org.apache.http.NameValuePair;
-import org.apache.http.client.ClientProtocolException;
 import org.apache.http.client.HttpClient;
 import org.apache.http.client.entity.UrlEncodedFormEntity;
 import org.apache.http.client.methods.HttpPost;
@@ -25,9 +24,7 @@ import java.io.UnsupportedEncodingException;
 import java.util.ArrayList;
 import java.util.List;
 
-
-public class TrainingpeaksGetAccessTokenActivity
-        extends BaseGetAccessTokenActivity {
+public class TrainingpeaksGetAccessTokenActivity extends BaseGetAccessTokenActivity {
     public static final String MY_CLIENT_ID = "atrainingtracker";
     private static final String TAG = TrainingpeaksGetAccessTokenActivity.class.getName();
     private static final boolean DEBUG = TrainingApplication.DEBUG && false;
@@ -37,14 +34,7 @@ public class TrainingpeaksGetAccessTokenActivity
     @Override
     protected String getAuthorizationUrl() {
         Uri.Builder builder = new Uri.Builder();
-        builder.scheme(HTTPS)
-                .authority(TRAININGPEAKS_AUTHORITY)
-                .appendPath(OAUTH)
-                .appendPath(AUTHORIZE)
-                .appendQueryParameter(CLIENT_ID, MY_CLIENT_ID)
-                .appendQueryParameter(RESPONSE_TYPE, CODE)
-                .appendQueryParameter(SCOPE, FILE_WRITE)
-                .appendQueryParameter(REDIRECT_URI, MY_REDIRECT_URI);
+        builder.scheme(HTTPS).authority(TRAININGPEAKS_AUTHORITY).appendPath(OAUTH).appendPath(AUTHORIZE).appendQueryParameter(CLIENT_ID, MY_CLIENT_ID).appendQueryParameter(RESPONSE_TYPE, CODE).appendQueryParameter(SCOPE, FILE_WRITE).appendQueryParameter(REDIRECT_URI, MY_REDIRECT_URI);
 
         return builder.build().toString();
     }
@@ -52,10 +42,7 @@ public class TrainingpeaksGetAccessTokenActivity
     @Override
     protected String getAccessUrl(String code) {
         Uri.Builder builder = new Uri.Builder();
-        builder.scheme(HTTPS)
-                .authority(TRAININGPEAKS_AUTHORITY)
-                .appendPath(OAUTH)
-                .appendPath(TOKEN);
+        builder.scheme(HTTPS).authority(TRAININGPEAKS_AUTHORITY).appendPath(OAUTH).appendPath(TOKEN);
         return builder.build().toString();
     }
 
@@ -71,17 +58,13 @@ public class TrainingpeaksGetAccessTokenActivity
         try {
             return new UrlEncodedFormEntity(nameValuePairs);
         } catch (UnsupportedEncodingException e) {
-            e.printStackTrace();
+            throw new RuntimeException(e);
         }
-        return null;
     }
 
     protected String getRefreshUrl() {
         Uri.Builder builder = new Uri.Builder();
-        builder.scheme(HTTPS)
-                .authority(TRAININGPEAKS_AUTHORITY)
-                .appendPath(OAUTH)
-                .appendPath(TOKEN);
+        builder.scheme(HTTPS).authority(TRAININGPEAKS_AUTHORITY).appendPath(OAUTH).appendPath(TOKEN);
         return builder.build().toString();
     }
 
@@ -94,18 +77,14 @@ public class TrainingpeaksGetAccessTokenActivity
         try {
             return new UrlEncodedFormEntity(nameValuePairs);
         } catch (UnsupportedEncodingException e) {
-            e.printStackTrace();
+            throw new RuntimeException(e);
         }
-        return null;
     }
 
     @Override
     protected String getAcceptApplicationUrl() {
         Uri.Builder builder = new Uri.Builder();
-        builder.scheme(HTTPS)
-                .authority(TRAININGPEAKS_AUTHORITY)
-                .appendPath(OAUTH)
-                .appendPath(ACCEPT_APPLICATION);
+        builder.scheme(HTTPS).authority(TRAININGPEAKS_AUTHORITY).appendPath(OAUTH).appendPath(ACCEPT_APPLICATION);
         return builder.build().toString();
     }
 
@@ -122,7 +101,7 @@ public class TrainingpeaksGetAccessTokenActivity
                 TrainingApplication.setTrainingPeaksRefreshToken(jsonObject.getString(REFRESH_TOKEN));
             }
         } catch (JSONException e) {
-            e.printStackTrace();
+            throw new RuntimeException(e);
         }
     }
 
@@ -164,22 +143,11 @@ public class TrainingpeaksGetAccessTokenActivity
                 // String tokenType   = responseJson.getString(TOKEN_TYPE);
                 return responseJson.getString(ACCESS_TOKEN);
             }
-        } catch (ClientProtocolException e) {
+        } catch (IOException | JSONException e) {
             // TODO Auto-generated catch block
             Log.e(TAG, e.toString());
-            e.printStackTrace();
-        } catch (IOException e) {
-            // TODO Auto-generated catch block
-            Log.e(TAG, e.toString());
-            e.printStackTrace();
-        } catch (JSONException e) {
-            // TODO Auto-generated catch block
-            Log.e(TAG, e.toString());
-            e.printStackTrace();
+            throw new RuntimeException(e);
         }
-
         return null;
     }
-
-
 }

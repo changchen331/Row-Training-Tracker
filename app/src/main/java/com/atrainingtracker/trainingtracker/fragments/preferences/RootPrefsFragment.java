@@ -15,19 +15,15 @@ import com.atrainingtracker.R;
 import com.atrainingtracker.trainingtracker.TrainingApplication;
 import com.atrainingtracker.trainingtracker.exporter.FileFormat;
 
-
-public class RootPrefsFragment extends PreferenceFragmentCompat
-        implements OnSharedPreferenceChangeListener {
+public class RootPrefsFragment extends PreferenceFragmentCompat implements OnSharedPreferenceChangeListener {
     public static final String TAG = RootPrefsFragment.class.getName();
     private static final boolean DEBUG = TrainingApplication.DEBUG && false;
-
 
     private EditTextPreference mAthleteNamePref, mSamplingTimePref, mSearchRoundsPref;
     private ListPreference mUnitPref;
     private Preference mExport, mPebble, mLocationSources, mCloudUpload;
 
     private SharedPreferences mSharedPreferences;
-
 
     @Override
     public void onCreatePreferences(Bundle savedInstanceState, String rootKey) {
@@ -37,17 +33,16 @@ public class RootPrefsFragment extends PreferenceFragmentCompat
         setPreferencesFromResource(R.xml.prefs, rootKey);
         if (DEBUG) Log.i(TAG, "inflated xml resource file");
 
-        mUnitPref = (ListPreference) getPreferenceScreen().findPreference(TrainingApplication.SP_UNITS);
+        mUnitPref = getPreferenceScreen().findPreference(TrainingApplication.SP_UNITS);
 
-        mAthleteNamePref = (EditTextPreference) getPreferenceScreen().findPreference(TrainingApplication.SP_ATHLETE_NAME);
-        mSamplingTimePref = (EditTextPreference) getPreferenceScreen().findPreference(TrainingApplication.SP_SAMPLING_TIME);
-        mSearchRoundsPref = (EditTextPreference) getPreferenceScreen().findPreference(TrainingApplication.SP_NUMBER_OF_SEARCH_TRIES);
+        mAthleteNamePref = getPreferenceScreen().findPreference(TrainingApplication.SP_ATHLETE_NAME);
+        mSamplingTimePref = getPreferenceScreen().findPreference(TrainingApplication.SP_SAMPLING_TIME);
+        mSearchRoundsPref = getPreferenceScreen().findPreference(TrainingApplication.SP_NUMBER_OF_SEARCH_TRIES);
 
         mExport = this.getPreferenceScreen().findPreference(TrainingApplication.FILE_EXPORT);
         mCloudUpload = this.getPreferenceScreen().findPreference(TrainingApplication.CLOUD_UPLOAD);
         //mPebble = this.getPreferenceScreen().findPreference(TrainingApplication.PEBBLE_SCREEN);
         //mLocationSources = this.getPreferenceScreen().findPreference(TrainingApplication.LOCATION_SOURCES);
-
     }
 
     @Override
@@ -62,13 +57,11 @@ public class RootPrefsFragment extends PreferenceFragmentCompat
         super.onResume();
         if (DEBUG) Log.i(TAG, "onResume()");
 
-
-        mSharedPreferences = PreferenceManager.getDefaultSharedPreferences(getActivity());
+        mSharedPreferences = PreferenceManager.getDefaultSharedPreferences(requireActivity());
 
         mUnitPref.setSummary(TrainingApplication.getUnit().getNameId());
 //        mPebble.setSummary(pebbleSummary());
         //mLocationSources.setSummary(locationSourcesSummary());
-
 
         mAthleteNamePref.setSummary(TrainingApplication.getAthleteName());
         if (DEBUG) Log.d(TAG, "sampling time: " + TrainingApplication.getSamplingTime());
@@ -76,14 +69,10 @@ public class RootPrefsFragment extends PreferenceFragmentCompat
 
         mSearchRoundsPref.setSummary(TrainingApplication.getNumberOfSearchTries() + "");
 
-
         mExport.setSummary(exportSummary());
         mCloudUpload.setSummary(cloudUploadSummary());
 
-
         mSharedPreferences.registerOnSharedPreferenceChangeListener(this);
-
-
     }
 
     @Override
@@ -114,25 +103,18 @@ public class RootPrefsFragment extends PreferenceFragmentCompat
 //            getActivity().onContentChanged();
 //        }
 
-
-        if (TrainingApplication.SP_EXPORT_TO_CSV.equals(key)
-                | TrainingApplication.SP_EXPORT_TO_TCX.equals(key)
-                | TrainingApplication.SP_EXPORT_TO_GPX.equals(key)
-                | TrainingApplication.SP_EXPORT_TO_GC_JSON.equals(key)) {
+        if (TrainingApplication.SP_EXPORT_TO_CSV.equals(key) | TrainingApplication.SP_EXPORT_TO_TCX.equals(key) | TrainingApplication.SP_EXPORT_TO_GPX.equals(key) | TrainingApplication.SP_EXPORT_TO_GC_JSON.equals(key)) {
             String exportSummary = exportSummary();
             Log.i(TAG, "updating exportSummary to " + exportSummary);
             mExport.setSummary(exportSummary);
-            getActivity().onContentChanged();
+            requireActivity().onContentChanged();
         }
 
-        if (TrainingApplication.SP_UPLOAD_TO_DROPBOX.equals(key)
-                | TrainingApplication.SP_UPLOAD_TO_STRAVA.equals(key)
-                | TrainingApplication.SP_UPLOAD_TO_RUNKEEPER.equals(key)
-                | TrainingApplication.SP_UPLOAD_TO_TRAINING_PEAKS.equals(key)) {
+        if (TrainingApplication.SP_UPLOAD_TO_DROPBOX.equals(key) | TrainingApplication.SP_UPLOAD_TO_STRAVA.equals(key) | TrainingApplication.SP_UPLOAD_TO_RUNKEEPER.equals(key) | TrainingApplication.SP_UPLOAD_TO_TRAINING_PEAKS.equals(key)) {
             String cloudUploadSummary = cloudUploadSummary();
             Log.i(TAG, "updating cloudUploadSummary to " + cloudUploadSummary);
             mCloudUpload.setSummary(cloudUploadSummary);
-            getActivity().onContentChanged();
+            requireActivity().onContentChanged();
         }
 
         if (TrainingApplication.SP_SAMPLING_TIME.equals(key)) {
@@ -142,7 +124,6 @@ public class RootPrefsFragment extends PreferenceFragmentCompat
         if (TrainingApplication.SP_NUMBER_OF_SEARCH_TRIES.equals(key)) {
             mSearchRoundsPref.setSummary(TrainingApplication.getNumberOfSearchTries() + "");
         }
-
 
 //        if (TrainingApplication.SP_LOCATION_SOURCE_GPS.equals(key)
 //                | TrainingApplication.SP_LOCATION_SOURCE_GOOGLE_FUSED.equals(key)
@@ -249,5 +230,4 @@ public class RootPrefsFragment extends PreferenceFragmentCompat
             Log.i(TAG, "setSamplingTimeSummary: samplingTime=" + samplingTime + ", units = " + units);
         mSamplingTimePref.setSummary(getString(R.string.value_unit_int_string, samplingTime, units));
     }
-
 }

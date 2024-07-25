@@ -7,14 +7,13 @@ import com.atrainingtracker.banalservice.devices.MyDevice;
 
 import java.util.LinkedList;
 
-
 public class MySensor<T> {
     private static final String TAG = "MySensor";
     private static final boolean DEBUG = BANALService.DEBUG && false;
     protected MyDevice mDevice;
     protected SensorType mSensorType;
     protected T mValue = null;
-    protected boolean mActivated = true;
+    protected boolean mActivated;
     protected LinkedList<SensorListener> mSensorListeners = new LinkedList<>();
 
     public MySensor(MyDevice myDevice, SensorType sensorType) {
@@ -85,11 +84,10 @@ public class MySensor<T> {
     }
 
     public SensorData<T> getSensorData() {
-        return new SensorData<T>(getSensorType(), getValue(), getStringValue(), getDeviceName());
+        return new SensorData<>(getSensorType(), getValue(), getStringValue(), getDeviceName());
     }
 
     public interface SensorListener<T> {
         void newValue(T value);
     }
-
 }   

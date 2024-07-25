@@ -1,5 +1,6 @@
 package com.atrainingtracker.trainingtracker.exporter;
 
+import android.annotation.SuppressLint;
 import android.content.Context;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
@@ -24,9 +25,11 @@ import org.json.JSONObject;
 
 import java.io.ByteArrayOutputStream;
 import java.io.File;
-import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.nio.file.Files;
+import java.nio.file.Paths;
+import java.util.Objects;
 
 public class TrainingPeaksUploader extends BaseExporter {
     protected static final String MY_UPLOAD_URL = "https://api.trainingpeaks.com/v1/file";
@@ -48,9 +51,9 @@ public class TrainingPeaksUploader extends BaseExporter {
         super(context);
     }
 
+    @SuppressLint("Range")
     @Override
-    protected ExportResult doExport(ExportInfo exportInfo)
-            throws IOException, JSONException {
+    protected ExportResult doExport(ExportInfo exportInfo) throws IOException, JSONException {
         if (DEBUG) Log.d(TAG, "doExport: " + exportInfo.getFileBaseName());
 
         TrainingpeaksGetAccessTokenActivity trainingPeaksGetAccessTokenActivity = new TrainingpeaksGetAccessTokenActivity();
@@ -65,13 +68,7 @@ public class TrainingPeaksUploader extends BaseExporter {
 
         WorkoutSummariesDatabaseManager databaseManager = WorkoutSummariesDatabaseManager.getInstance();
         SQLiteDatabase db = databaseManager.getOpenDatabase();
-        Cursor cursor = db.query(WorkoutSummariesDatabaseManager.WorkoutSummaries.TABLE,
-                null,
-                WorkoutSummaries.FILE_BASE_NAME + "=?",
-                new String[]{exportInfo.getFileBaseName()},
-                null,
-                null,
-                null);
+        Cursor cursor = db.query(WorkoutSummariesDatabaseManager.WorkoutSummaries.TABLE, null, WorkoutSummaries.FILE_BASE_NAME + "=?", new String[]{exportInfo.getFileBaseName()}, null, null, null);
 
         cursor.moveToFirst();
 
@@ -105,17 +102,20 @@ public class TrainingPeaksUploader extends BaseExporter {
         jsonObject.put(TYPE, sportName);
 
         File file = new File(getDir(mContext, FileFormat.TRAINING_PEAKS.getDirName()), exportInfo.getFileBaseName() + FileFormat.TRAINING_PEAKS.getFileEnding());
-        InputStream inputStream = new FileInputStream(file.getAbsolutePath());
+        InputStream inputStream = null;
+        if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.O) {
+            inputStream = Files.newInputStream(Paths.get(file.getAbsolutePath()));
+        }
         byte[] buffer = new byte[8192];
         int bytesRead;
         ByteArrayOutputStream output = new ByteArrayOutputStream();
         Base64OutputStream output64 = new Base64OutputStream(output, Base64.DEFAULT);
         try {
-            while ((bytesRead = inputStream.read(buffer)) != -1) {
+            while ((bytesRead = Objects.requireNonNull(inputStream).read(buffer)) != -1) {
                 output64.write(buffer, 0, bytesRead);
             }
         } catch (IOException e) {
-            e.printStackTrace();
+            throw new RuntimeException(e);
         }
         output64.close();
         jsonObject.put(DATA, output.toString());
@@ -132,7 +132,7 @@ public class TrainingPeaksUploader extends BaseExporter {
         if (DEBUG) Log.d(TAG, "uploadToTrainingPeaks response: " + response);
         if (response == null) {
             return new ExportResult(false, "no response");
-        } else if (response.equals("")) {
+        } else if (response.isEmpty()) {
             return new ExportResult(true, "successfully uploaded " + exportInfo.getFileBaseName() + " to TrainingPeaks");
         }
 
@@ -143,5 +143,4 @@ public class TrainingPeaksUploader extends BaseExporter {
     protected Action getAction() {
         return Action.UPLOAD;
     }
-
 }

@@ -1,6 +1,6 @@
 package com.atrainingtracker.banalservice.devices.bluetooth_le;
 
-import android.annotation.TargetApi;
+import android.annotation.SuppressLint;
 import android.bluetooth.BluetoothDevice;
 import android.bluetooth.BluetoothGatt;
 import android.bluetooth.BluetoothGattCallback;
@@ -10,7 +10,6 @@ import android.bluetooth.BluetoothGattService;
 import android.bluetooth.BluetoothManager;
 import android.bluetooth.BluetoothProfile;
 import android.content.Context;
-import android.os.Build;
 import android.os.Handler;
 import android.util.Log;
 
@@ -28,7 +27,6 @@ import java.util.Queue;
 
 // TODO: where/when to register and unregister the sensors
 
-@TargetApi(Build.VERSION_CODES.JELLY_BEAN_MR2)
 public abstract class MyBTLEDevice extends MyRemoteDevice {
     private static final boolean DEBUG = BANALService.DEBUG & false;
     private static final int SEARCH_PERIOD = 10 * 1000; // 10 seconds (same as for ANT+)
@@ -36,7 +34,7 @@ public abstract class MyBTLEDevice extends MyRemoteDevice {
     protected String mAddress; // the MAC Address
     // private static final int READ_BATTERY_PERCENTAGE_PERIOD = 10 * 1000; // 10 seconds (just for testing)
     protected BluetoothGatt mBluetoothGatt;
-    protected Queue<BluetoothGattCharacteristic> mReadCharacteristicQueue = new LinkedList<BluetoothGattCharacteristic>();
+    protected Queue<BluetoothGattCharacteristic> mReadCharacteristicQueue = new LinkedList<>();
     protected State mState = State.DISCONNECTED;
     Handler mHandler;
     private String TAG = "MyBTLEDevice";
@@ -54,7 +52,9 @@ public abstract class MyBTLEDevice extends MyRemoteDevice {
     @Override
     public Protocol getProtocol() {
         return Protocol.BLUETOOTH_LE;
-    }    private final BluetoothGattCallback mGattCallback = new BluetoothGattCallback() {
+    }
+
+    private final BluetoothGattCallback mGattCallback = new BluetoothGattCallback() {
         @Override
         public void onConnectionStateChange(BluetoothGatt gatt, int status, int newState) {
             if (DEBUG)
@@ -65,6 +65,7 @@ public abstract class MyBTLEDevice extends MyRemoteDevice {
 
                 mState = State.CONNECTED_TO_GATT;
                 mHandler.post(new Runnable() {
+                    @SuppressLint("MissingPermission")
                     @Override
                     public void run() {
                         mBluetoothGatt.discoverServices();
@@ -90,32 +91,26 @@ public abstract class MyBTLEDevice extends MyRemoteDevice {
         public void onServicesDiscovered(final BluetoothGatt gatt, int status) {
             Log.i(TAG, "onServiceDiscovered");
 
-            mHandler.post(new Runnable() {
+            mHandler.post(() -> {
+                BluetoothGattService btGattService;
+                BluetoothGattCharacteristic btGattChar;
 
-                @Override
-                public void run() {
-                    BluetoothGattService btGattService;
-                    BluetoothGattCharacteristic btGattChar;
-
-                    btGattService = gatt.getService(BluetoothConstants.UUID_SERVICE_BATTERY);
-                    if (btGattService != null) { // ok, the battery service is available
-                        btGattChar = btGattService.getCharacteristic(BluetoothConstants.UUID_CHARACTERISTIC_BATTERY_LEVEL);
-                        if (btGattChar != null) {
-                            Log.i(TAG, "go battery service, request to read battery characteristic");
-                            mReadCharacteristicQueue.add(btGattChar);
-                        } else {
-                            Log.d(TAG, "WTF: btGattChar == null for battery characteristic");
-                        }
+                btGattService = gatt.getService(BluetoothConstants.UUID_SERVICE_BATTERY);
+                if (btGattService != null) { // ok, the battery service is available
+                    btGattChar = btGattService.getCharacteristic(BluetoothConstants.UUID_CHARACTERISTIC_BATTERY_LEVEL);
+                    if (btGattChar != null) {
+                        Log.i(TAG, "go battery service, request to read battery characteristic");
+                        mReadCharacteristicQueue.add(btGattChar);
+                    } else {
+                        Log.d(TAG, "WTF: btGattChar == null for battery characteristic");
                     }
-                    readNextCharacteristic();
                 }
+                readNextCharacteristic();
             });
         }
 
         @Override
-        public void onCharacteristicRead(BluetoothGatt gatt,
-                                         BluetoothGattCharacteristic characteristic,
-                                         int status) {
+        public void onCharacteristicRead(BluetoothGatt gatt, BluetoothGattCharacteristic characteristic, int status) {
             if (DEBUG) Log.i(TAG, "onCharacteristicRead: " + characteristic.getUuid());
 
             characteristicUpdate(gatt, characteristic);
@@ -136,21 +131,19 @@ public abstract class MyBTLEDevice extends MyRemoteDevice {
         mState = State.SEARCHING;
 
         //stop searching after some time
-        mHandler.postDelayed(new Runnable() {
-            @Override
-            public void run() {
-                if (DEBUG) Log.i(TAG, "search time out");
-                if (!isReceivingData()) {
-                    if (DEBUG) Log.i(TAG, "device is not receiving data, so this search failed");
-                    disconnectFromGatt();
-                    notifyStopSearching(false);  // we did not find the device
-                }
+        mHandler.postDelayed(() -> {
+            if (DEBUG) Log.i(TAG, "search time out");
+            if (!isReceivingData()) {
+                if (DEBUG) Log.i(TAG, "device is not receiving data, so this search failed");
+                disconnectFromGatt();
+                notifyStopSearching(false);  // we did not find the device
             }
         }, SEARCH_PERIOD);
 
         final BluetoothDevice device = ((BluetoothManager) mContext.getSystemService(Context.BLUETOOTH_SERVICE)).getAdapter().getRemoteDevice(mAddress);
 
         mHandler.post(new Runnable() {
+            @SuppressLint("MissingPermission")
             @Override
             public void run() {
                 if (DEBUG) Log.i(TAG, "trying to connect gatt");
@@ -164,6 +157,7 @@ public abstract class MyBTLEDevice extends MyRemoteDevice {
 
         if (mBluetoothGatt != null) {
             mHandler.post(new Runnable() {
+                @SuppressLint("MissingPermission")
                 @Override
                 public void run() {
                     mBluetoothGatt.disconnect();
@@ -196,12 +190,7 @@ public abstract class MyBTLEDevice extends MyRemoteDevice {
 
         if (BluetoothConstants.getCharacteristicUUID(getDeviceType()).equals(characteristic.getUuid())) {
 
-            mHandler.post(new Runnable() {
-                @Override
-                public void run() {
-                    measurementCharacteristicUpdate(gatt, characteristic);
-                }
-            });
+            mHandler.post(() -> measurementCharacteristicUpdate(gatt, characteristic));
         }
         if (BluetoothConstants.UUID_CHARACTERISTIC_BATTERY_LEVEL.equals(characteristic.getUuid())) {
             int batteryPercentage = characteristic.getIntValue(BluetoothGattCharacteristic.FORMAT_UINT8, 0);
@@ -209,12 +198,9 @@ public abstract class MyBTLEDevice extends MyRemoteDevice {
             DevicesDatabaseManager.setBatteryPercentage(getDeviceId(), batteryPercentage);
 
             //reread after some time
-            mHandler.postDelayed(new Runnable() {
-                @Override
-                public void run() {
-                    mReadCharacteristicQueue.add(characteristic);
-                    readNextCharacteristic();
-                }
+            mHandler.postDelayed(() -> {
+                mReadCharacteristicQueue.add(characteristic);
+                readNextCharacteristic();
             }, READ_BATTERY_PERCENTAGE_PERIOD);
         }
         // else {
@@ -231,6 +217,7 @@ public abstract class MyBTLEDevice extends MyRemoteDevice {
             final BluetoothGattCharacteristic gattChar = mReadCharacteristicQueue.poll();
             if (gattChar == null) Log.d(TAG, "WTF: gattChar == null");
             mHandler.post(new Runnable() {
+                @SuppressLint("MissingPermission")
                 @Override
                 public void run() {
                     mBluetoothGatt.readCharacteristic(gattChar);
@@ -243,6 +230,7 @@ public abstract class MyBTLEDevice extends MyRemoteDevice {
                 registerSensors();
 
                 mHandler.post(new Runnable() {
+                    @SuppressLint("MissingPermission")
                     @Override
                     public void run() {
                         BluetoothGattService btGattService = mBluetoothGatt.getService(BluetoothConstants.getServiceUUID(getDeviceType()));
@@ -263,8 +251,6 @@ public abstract class MyBTLEDevice extends MyRemoteDevice {
     }
 
     protected enum State {DISCONNECTED, SEARCHING, CONNECTED_TO_GATT, CONNECTED_WITH_SERVICE}
-
-
 
 
 }

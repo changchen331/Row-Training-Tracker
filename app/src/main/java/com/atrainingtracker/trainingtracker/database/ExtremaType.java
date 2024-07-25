@@ -1,5 +1,7 @@
 package com.atrainingtracker.trainingtracker.database;
 
+import androidx.annotation.NonNull;
+
 import com.atrainingtracker.R;
 import com.atrainingtracker.trainingtracker.TrainingApplication;
 
@@ -7,12 +9,7 @@ import java.util.LinkedList;
 import java.util.List;
 
 public enum ExtremaType {
-    MAX(R.string.max),
-    MIN(R.string.min),
-    AVG(R.string.average),
-    START(R.string.start),
-    MAX_LINE_DISTANCE(R.string.max_line_distance),
-    END(R.string.end);
+    MAX(R.string.max), MIN(R.string.min), AVG(R.string.average), START(R.string.start), MAX_LINE_DISTANCE(R.string.max_line_distance), END(R.string.end);
 
     public static final ExtremaType[] LOCATION_EXTREMA_TYPES = new ExtremaType[]{START, MAX_LINE_DISTANCE, END};
     private final int nameId;
@@ -30,6 +27,7 @@ public enum ExtremaType {
         return result;
     }
 
+    @NonNull
     @Override
     public String toString() {
         return TrainingApplication.getAppContext().getString(nameId);

@@ -1,5 +1,6 @@
 package com.atrainingtracker.trainingtracker.onlinecommunities.strava;
 
+import android.annotation.SuppressLint;
 import android.app.ProgressDialog;
 import android.content.Context;
 import android.os.AsyncTask;
@@ -9,7 +10,6 @@ import com.atrainingtracker.R;
 import com.atrainingtracker.trainingtracker.TrainingApplication;
 
 import org.apache.http.HttpResponse;
-import org.apache.http.client.ClientProtocolException;
 import org.apache.http.client.HttpClient;
 import org.apache.http.client.methods.HttpPost;
 import org.apache.http.impl.client.DefaultHttpClient;
@@ -18,15 +18,13 @@ import org.json.JSONException;
 import org.json.JSONObject;
 
 import java.io.IOException;
-import java.io.UnsupportedEncodingException;
 
-public class StravaDeauthorizationAsyncTask extends
-        AsyncTask<String, String, String> {
-
+public class StravaDeauthorizationAsyncTask extends AsyncTask<String, String, String> {
     private static final String TAG = "StravaDeauthorizationAsyncTask";
     private static final boolean DEBUG = false;
 
     private ProgressDialog progressDialog;
+    @SuppressLint("StaticFieldLeak")
     private Context mContext;
 
     public StravaDeauthorizationAsyncTask(Context context) {
@@ -50,6 +48,7 @@ public class StravaDeauthorizationAsyncTask extends
         }
     }
 
+    @SuppressLint("LongLogTag")
     @Override
     protected String doInBackground(String... params) {
 
@@ -73,23 +72,12 @@ public class StravaDeauthorizationAsyncTask extends
                     if (DEBUG) Log.d(TAG, "all right!");
                 }
             }
-        } catch (UnsupportedEncodingException e) {
+        } catch (JSONException | IOException e) {
             // TODO Auto-generated catch block
-            e.printStackTrace();
-        } catch (JSONException e) {
-            // TODO Auto-generated catch block
-            e.printStackTrace();
-        } catch (ClientProtocolException e) {
-            // TODO Auto-generated catch block
-            e.printStackTrace();
-        } catch (IOException e) {
-            // TODO Auto-generated catch block
-            e.printStackTrace();
+            throw new RuntimeException(e);
         }
 
         TrainingApplication.deleteStravaToken();
         return "foo";
-
     }
-
 }

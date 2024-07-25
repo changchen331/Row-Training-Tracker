@@ -1,13 +1,14 @@
 package com.atrainingtracker.banalservice.fragments;
 
+import android.annotation.SuppressLint;
 import android.content.BroadcastReceiver;
 import android.content.Context;
-import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.IntentFilter;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
 import android.graphics.drawable.Drawable;
+import android.os.Build;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.ContextMenu;
@@ -20,6 +21,7 @@ import android.widget.AdapterView;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import androidx.annotation.NonNull;
 import androidx.appcompat.app.AlertDialog;
 import androidx.cursoradapter.widget.SimpleCursorAdapter;
 import androidx.fragment.app.ListFragment;
@@ -32,8 +34,9 @@ import com.atrainingtracker.trainingtracker.MyHelper;
 import com.atrainingtracker.trainingtracker.TrainingApplication;
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
 
-public class SportTypeListFragment
-        extends ListFragment {
+import java.util.Objects;
+
+public class SportTypeListFragment extends ListFragment {
     public static final String TAG = SportTypeListFragment.class.getName();
     protected static final String[] FROM = {SportType.UI_NAME, SportType.MIN_AVG_SPEED, SportType.MAX_AVG_SPEED};
     protected static final String[] FROM_WITH_C_ID = {SportType.C_ID, SportType.MIN_AVG_SPEED, SportType.MAX_AVG_SPEED, SportType.UI_NAME};
@@ -82,25 +85,20 @@ public class SportTypeListFragment
 
         SQLiteDatabase db = SportTypeDatabaseManager.getInstance().getOpenDatabase();
 
-        mCursor = db.query(SportType.TABLE,
-                FROM_WITH_C_ID,
-                null,
-                null,
-                null,
-                null,
-                null);
+        mCursor = db.query(SportType.TABLE, FROM_WITH_C_ID, null, null, null, null, null);
 
-        mAdapter = new SimpleCursorAdapter(getContext(), R.layout.sport_type_row, mCursor, FROM, TO);
+        mAdapter = new SimpleCursorAdapter(requireContext(), R.layout.sport_type_row, mCursor, FROM, TO);
         mAdapter.setViewBinder(new SimpleCursorAdapter.ViewBinder() {
+            @SuppressLint("Range")
             @Override
             public boolean setViewValue(View view, Cursor cursor, int columnIndex) {
 
                 TextView tv = (TextView) view;
 
                 if (view.getId() == R.id.st_tvName) {
-                    String name = cursor.getString(cursor.getColumnIndex(SportType.UI_NAME));
+                    @SuppressLint("Range") String name = cursor.getString(cursor.getColumnIndex(SportType.UI_NAME));
                     tv.setText(name);
-                    long sportTypeId = cursor.getLong(cursor.getColumnIndex(SportType.C_ID));
+                    @SuppressLint("Range") long sportTypeId = cursor.getLong(cursor.getColumnIndex(SportType.C_ID));
                     Drawable icon = SportTypeDatabaseManager.getBSportTypeIcon(getContext(), sportTypeId, 0.75);
                     int h = icon.getIntrinsicHeight();
                     int w = icon.getIntrinsicWidth();
@@ -109,8 +107,7 @@ public class SportTypeListFragment
 
                     return true;
                 } else if (view.getId() == R.id.st_tvSpeed) {
-                    tv.setText(getString(R.string.average_speed_range_format, MyHelper.mps2userUnit(cursor.getDouble(cursor.getColumnIndex(SportType.MIN_AVG_SPEED))),
-                            MyHelper.mps2userUnit(cursor.getDouble(cursor.getColumnIndex(SportType.MAX_AVG_SPEED))), mSpeedUnit));
+                    tv.setText(getString(R.string.average_speed_range_format, MyHelper.mps2userUnit(cursor.getDouble(cursor.getColumnIndex(SportType.MIN_AVG_SPEED))), MyHelper.mps2userUnit(cursor.getDouble(cursor.getColumnIndex(SportType.MAX_AVG_SPEED))), mSpeedUnit));
                     return true;
                 }
 
@@ -122,15 +119,10 @@ public class SportTypeListFragment
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
-        View view = inflater.inflate(R.layout.sport_type_list_layout, null);
+        @SuppressLint("InflateParams") View view = inflater.inflate(R.layout.sport_type_list_layout, null);
 
         FloatingActionButton fab = view.findViewById(R.id.fab);
-        fab.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                showEditSportTypeDialog(-1);
-            }
-        });
+        fab.setOnClickListener(view1 -> showEditSportTypeDialog(-1));
 
         return view;
     }
@@ -138,12 +130,9 @@ public class SportTypeListFragment
     @Override
     public void onActivityCreated(Bundle savedInstanceState) {
         super.onActivityCreated(savedInstanceState);
-        getListView().setOnItemClickListener(new AdapterView.OnItemClickListener() {
-            @Override
-            public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
-                // Log.i(TAG, "onItemClick: position=" + position + ", id=" + id);
-                showEditSportTypeDialog(id);
-            }
+        getListView().setOnItemClickListener((parent, view, position, id) -> {
+            // Log.i(TAG, "onItemClick: position=" + position + ", id=" + id);
+            showEditSportTypeDialog(id);
         });
 
         registerForContextMenu(getListView());
@@ -153,14 +142,18 @@ public class SportTypeListFragment
     public void onResume() {
         super.onResume();
 
-        getContext().registerReceiver(mSportTypeChangedReceiver, mSportTypeChangedFilter);
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+                requireContext().registerReceiver(mSportTypeChangedReceiver, mSportTypeChangedFilter, Context.RECEIVER_NOT_EXPORTED);
+            }
+        }
     }
 
     @Override
     public void onPause() {
         super.onPause();
 
-        getContext().unregisterReceiver(mSportTypeChangedReceiver);
+        requireContext().unregisterReceiver(mSportTypeChangedReceiver);
     }
 
     @Override
@@ -172,20 +165,20 @@ public class SportTypeListFragment
     }
 
     @Override
-    public void onCreateContextMenu(ContextMenu menu, View v,
-                                    ContextMenu.ContextMenuInfo menuInfo) {
+    public void onCreateContextMenu(@NonNull ContextMenu menu, @NonNull View v, ContextMenu.ContextMenuInfo menuInfo) {
         super.onCreateContextMenu(menu, v, menuInfo);
         if (DEBUG) Log.i(TAG, "onCreateContextMenu");
 
-        MenuInflater inflater = this.getActivity().getMenuInflater();
+        MenuInflater inflater = this.requireActivity().getMenuInflater();
         inflater.inflate(R.menu.delete, menu);
     }
 
+    @SuppressLint("NonConstantResourceId")
     @Override
     public boolean onContextItemSelected(MenuItem item) {
         AdapterView.AdapterContextMenuInfo info = (AdapterView.AdapterContextMenuInfo) item.getMenuInfo();
         // int position = info.position;
-        long id = info.id;
+        long id = Objects.requireNonNull(info).id;
 
         if (DEBUG) Log.i(TAG, "onContextItemSelected: id=" + id);
 
@@ -213,30 +206,20 @@ public class SportTypeListFragment
         if (DEBUG) Log.i(TAG, "showReallyDeleteDialog, id=" + id);
         String sportTypeUiName = SportTypeDatabaseManager.getUIName(id);
 
-        AlertDialog.Builder builder = new AlertDialog.Builder(getActivity());
-        builder.setTitle(R.string.delete)
-                .setMessage(getContext().getString(R.string.really_delete_workout_name_scheme, sportTypeUiName))
-                .setIcon(android.R.drawable.ic_menu_delete)
-                .setPositiveButton(R.string.delete, new DialogInterface.OnClickListener() {
-                    public void onClick(DialogInterface dialog, int whichButton) {
-                        SportTypeDatabaseManager.delete(id);
-                        updateView();
+        AlertDialog.Builder builder = new AlertDialog.Builder(requireActivity());
+        builder.setTitle(R.string.delete).setMessage(requireContext().getString(R.string.really_delete_workout_name_scheme, sportTypeUiName)).setIcon(android.R.drawable.ic_menu_delete).setPositiveButton(R.string.delete, (dialog, whichButton) -> {
+            SportTypeDatabaseManager.delete(id);
+            updateView();
 
-                        dialog.dismiss();
-                    }
-                })
-                .setNegativeButton(R.string.Cancel, new DialogInterface.OnClickListener() {
-                    public void onClick(DialogInterface dialog, int which) {
-                        dialog.dismiss();
-                    }
-                });
+            dialog.dismiss();
+        }).setNegativeButton(R.string.Cancel, (dialog, which) -> dialog.dismiss());
         // Create the AlertDialog object and return it
         builder.create().show();
     }
 
     private void showEditSportTypeDialog(final long id) {
         EditSportTypeDialog editSportTypeDialog = EditSportTypeDialog.newInstance(id);
-        editSportTypeDialog.show(getFragmentManager(), EditSportTypeDialog.TAG);
+        editSportTypeDialog.show(requireFragmentManager(), EditSportTypeDialog.TAG);
         // FragmentTransaction ft = getFragmentManager().beginTransaction();
         // ft.replace(R.id.list, editSportTypeDialog, EditSportTypeDialog.TAG);
         // ft.addToBackStack(EditSportTypeDialog.TAG);

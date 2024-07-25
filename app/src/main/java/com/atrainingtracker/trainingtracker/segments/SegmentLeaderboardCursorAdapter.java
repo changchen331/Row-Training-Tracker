@@ -1,5 +1,6 @@
 package com.atrainingtracker.trainingtracker.segments;
 
+import android.annotation.SuppressLint;
 import android.content.Context;
 import android.database.Cursor;
 import android.util.Log;
@@ -20,7 +21,6 @@ import com.atrainingtracker.trainingtracker.onlinecommunities.strava.StravaHelpe
 import com.atrainingtracker.trainingtracker.segments.SegmentsDatabaseManager.Segments;
 import com.squareup.picasso.Picasso;
 
-
 public class SegmentLeaderboardCursorAdapter extends CursorAdapter {
     protected static final String[] FROM = {Segments.C_ID, Segments.ATHLETE_ID, Segments.ATHLETE_PROFILE_URL, Segments.RANK, Segments.ATHLETE_NAME, Segments.ELAPSED_TIME, Segments.DISTANCE};
     protected static final int[] TO = {R.id.tvSegmentName, R.id.tvSegmentName, R.id.ivSegmentAthletePicture, R.id.tvSegmentAthleteName, R.id.tvSegmentAthleteName, R.id.tvSegmentTime, R.id.tvSegmentAverageSpeed};
@@ -36,7 +36,6 @@ public class SegmentLeaderboardCursorAdapter extends CursorAdapter {
 
     private LayoutInflater mInflater;
 
-
     public SegmentLeaderboardCursorAdapter(Context context, Cursor cursor) {
         super(context, cursor);
 
@@ -45,7 +44,7 @@ public class SegmentLeaderboardCursorAdapter extends CursorAdapter {
     }
 
     private int getItemViewType(Cursor cursor) {
-        long athleteId = cursor.getLong(cursor.getColumnIndex(Segments.ATHLETE_ID));
+        @SuppressLint("Range") long athleteId = cursor.getLong(cursor.getColumnIndex(Segments.ATHLETE_ID));
 
         if (athleteId == -1) {
             return SEPARATOR;
@@ -97,11 +96,14 @@ public class SegmentLeaderboardCursorAdapter extends CursorAdapter {
                 break;
         }
 
-        view.setTag(viewHolder);
+        if (view != null) {
+            view.setTag(viewHolder);
+        }
         return view;
     }
 
 
+    @SuppressLint({"Range", "SetTextI18n"})
     @Override
     public void bindView(View view, Context context, Cursor cursor) {
         if (DEBUG) Log.i(TAG, "bindView");
@@ -129,7 +131,6 @@ public class SegmentLeaderboardCursorAdapter extends CursorAdapter {
                 viewHolder.tvAverageSpeed.setText(speed_string);
                 break;
         }
-
     }
 
     private static class ViewHolder {

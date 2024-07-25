@@ -1,11 +1,12 @@
 package com.atrainingtracker.trainingtracker.dialogs;
 
+import android.annotation.SuppressLint;
 import android.app.Dialog;
 import android.content.BroadcastReceiver;
 import android.content.Context;
-import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.IntentFilter;
+import android.os.Build;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.Gravity;
@@ -17,6 +18,7 @@ import android.widget.Button;
 import android.widget.Spinner;
 import android.widget.TextView;
 
+import androidx.annotation.NonNull;
 import androidx.appcompat.app.AlertDialog;
 import androidx.fragment.app.DialogFragment;
 
@@ -31,7 +33,6 @@ import com.atrainingtracker.trainingtracker.views.DeviceIdAndNameArrayAdapter;
 import com.atrainingtracker.trainingtracker.views.SensorArrayAdapter;
 
 import java.util.LinkedList;
-
 
 public class EditFieldDialog extends DialogFragment {
     public static final String TAG = EditFieldDialog.class.getName();
@@ -57,7 +58,7 @@ public class EditFieldDialog extends DialogFragment {
     private long mDeviceId;
     private int mTextSize;
 
-    protected static final int textSize2Pos(int textSize) {
+    protected static int textSize2Pos(int textSize) {
         if (textSize == 20) {
             return 0;
         } else if (textSize == 25) {
@@ -108,30 +109,36 @@ public class EditFieldDialog extends DialogFragment {
         super.onCreate(savedInstanceState);
         if (DEBUG) Log.d(TAG, "onCreate");
 
-        mActivityType = ActivityType.valueOf(getArguments().getString(ACTIVITY_TYPE));
-        mSensorType = SensorType.valueOf(getArguments().getString(SENSOR_TYPE));
-        mRowId = getArguments().getLong(ROW_ID);
-        mDeviceId = getArguments().getLong(DEVICE_ID);
-        mTextSize = getArguments().getInt(TEXT_SIZE);
+        mActivityType = ActivityType.valueOf(requireArguments().getString(ACTIVITY_TYPE));
+        mSensorType = SensorType.valueOf(requireArguments().getString(SENSOR_TYPE));
+        mRowId = requireArguments().getLong(ROW_ID);
+        mDeviceId = requireArguments().getLong(DEVICE_ID);
+        mTextSize = requireArguments().getInt(TEXT_SIZE);
     }
 
     @Override
     public void onResume() {
         super.onResume();
-        getContext().registerReceiver(mFilterChangedReceiver, mFilterChangedFilter);
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+                requireContext().registerReceiver(mFilterChangedReceiver, mFilterChangedFilter, Context.RECEIVER_NOT_EXPORTED);
+            }
+        }
     }
 
     public void onPause() {
         super.onPause();
         if (DEBUG) Log.i(TAG, "onPause()");
 
-        getContext().unregisterReceiver(mFilterChangedReceiver);
+        requireContext().unregisterReceiver(mFilterChangedReceiver);
     }
 
 
+    @SuppressLint("InflateParams")
+    @NonNull
     @Override
     public Dialog onCreateDialog(Bundle savedInstanceState) {
-        AlertDialog.Builder builder = new AlertDialog.Builder(getActivity());
+        AlertDialog.Builder builder = new AlertDialog.Builder(requireActivity());
 
         TextView title = new TextView(getActivity());
         // You Can Customise your Title here
@@ -146,7 +153,7 @@ public class EditFieldDialog extends DialogFragment {
         // builder.setTitle(getString(R.string.Lap_NR, lapNr));
 
         // Get the layout inflater
-        LayoutInflater inflater = getActivity().getLayoutInflater();
+        LayoutInflater inflater = requireActivity().getLayoutInflater();
 
         // Inflate and set the layout for the dialog
         mMainView = inflater.inflate(R.layout.config_tracking_view_entry_configurable, null);
@@ -157,7 +164,7 @@ public class EditFieldDialog extends DialogFragment {
         final SensorType[] sensorTypes = ActivityType.getSensorTypeArray(mActivityType, getContext());
         SensorArrayAdapter SENSOR_ARRAY_ADAPTER = new SensorArrayAdapter(getContext(), android.R.layout.simple_spinner_item, sensorTypes);
 
-        ArrayAdapter<Integer> TEXT_SIZES_ARRAY_ADAPTER = new ArrayAdapter<>(getContext(), android.R.layout.simple_spinner_item, TEXT_SIZES);
+        ArrayAdapter<Integer> TEXT_SIZES_ARRAY_ADAPTER = new ArrayAdapter<>(requireContext(), android.R.layout.simple_spinner_item, TEXT_SIZES);
 
         Spinner sensorSpinner = mMainView.findViewById(R.id.spinnerSensor);
         sensorSpinner.setAdapter(SENSOR_ARRAY_ADAPTER);
@@ -200,14 +207,11 @@ public class EditFieldDialog extends DialogFragment {
         deleteButton.setVisibility(View.GONE);
 
         // configure the positive/OK and negative/cancel button
-        builder.setPositiveButton(R.string.OK, new DialogInterface.OnClickListener() {
-            @Override
-            public void onClick(DialogInterface dialog, int whichButton) {
-                TrackingViewsDatabaseManager.updateTextSizeOfRow(mRowId, mTextSize);
-                TrackingViewsDatabaseManager.updateSensorTypeOfRow(mRowId, mSensorType);
-                TrackingViewsDatabaseManager.updateSourceDeviceIdOfRow(mRowId, mDeviceId);
-                getActivity().sendBroadcast(new Intent(TRACKING_VIEW_CHANGED_INTENT));
-            }
+        builder.setPositiveButton(R.string.OK, (dialog, whichButton) -> {
+            TrackingViewsDatabaseManager.updateTextSizeOfRow(mRowId, mTextSize);
+            TrackingViewsDatabaseManager.updateSensorTypeOfRow(mRowId, mSensorType);
+            TrackingViewsDatabaseManager.updateSourceDeviceIdOfRow(mRowId, mDeviceId);
+            requireActivity().sendBroadcast(new Intent(TRACKING_VIEW_CHANGED_INTENT));
         });
         builder.setNegativeButton(R.string.Cancel, null);
 
@@ -226,7 +230,7 @@ public class EditFieldDialog extends DialogFragment {
             sourceSpinner.setVisibility(View.GONE);
             textViewSource.setVisibility(View.VISIBLE);
             textViewSource.setText(R.string.smartphone);
-        } else if (deviceIdAndNameLists.deviceIds.size() == 0) {     // no sensors available
+        } else if (deviceIdAndNameLists.deviceIds.isEmpty()) {     // no sensors available
             if (DEBUG) Log.i(TAG, "size of list is zero");
             sourceSpinner.setVisibility(View.GONE);
             textViewSource.setVisibility(View.VISIBLE);
@@ -239,18 +243,15 @@ public class EditFieldDialog extends DialogFragment {
             LinkedList<Long> deviceIds = deviceIdAndNameLists.deviceIds;
             LinkedList<String> names = deviceIdAndNameLists.names;
 
-            deviceIds.addFirst(new Long(0));
-            names.addFirst(getContext().getString(R.string.bestSensor));
+            deviceIds.addFirst(0L);
+            names.addFirst(requireContext().getString(R.string.bestSensor));
 
             if (mDeviceId < 0) {
                 mDeviceId = 0;
             }
 
             final Long[] a_deviceIds = deviceIdAndNameLists.deviceIds.toArray(new Long[0]);
-            DeviceIdAndNameArrayAdapter deviceIdAndNameArrayAdapter = new DeviceIdAndNameArrayAdapter(getContext(),
-                    android.R.layout.simple_spinner_item,
-                    a_deviceIds,
-                    names.toArray(new String[0]));
+            DeviceIdAndNameArrayAdapter deviceIdAndNameArrayAdapter = new DeviceIdAndNameArrayAdapter(getContext(), android.R.layout.simple_spinner_item, a_deviceIds, names.toArray(new String[0]));
 
             sourceSpinner.setAdapter(deviceIdAndNameArrayAdapter);
             sourceSpinner.setSelection(deviceIdAndNameArrayAdapter.getPosition(mDeviceId));  // TODO: when first showing this view, the spinner is 'empty'
@@ -283,12 +284,9 @@ public class EditFieldDialog extends DialogFragment {
 
             button.setText(ConfigureFilterDialogFragment.getFilterSummary(getContext(), filterInfo.filterType, filterInfo.filterConstant));
 
-            button.setOnClickListener(new View.OnClickListener() {
-                @Override
-                public void onClick(View v) {
-                    ConfigureFilterDialogFragment configureFilterDialogFragment = ConfigureFilterDialogFragment.newInstance(mRowId, filterInfo.filterType, filterInfo.filterConstant);
-                    configureFilterDialogFragment.show(getFragmentManager(), ConfigureFilterDialogFragment.TAG);
-                }
+            button.setOnClickListener(v -> {
+                ConfigureFilterDialogFragment configureFilterDialogFragment = ConfigureFilterDialogFragment.newInstance(mRowId, filterInfo.filterType, filterInfo.filterConstant);
+                configureFilterDialogFragment.show(requireFragmentManager(), ConfigureFilterDialogFragment.TAG);
             });
         } else {
             button.setVisibility(View.GONE);
